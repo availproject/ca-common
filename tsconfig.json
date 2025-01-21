@@ -12,6 +12,7 @@
       "strictPropertyInitialization": false,
       "esModuleInterop": true,
       "skipLibCheck": true,
+      "importHelpers": true,
       "forceConsistentCasingInFileNames": true,
     },
     "include": ["src/*.*"]
