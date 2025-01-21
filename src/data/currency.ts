@@ -22,7 +22,7 @@ export class Currency {
    */
   private readonly oneUnitToAtomicUnitRatio: Decimal
 
-  constructor(public readonly currencyID: CurrencyID, public readonly universe: Universe, tokenAddress: Hex | Bytes | number[], public readonly decimals: number, public readonly isGasToken: boolean, public readonly polygonGasOracleAddress: Hex) {
+  constructor(public readonly currencyID: CurrencyID, public readonly universe: Universe, tokenAddress: string | Bytes | number[], public readonly decimals: number, public readonly isGasToken: boolean, public readonly polygonGasOracleAddress: Hex) {
     if (typeof tokenAddress === 'string') {
       this.tokenAddress = zeroExtendBufToGivenSize(toBytes(tokenAddress), 32)
     } else if (tokenAddress instanceof Uint8Array) {

@@ -1,6 +1,7 @@
 {
   "name": "ca-common",
   "version": "0.0.1",
+  "type": "module",
   "description": "common utilities for CA",
   "main": "dist/index.js",
   "files": [
@@ -38,7 +39,10 @@
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.3",
+    "@improbable-eng/grpc-web": "^0.15.0",
+    "browser-headers": "^0.4.1",
     "decimal.js": "^10.4.3",
+    "fuels": "^0.98.0",
     "long": "^5.2.4",
     "viem": "^2.22.10"
   }

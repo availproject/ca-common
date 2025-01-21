@@ -2,7 +2,7 @@
     "compilerOptions": {
       "lib": ["dom", "ES2020"],
       "target": "ES2020",
-      "module": "esnext",
+      "module": "commonjs",
       "moduleResolution": "node",
       "declaration": true,
       "declarationDir": "dist/types",
@@ -16,4 +16,3 @@
     },
     "include": ["src/*.*"]
   }
-  
