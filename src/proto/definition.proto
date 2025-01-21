@@ -1,0 +1,292 @@
+syntax = "proto3";
+
+// PageRequest is to be embedded in gRPC request messages for efficient
+// pagination. Ex:
+//
+//  message SomeRequest {
+//          Foo some_parameter = 1;
+//          PageRequest pagination = 2;
+//  }
+message PageRequest {
+  // key is a value returned in PageResponse.next_key to begin
+  // querying the next page most efficiently. Only one of offset or key
+  // should be set.
+  bytes key = 1;
+
+  // offset is a numeric offset that can be used when key is unavailable.
+  // It is less efficient than using key. Only one of offset or key should
+  // be set.
+  uint64 offset = 2;
+
+  // limit is the total number of results to be returned in the result page.
+  // If left empty it will default to a value to be set by each app.
+  uint64 limit = 3;
+
+  // count_total is set to true  to indicate that the result set should include
+  // a count of the total number of items available for pagination in UIs.
+  // count_total is only respected when offset is used. It is ignored when key
+  // is set.
+  bool count_total = 4;
+
+  // reverse is set to true if results are to be returned in the descending order.
+  bool reverse = 5;
+}
+
+// PageResponse is to be embedded in gRPC response messages where the
+// corresponding request message has used PageRequest.
+//
+//  message SomeResponse {
+//          repeated Bar results = 1;
+//          PageResponse page = 2;
+//  }
+message PageResponse {
+  // next_key is the key to be passed to PageRequest.key to
+  // query the next page most efficiently. It will be empty if
+  // there are no more results.
+  bytes next_key = 1;
+
+  // total is total number of results available if PageRequest.count_total
+  // was set, its value is undefined otherwise
+  uint64 total = 2;
+}
+
+enum RFFSourceState {
+  WAITING = 0;
+  DEPOSITED = 1;
+}
+
+enum CollectionFeeRequirement {
+  UNDETERMINED = 0;
+  YES = 1;
+  NO = 2;
+}
+
+enum Universe {
+  ETHEREUM = 0;
+  FUEL = 1;
+  SOLANA = 2;
+}
+
+message RFFSourcePair {
+  Universe universe = 1;
+  bytes chainID = 2;
+  bytes tokenAddress = 3;
+  bytes value = 4;
+  RFFSourceState status = 5;
+  CollectionFeeRequirement collectionFeeRequired = 6;
+}
+
+message SignatureDatum {
+  Universe universe = 1;
+  bytes address = 2;
+  bytes signature = 3;
+  bytes hash = 4; // is to be left empty by the creator and is to be filled in during signature verification
+}
+
+message RFFDestinationPair {
+  bytes tokenAddress = 1;
+  bytes value = 2; // amount
+}
+
+message RequestForFunds {
+  uint64 id = 1;
+  repeated RFFSourcePair sources = 2;
+  bytes destinationChainID = 3;
+  repeated RFFDestinationPair destinations = 4;
+  bytes nonce = 5;
+  uint64 expiry = 6;
+  Universe destinationUniverse = 9;
+  repeated SignatureDatum signatureData = 10;
+
+  // Cosmos user (???)/Cosmos internal fields
+  string user = 101;
+  bytes fulfilledBy = 102; // the EVM address that fulfilled it on the destination chain
+  uint64 fulfilledAt = 103;
+
+  bool deposited = 104;
+  bool fulfilled = 105;
+  //todo: remove settled, using solver amount instead
+  bool settled = 106;
+  bool refunded = 107;
+  int64 creationBlock = 109;
+}
+
+message MsgCreateRequestForFunds {
+  repeated RFFSourcePair      sources             = 1;
+  Universe           destinationUniverse = 2;
+  bytes              destinationChainID  = 3;
+  repeated RFFDestinationPair destinations        = 4;
+  bytes              nonce               = 5;
+  uint64             expiry              = 6;
+  string             user                = 7;
+  repeated SignatureDatum     signatureData       = 8;
+}
+
+message MsgCreateRequestForFundsResponse {
+  uint64 id = 1;
+}
+
+message QueryGetRequestForFundsRequest {
+  uint64 id = 1;
+}
+
+message QueryGetRequestForFundsResponse {
+  RequestForFunds requestForFunds = 1;
+}
+
+message QueryAllRequestForFundsRequest {
+  PageRequest pagination = 1;
+}
+
+message QueryAllRequestForFundsResponse {
+  repeated RequestForFunds requestForFunds = 1;
+  PageResponse pagination      = 2;
+}
+
+message RouteFee {
+  Universe sourceUniverse = 1;
+  Universe destinationUniverse = 2;
+  bytes sourceChainID = 3;
+  bytes destinationChainID = 4;
+  bytes sourceTokenAddress = 5;
+  bytes destinationTokenAddress = 6;
+  // 7 ↔ 9 are reserved for new fields
+  uint32 feeBP = 10;
+}
+
+message SolverAddress {
+  Universe universe = 1;
+  bytes address = 2;
+  bytes signature = 3;
+}
+
+message SolverData {
+  string cosmosAddress = 1;
+
+  repeated RouteFee advertisedFees = 2;
+  repeated SolverAddress addresses = 3;
+}
+
+message QueryGetSolverDataRequest {
+  string cosmosAddress = 1;
+}
+
+message QueryGetSolverDataResponse {
+  SolverData solverData = 1;
+}
+
+message QueryAllSolverDataRequest {
+  PageRequest pagination = 1;
+}
+
+message QueryAllSolverDataResponse {
+  repeated SolverData solverData = 1;
+  PageResponse pagination = 2;
+}
+
+message MsgCreateSolverData {
+  string   cosmosAddress  = 1;
+  repeated RouteFee advertisedFees = 2;
+  repeated SolverAddress addresses = 3;
+}
+
+message MsgCreateSolverDataResponse {}
+
+message MsgUpdateSolverData {
+  string   cosmosAddress  = 1;
+  repeated RouteFee advertisedFees = 2;
+  repeated SolverAddress addresses = 3;
+}
+
+message MsgUpdateSolverDataResponse {}
+
+message Settlement {
+  bytes id = 1;
+  Universe universe = 2;
+  bytes chainId = 3;
+  repeated bytes amounts = 4;
+  repeated bytes tokenAddress = 5;
+  repeated bytes filler = 6;
+  bool success = 7;
+}
+
+message QueryGetSettlementRequest {
+  uint64 id = 1;
+}
+
+message QueryGetSettlementResponse {
+  Settlement Settlement = 1;
+}
+
+message QueryAllSettlementRequest {
+  PageRequest pagination = 1;
+}
+
+message QueryAllSettlementResponse {
+  repeated Settlement Settlement = 1;
+  PageResponse pagination = 2;
+}
+
+message FixedFeeTuple {
+  Universe universe = 4;
+  bytes chainID = 1;
+  bytes tokenAddress = 2;
+  bytes fee = 3;
+}
+
+message ProtocolFees {
+  uint64 feeBP = 1;
+  repeated FixedFeeTuple collectionFees = 2;
+  repeated FixedFeeTuple fulfilmentFees = 3;
+  string admin = 4;
+}
+
+message QueryGetProtocolFeesRequest {}
+
+message QueryGetProtocolFeesResponse {
+  ProtocolFees ProtocolFees = 1;
+}
+
+message MsgCreateProtocolFees {
+  string creator = 1;
+  uint64 feeBP     = 2;
+  repeated FixedFeeTuple collectionFees = 3;
+  repeated FixedFeeTuple fulfilmentFees = 4;
+}
+
+message MsgCreateProtocolFeesResponse {}
+
+message MsgUpdateProtocolFees {
+  string creator = 1;
+  uint64 feeBP     = 2;
+  repeated FixedFeeTuple collectionFees = 3;
+  repeated FixedFeeTuple fulfilmentFees = 4;
+}
+
+message MsgUpdateProtocolFeesResponse {}
+
+message PriceOracleDatum {
+  Universe universe = 1;
+  bytes chainID = 2;
+  bytes tokenAddress = 3;
+  bytes price = 4;
+  uint32 decimals = 5;
+}
+
+message PriceOracleData {
+  repeated PriceOracleDatum priceData = 1;
+}
+
+message QueryGetPriceOracleDataRequest {}
+
+message QueryGetPriceOracleDataResponse {
+  PriceOracleData PriceOracleData = 1;
+}
+
+message MsgRefundReq {
+  string creator = 1;
+  uint64 rffID = 2;
+}
+
+message MsgRefundReqResponse {
+}

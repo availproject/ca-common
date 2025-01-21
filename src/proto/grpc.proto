@@ -1,0 +1,14 @@
+syntax = "proto3";
+import "definition.proto";
+package xarchain.chainabstraction;
+
+service Query {
+  rpc RequestForFunds    (QueryGetRequestForFundsRequest) returns (QueryGetRequestForFundsResponse);
+  rpc RequestForFundsAll (QueryAllRequestForFundsRequest) returns (QueryAllRequestForFundsResponse);
+  rpc SolverData         (QueryGetSolverDataRequest)      returns (QueryGetSolverDataResponse);
+  rpc SolverDataAll      (QueryAllSolverDataRequest)      returns (QueryAllSolverDataResponse);
+  rpc Settlement         (QueryGetSettlementRequest)      returns (QueryGetSettlementResponse);
+  rpc SettlementAll      (QueryAllSettlementRequest)      returns (QueryAllSettlementResponse);
+  rpc ProtocolFees       (QueryGetProtocolFeesRequest)    returns (QueryGetProtocolFeesResponse);
+  rpc PriceOracleData    (QueryGetPriceOracleDataRequest) returns (QueryGetPriceOracleDataResponse);
+}
