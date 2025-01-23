@@ -1,6 +1,6 @@
 import { toBytes, toHex } from "viem";
 
-import { encodeChainID36, OmniversalChainID } from "./chainid";
+import { encodeChainID36, OmniversalChainID } from "../data/chainid";
 import { Universe } from "../proto/definition";
 import { Bytes } from "../types";
 

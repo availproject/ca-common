@@ -1,7 +1,6 @@
 {
   "name": "ca-common",
   "version": "0.0.1",
-  "type": "module",
   "description": "common utilities for CA",
   "main": "dist/index.js",
   "files": [

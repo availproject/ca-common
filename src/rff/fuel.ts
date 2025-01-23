@@ -1,0 +1,27 @@
+import { Universe } from "../proto/definition";
+import { UniverseInput, UniverseOutput } from "../fuelcontracts/ArcanaVault";
+
+export function protobufUniverseToFuelUniverse(input: Universe): UniverseInput {
+  switch (input) {
+    case Universe.ETHEREUM:
+      return UniverseInput.ETHEREUM;
+    case Universe.FUEL:
+      return UniverseInput.FUEL;
+    case Universe.SOLANA:
+      return UniverseInput.SOLANA;
+  }
+  throw new Error("Invalid universe");
+}
+
+export function fuelUniverseToProtobufUniverse(
+  input: UniverseOutput,
+): Universe {
+  switch (input) {
+    case UniverseOutput.ETHEREUM:
+      return Universe.ETHEREUM;
+    case UniverseOutput.FUEL:
+      return Universe.FUEL;
+    case UniverseOutput.SOLANA:
+      return Universe.SOLANA;
+  }
+}
