@@ -5,45 +5,6 @@ import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
 import { zeroExtendBufToGivenSize } from "./zeroextn";
 
-exports.RPCURLMap = new (class RPCURLMap {
-  map = new Map([
-    [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 8453), 'https://base-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 1), 'https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 534352), 'https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 59144), 'https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.FUEL, 9889), 'https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql']
-  ].map(z => [toHex(z[0]), z[1]]))
-
-  get (key: Uint8Array) {
-    return this.map.get(toHex(key))
-  }
-})()
-
-class CurrencyMap {
-  map = new Map<string, Currency>()
-
-  constructor(currencies: Currency[]) {
-    for (const cur of currencies) {
-      this.map.set(toHex(cur.tokenAddress), cur)
-    }
-  }
-
-  get(input: Parameters<typeof toBytes>[0]) {
-    return this.map.get(toHex(zeroExtendBufToGivenSize(toBytes(input), 32)))
-  }
-}
-
-export type ChainDatum = {
-  ChainID: OmniversalChainID
-  Universe: Universe
-  ChainID32: Buffer
-  Currencies: Currency[]
-  CurrencyMap: CurrencyMap,
-}
-
 const RawData = [
   {
     "ChainID36": [
@@ -758,6 +719,45 @@ const RawData = [
   }
 ]
 
+export const RPCURLMap = new (class RPCURLMap {
+  map = new Map([
+    [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 8453), 'https://base-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 1), 'https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 534352), 'https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 59144), 'https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.FUEL, 9889), 'https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql']
+  ].map(z => [toHex(z[0]), z[1]]))
+
+  get (key: Uint8Array) {
+    return this.map.get(toHex(key))
+  }
+})()
+
+class CurrencyMap {
+  map = new Map<string, Currency>()
+
+  constructor(currencies: Currency[]) {
+    for (const cur of currencies) {
+      this.map.set(toHex(cur.tokenAddress), cur)
+    }
+  }
+
+  get(input: Parameters<typeof toBytes>[0]) {
+    return this.map.get(toHex(zeroExtendBufToGivenSize(toBytes(input), 32)))
+  }
+}
+
+export type ChainDatum = {
+  ChainID: OmniversalChainID
+  Universe: Universe
+  ChainID32: Buffer
+  Currencies: Currency[]
+  CurrencyMap: CurrencyMap,
+}
+
 // Certain data fields are auto-generated while others are not.
 export const Chaindata: ChainDatum[] = RawData.map(ch => {
   const ch32 = Buffer.from(ch.ChainID32)
@@ -772,3 +772,17 @@ export const Chaindata: ChainDatum[] = RawData.map(ch => {
     CurrencyMap: new CurrencyMap(currencies),
   }
 })
+
+export const ChaindataMap = new (class ChaindataMap {
+  map = new Map<string, ChainDatum>()
+
+  constructor() {
+    for (const datum of Chaindata) {
+      this.map.set(toHex(datum.ChainID.toBytes()), datum)
+    }
+  }
+
+  get (key: OmniversalChainID) {
+    return this.map.get(toHex(key.toBytes()))
+  }
+})()
