@@ -719,8 +719,8 @@ const RawData = [
   }
 ]
 
-export const RPCURLMap = new (class RPCURLMap {
-  map = new Map([
+class _RPCURLMap {
+  private readonly map = new Map([
     [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
@@ -734,10 +734,11 @@ export const RPCURLMap = new (class RPCURLMap {
   get (key: Uint8Array) {
     return this.map.get(toHex(key))
   }
-})()
+}
+export const RPCURLMap = new _RPCURLMap()
 
 class CurrencyMap {
-  map = new Map<string, Currency>()
+  private readonly map = new Map<string, Currency>()
 
   constructor(currencies: Currency[]) {
     for (const cur of currencies) {
@@ -773,8 +774,8 @@ export const Chaindata: ChainDatum[] = RawData.map(ch => {
   }
 })
 
-export const ChaindataMap = new (class ChaindataMap {
-  map = new Map<string, ChainDatum>()
+class _ChaindataMap {
+  private readonly map = new Map<string, ChainDatum>()
 
   constructor() {
     for (const datum of Chaindata) {
@@ -785,4 +786,6 @@ export const ChaindataMap = new (class ChaindataMap {
   get (key: OmniversalChainID) {
     return this.map.get(toHex(key.toBytes()))
   }
-})()
+}
+
+export const ChaindataMap = new _ChaindataMap()
