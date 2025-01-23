@@ -762,7 +762,7 @@ const RawData = [
 export const Chaindata: ChainDatum[] = RawData.map(ch => {
   const ch32 = Buffer.from(ch.ChainID32)
   const currencies = ch.Currencies.map(cur => {
-    return new Currency(cur.CurrencyID, ch.Universe, Buffer.from(cur.TokenContractAddress), cur.TokenDecimals, cur.IsGasToken, cur.USDPriceOracleAddress as Hex)
+    return new Currency(cur.CurrencyID, Buffer.from(cur.TokenContractAddress), cur.TokenDecimals, cur.IsGasToken, cur.USDPriceOracleAddress as Hex)
   })
   return {
     Universe: ch.Universe,
