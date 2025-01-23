@@ -1,6 +1,5 @@
 export * from './chaindata'
 export * from './chainid'
 export * from './currency'
-export * from '../vaultcontracts/vaultcontracts'
 export * from './zeroextn'
 export * from './vault.abi'

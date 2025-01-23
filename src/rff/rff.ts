@@ -2,7 +2,7 @@ import { bytesToBigInt, bytesToHex } from "viem";
 import { BN, hexlify } from "fuels";
 
 import { RequestForFunds } from "../proto/definition";
-import { type EVMRFF } from "../vaultcontracts";
+import { type EVMRFF } from "../vaultcontracts/evm";
 import { RequestInput as FuelRFF } from "../fuelcontracts/ArcanaVault";
 import { protobufUniverseToFuelUniverse } from "./fuel";
 

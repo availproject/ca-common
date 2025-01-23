@@ -1,2 +1,6 @@
 export * from './vaultcontracts'
-export * from './evm'
+export {
+  createEVMVaultContract,
+  EVMVaultContractIface,
+  EVMRFF
+} from './evm'
