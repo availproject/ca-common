@@ -1,4 +1,7 @@
-export * from './fuelcontracts'
+export {
+  ArcanaVault,
+  ArcanaVaultFactory
+} from './fuelcontracts'
 export * from './proto/definition'
 export {
   QueryClientImpl,
