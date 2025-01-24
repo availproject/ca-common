@@ -1,5 +1,10 @@
 import { Registry as CosmosRegistry, OfflineDirectSigner } from "@cosmjs/proto-signing";
-import { defaultRegistryTypes, SigningStargateClient, SigningStargateClientOptions } from "@cosmjs/stargate";
+import {
+  defaultRegistryTypes,
+  HttpEndpoint,
+  SigningStargateClient,
+  SigningStargateClientOptions
+} from "@cosmjs/stargate";
 
 import {
   MsgCreateRequestForFunds, MsgCreateRequestForFundsResponse,
@@ -21,7 +26,7 @@ export const Registry = new CosmosRegistry(defaultRegistryTypes)
   Registry.register('/xarchain.chainabstraction.MsgRefundReqResponse', MsgRefundReqResponse)
 }
 
-export function createCosmosClient (signer: OfflineDirectSigner, endpoint: string, options?: SigningStargateClientOptions): Promise<SigningStargateClient> {
+export function createCosmosClient (signer: OfflineDirectSigner, endpoint: string | HttpEndpoint, options?: SigningStargateClientOptions): Promise<SigningStargateClient> {
   return SigningStargateClient.connectWithSigner(endpoint, signer, {
     registry: Registry,
     ...options,
