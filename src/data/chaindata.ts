@@ -720,7 +720,7 @@ const RawData = [
 ]
 
 class _RPCURLMap {
-  private readonly map = new Map([
+  private readonly dataset: [Buffer, string][] = [
     [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
@@ -729,10 +729,11 @@ class _RPCURLMap {
     [encodeChainID36(Universe.ETHEREUM, 534352), 'https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 59144), 'https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.FUEL, 9889), 'https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql']
-  ].map(z => [toHex(z[0]), z[1]]))
+  ]
+  private readonly map = new Map<string, string>(this.dataset.map(z => [toHex(z[0]), z[1]]))
 
-  get (key: Uint8Array) {
-    return this.map.get(toHex(key))
+  public get (key: OmniversalChainID) {
+    return this.map.get(toHex(key.toBytes()))
   }
 }
 export const RPCURLMap = new _RPCURLMap()

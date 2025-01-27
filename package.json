@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/types/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./fuelcontracts": {
+      "types": "./dist/types/fuelcontracts/index.d.ts",
+      "import": "./dist/fuelcontracts/index.ts"
     }
   },
   "scripts": {
@@ -37,14 +41,18 @@
     "ts-proto": "^2.6.1",
     "typescript": "^5.7.3"
   },
+  "peerDependencies": {
+    "viem": "^2.22.10",
+    "fuels": "^0.98.0",
+    "@cosmjs/proto-signing": "^0.33.0",
+    "@cosmjs/stargate": "^0.33.0",
+    "decimal.js": "^10.4.3"
+  },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.3",
     "@improbable-eng/grpc-web": "^0.15.0",
     "browser-headers": "^0.4.1",
-    "decimal.js": "^10.4.3",
-    "fuels": "^0.98.0",
     "long": "^5.2.4",
-    "tslib": "^2.8.1",
-    "viem": "^2.22.10"
+    "tslib": "^2.8.1"
   }
 }

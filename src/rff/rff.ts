@@ -1,10 +1,17 @@
-import { bytesToBigInt, bytesToHex } from "viem";
-import { BN, hexlify } from "fuels";
+import { ByteArray, bytesToBigInt, Hex, pad, toHex } from "viem";
+import { BN } from "fuels";
 
 import { RequestForFunds } from "../proto/definition";
-import { type EVMRFF } from "../vaultcontracts/evm";
+import { type EVMRFF } from "../vaultcontracts";
 import { RequestInput as FuelRFF } from "../fuelcontracts/ArcanaVault";
 import { protobufUniverseToFuelUniverse } from "./fuel";
+
+function ezPadTo32Hex(input: ByteArray | Hex): Hex {
+  return pad(toHex(input), {
+    dir: 'left',
+    size: 32
+  })
+}
 
 export class OmniversalRFF {
   private evmRFF: EVMRFF | undefined
@@ -19,20 +26,20 @@ export class OmniversalRFF {
         sources: this.protobufRFF.sources.map(s => ({
           universe: s.universe,
           chainID: bytesToBigInt(s.chainID),
-          tokenAddress: bytesToHex(s.tokenAddress),
+          tokenAddress: ezPadTo32Hex(s.tokenAddress),
           value: bytesToBigInt(s.value),
         })),
         destinationUniverse: this.protobufRFF.destinationUniverse,
         destinationChainID: bytesToBigInt(this.protobufRFF.destinationChainID),
         destinations: this.protobufRFF.destinations.map(d => ({
-          tokenAddress: bytesToHex(d.tokenAddress),
+          tokenAddress: ezPadTo32Hex(d.tokenAddress),
           value: bytesToBigInt(d.value),
         })),
         nonce: bytesToBigInt(this.protobufRFF.nonce),
         expiry: BigInt(this.protobufRFF.expiry.toString()),
         parties: this.protobufRFF.signatureData.map(sd => ({
           universe: sd.universe,
-          address_: bytesToHex(sd.address),
+          address_: ezPadTo32Hex(sd.address),
         }))
       }
     }
@@ -46,7 +53,7 @@ export class OmniversalRFF {
           universe: protobufUniverseToFuelUniverse(s.universe),
           chain_id: new BN(s.chainID),
           asset_id: {
-            bits: hexlify(s.tokenAddress),
+            bits: ezPadTo32Hex(s.tokenAddress),
           },
           value: new BN(s.value),
         })),
@@ -54,7 +61,7 @@ export class OmniversalRFF {
         destination_universe: protobufUniverseToFuelUniverse(this.protobufRFF.destinationUniverse),
         destinations: this.protobufRFF.destinations.map(d => ({
           asset_id: {
-            bits: hexlify(d.tokenAddress)
+            bits: ezPadTo32Hex(d.tokenAddress)
           },
           value: new BN(d.value)
         })),
@@ -63,7 +70,7 @@ export class OmniversalRFF {
         parties: this.protobufRFF.signatureData.map(sd => ({
           universe: protobufUniverseToFuelUniverse(sd.universe),
           address: {
-            bits: hexlify(sd.address),
+            bits: ezPadTo32Hex(sd.address),
           }
         })),
       }
