@@ -9,11 +9,11 @@
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "import": "./dist/index.js"
+      "require": "./dist/index.js"
     },
     "./fuelcontracts": {
       "types": "./dist/types/fuelcontracts/index.d.ts",
-      "import": "./dist/fuelcontracts/index.ts"
+      "require": "./dist/fuelcontracts/index.ts"
     }
   },
   "scripts": {
