@@ -9,14 +9,14 @@
 */
 
 import type {
-    Account,
-    Address,
-    BigNumberish,
-    BN,
-    FunctionFragment,
-    InvokeFunction,
-    Provider,
-    StorageSlot
+  Account,
+  Address,
+  BigNumberish,
+  BN,
+  FunctionFragment,
+  InvokeFunction,
+  Provider,
+  StorageSlot
 } from "fuels";
 import { Contract, Interface } from "fuels";
 
@@ -52,6 +52,16 @@ export enum ReentrancyErrorInput {
 
 export enum ReentrancyErrorOutput {
   NonReentrant = "NonReentrant",
+}
+
+export enum RoleAccessErrorInput {
+  NotSettlementVerifier = "NotSettlementVerifier",
+  NotRefundEligible = "NotRefundEligible",
+}
+
+export enum RoleAccessErrorOutput {
+  NotSettlementVerifier = "NotSettlementVerifier",
+  NotRefundEligible = "NotRefundEligible",
 }
 export type StateInput = Enum<{
   Uninitialized: undefined;
@@ -130,10 +140,36 @@ export type FillOutput = {
   signed_message_hash: string;
   solver: AddressOutput;
 };
+export type OwnershipRenouncedInput = { previous_owner: IdentityInput };
+export type OwnershipRenouncedOutput = { previous_owner: IdentityOutput };
 export type OwnershipSetInput = { new_owner: IdentityInput };
 export type OwnershipSetOutput = { new_owner: IdentityOutput };
+export type OwnershipTransferredInput = {
+  new_owner: IdentityInput;
+  previous_owner: IdentityInput;
+};
+export type OwnershipTransferredOutput = {
+  new_owner: IdentityOutput;
+  previous_owner: IdentityOutput;
+};
 export type PartyInput = { universe: UniverseInput; address: AddressInput };
 export type PartyOutput = { universe: UniverseOutput; address: AddressOutput };
+export type RefundEligibleRoleSetInput = {
+  identity: IdentityInput;
+  has_role: boolean;
+};
+export type RefundEligibleRoleSetOutput = {
+  identity: IdentityOutput;
+  has_role: boolean;
+};
+export type RefundEligibleRoleTransferInput = {
+  old_identity: IdentityInput;
+  new_identity: IdentityInput;
+};
+export type RefundEligibleRoleTransferOutput = {
+  old_identity: IdentityOutput;
+  new_identity: IdentityOutput;
+};
 export type RequestInput = {
   sources: Vec<SourcePairInput>;
   destination_universe: UniverseInput;
@@ -179,6 +215,22 @@ export type SettleDataOutput = {
   assets: Vec<AssetIdOutput>;
   amounts: Vec<BN>;
   nonce: BN;
+};
+export type SettlementVerifierRoleSetInput = {
+  identity: IdentityInput;
+  has_role: boolean;
+};
+export type SettlementVerifierRoleSetOutput = {
+  identity: IdentityOutput;
+  has_role: boolean;
+};
+export type SettlementVerifierRoleTransferInput = {
+  old_identity: IdentityInput;
+  new_identity: IdentityInput;
+};
+export type SettlementVerifierRoleTransferOutput = {
+  old_identity: IdentityOutput;
+  new_identity: IdentityOutput;
 };
 export type SourcePairInput = {
   universe: UniverseInput;
@@ -229,34 +281,40 @@ const abi = {
         "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
     },
     {
+      type: "enum errors::RoleAccessError",
+      concreteTypeId:
+        "19d4ddc6bfa7239c40e8a40045394730ec18e202048f5b6404eb6b453bb70362",
+      metadataTypeId: 2,
+    },
+    {
       type: "enum errors::VaultError",
       concreteTypeId:
         "1174ac322e5f50aeb24de065558295d834bab4ad055eedc043379d91a8958834",
-      metadataTypeId: 2,
+      metadataTypeId: 3,
     },
     {
       type: "enum standards::src5::AccessError",
       concreteTypeId:
         "3f702ea3351c9c1ece2b84048006c8034a24cbc2bad2e740d0412b4172951d3d",
-      metadataTypeId: 3,
+      metadataTypeId: 4,
     },
     {
       type: "enum standards::src5::State",
       concreteTypeId:
         "192bc7098e2fe60635a9918afb563e4e5419d386da2bdbf0d716b4bc8549802c",
-      metadataTypeId: 4,
+      metadataTypeId: 5,
     },
     {
       type: "enum std::identity::Identity",
       concreteTypeId:
         "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
-      metadataTypeId: 5,
+      metadataTypeId: 6,
     },
     {
       type: "enum std::option::Option<bool>",
       concreteTypeId:
         "160e7964babcf172e41aa29b138f9c2ccfc416ad2368dabdbdf877ec5de5503f",
-      metadataTypeId: 6,
+      metadataTypeId: 7,
       typeArguments: [
         "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
       ],
@@ -265,7 +323,7 @@ const abi = {
       type: "enum std::option::Option<struct data_structures::Request>",
       concreteTypeId:
         "2644cb541197d16874ed15ff9b4e74d0cb01be34849c3fb2d8356f064f7b097a",
-      metadataTypeId: 6,
+      metadataTypeId: 7,
       typeArguments: [
         "8f17cef827b9269639659b2f90120c93255dfedb8f58f7f69e7f2f2a9040077d",
       ],
@@ -274,67 +332,103 @@ const abi = {
       type: "enum sway_libs::ownership::errors::InitializationError",
       concreteTypeId:
         "1dfe7feadc1d9667a4351761230f948744068a090fe91b1bc6763a90ed5d3893",
-      metadataTypeId: 7,
+      metadataTypeId: 8,
     },
     {
       type: "enum sway_libs::reentrancy::errors::ReentrancyError",
       concreteTypeId:
         "4d216c57b3357523323f59401c7355785b41bdf832f6e1106272186b94797038",
-      metadataTypeId: 8,
+      metadataTypeId: 9,
     },
     {
       type: "struct data_structures::Request",
       concreteTypeId:
         "8f17cef827b9269639659b2f90120c93255dfedb8f58f7f69e7f2f2a9040077d",
-      metadataTypeId: 13,
+      metadataTypeId: 14,
     },
     {
       type: "struct data_structures::SettleData",
       concreteTypeId:
         "3f398311d910f45891ebe297c796818054c203bb631628fb87216c30add71db0",
-      metadataTypeId: 14,
+      metadataTypeId: 15,
     },
     {
       type: "struct events::Deposit",
       concreteTypeId:
         "a93fb3d7088884ac8084fc44b117612059604f3d2051bfb1e2612381c3cebda9",
-      metadataTypeId: 16,
+      metadataTypeId: 17,
     },
     {
       type: "struct events::Fill",
       concreteTypeId:
         "5d6f0cf603f336a11e076b3797ac315dc56056f8fd733e270621be9b42f539f8",
-      metadataTypeId: 17,
+      metadataTypeId: 18,
+    },
+    {
+      type: "struct events::RefundEligibleRoleSet",
+      concreteTypeId:
+        "6bf7e984bfcd09a667a74ad394cc04dc36275dcc2610439ddd4eb06e138e0c99",
+      metadataTypeId: 19,
+    },
+    {
+      type: "struct events::RefundEligibleRoleTransfer",
+      concreteTypeId:
+        "69cfe1483138c6201ab36e7cf5e0b54aa9ee674f19318d289e55961bfdcc4ebf",
+      metadataTypeId: 20,
     },
     {
       type: "struct events::Settle",
       concreteTypeId:
         "d33ab1a100ca3838867bc1b5bd324dbf7d8385b8c61195a20e87cf71d3d35d4f",
-      metadataTypeId: 18,
+      metadataTypeId: 21,
+    },
+    {
+      type: "struct events::SettlementVerifierRoleSet",
+      concreteTypeId:
+        "cff3cdf4605fc7bc13714d42a1fa51fa0fd5743cc3ee2cebf512d2ee1f0541d0",
+      metadataTypeId: 22,
+    },
+    {
+      type: "struct events::SettlementVerifierRoleTransfer",
+      concreteTypeId:
+        "57e2d2b7e4cba1e211aa57fd003552898667215676b5c12e9018c643d3177b08",
+      metadataTypeId: 23,
     },
     {
       type: "struct events::Withdraw",
       concreteTypeId:
         "2dbac8ab9d6c521bc756385f712aadb559780f80981fd7f47f28ba0bf5aab3de",
-      metadataTypeId: 19,
+      metadataTypeId: 24,
     },
     {
       type: "struct std::asset_id::AssetId",
       concreteTypeId:
         "c0710b6731b1dd59799cf6bef33eee3b3b04a2e40e80a0724090215bbf2ca974",
-      metadataTypeId: 21,
+      metadataTypeId: 26,
     },
     {
       type: "struct std::b512::B512",
       concreteTypeId:
         "745e252e80bec590efc3999ae943f07ccea4d5b45b00bb6575499b64abdd3322",
-      metadataTypeId: 22,
+      metadataTypeId: 27,
+    },
+    {
+      type: "struct sway_libs::ownership::events::OwnershipRenounced",
+      concreteTypeId:
+        "43c4fa7b3297401afbf300127e59ea913e5c8f0c7ae69abbec789ab0bb872bed",
+      metadataTypeId: 31,
     },
     {
       type: "struct sway_libs::ownership::events::OwnershipSet",
       concreteTypeId:
         "e1ef35033ea9d2956f17c3292dea4a46ce7d61fdf37bbebe03b7b965073f43b5",
-      metadataTypeId: 26,
+      metadataTypeId: 32,
+    },
+    {
+      type: "struct sway_libs::ownership::events::OwnershipTransferred",
+      concreteTypeId:
+        "b3fffbcb3158d7c010c31b194b60fb7857adb4ad61bdcf4b8b42958951d9f308",
+      metadataTypeId: 33,
     },
     {
       type: "u256",
@@ -381,8 +475,24 @@ const abi = {
       ],
     },
     {
-      type: "enum errors::VaultError",
+      type: "enum errors::RoleAccessError",
       metadataTypeId: 2,
+      components: [
+        {
+          name: "NotSettlementVerifier",
+          typeId:
+            "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+        },
+        {
+          name: "NotRefundEligible",
+          typeId:
+            "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+        },
+      ],
+    },
+    {
+      type: "enum errors::VaultError",
+      metadataTypeId: 3,
       components: [
         {
           name: "AssetMismatch",
@@ -396,11 +506,11 @@ const abi = {
         },
         {
           name: "DestinationPairsNotFilled",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 11,
+              typeId: 12,
             },
           ],
         },
@@ -453,7 +563,7 @@ const abi = {
     },
     {
       type: "enum standards::src5::AccessError",
-      metadataTypeId: 3,
+      metadataTypeId: 4,
       components: [
         {
           name: "NotOwner",
@@ -464,7 +574,7 @@ const abi = {
     },
     {
       type: "enum standards::src5::State",
-      metadataTypeId: 4,
+      metadataTypeId: 5,
       components: [
         {
           name: "Uninitialized",
@@ -473,7 +583,7 @@ const abi = {
         },
         {
           name: "Initialized",
-          typeId: 5,
+          typeId: 6,
         },
         {
           name: "Revoked",
@@ -484,21 +594,21 @@ const abi = {
     },
     {
       type: "enum std::identity::Identity",
-      metadataTypeId: 5,
+      metadataTypeId: 6,
       components: [
         {
           name: "Address",
-          typeId: 20,
+          typeId: 25,
         },
         {
           name: "ContractId",
-          typeId: 23,
+          typeId: 28,
         },
       ],
     },
     {
       type: "enum std::option::Option",
-      metadataTypeId: 6,
+      metadataTypeId: 7,
       components: [
         {
           name: "None",
@@ -507,14 +617,14 @@ const abi = {
         },
         {
           name: "Some",
-          typeId: 9,
+          typeId: 10,
         },
       ],
-      typeParameters: [9],
+      typeParameters: [10],
     },
     {
       type: "enum sway_libs::ownership::errors::InitializationError",
-      metadataTypeId: 7,
+      metadataTypeId: 8,
       components: [
         {
           name: "CannotReinitialized",
@@ -525,7 +635,7 @@ const abi = {
     },
     {
       type: "enum sway_libs::reentrancy::errors::ReentrancyError",
-      metadataTypeId: 8,
+      metadataTypeId: 9,
       components: [
         {
           name: "NonReentrant",
@@ -536,19 +646,19 @@ const abi = {
     },
     {
       type: "generic T",
-      metadataTypeId: 9,
-    },
-    {
-      type: "raw untyped ptr",
       metadataTypeId: 10,
     },
     {
-      type: "struct data_structures::DestinationPair",
+      type: "raw untyped ptr",
       metadataTypeId: 11,
+    },
+    {
+      type: "struct data_structures::DestinationPair",
+      metadataTypeId: 12,
       components: [
         {
           name: "asset_id",
-          typeId: 21,
+          typeId: 26,
         },
         {
           name: "value",
@@ -559,7 +669,7 @@ const abi = {
     },
     {
       type: "struct data_structures::Party",
-      metadataTypeId: 12,
+      metadataTypeId: 13,
       components: [
         {
           name: "universe",
@@ -567,21 +677,21 @@ const abi = {
         },
         {
           name: "address",
-          typeId: 20,
+          typeId: 25,
         },
       ],
     },
     {
       type: "struct data_structures::Request",
-      metadataTypeId: 13,
+      metadataTypeId: 14,
       components: [
         {
           name: "sources",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 15,
+              typeId: 16,
             },
           ],
         },
@@ -596,11 +706,11 @@ const abi = {
         },
         {
           name: "destinations",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 11,
+              typeId: 12,
             },
           ],
         },
@@ -616,11 +726,11 @@ const abi = {
         },
         {
           name: "parties",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 12,
+              typeId: 13,
             },
           ],
         },
@@ -628,7 +738,7 @@ const abi = {
     },
     {
       type: "struct data_structures::SettleData",
-      metadataTypeId: 14,
+      metadataTypeId: 15,
       components: [
         {
           name: "universe",
@@ -641,27 +751,27 @@ const abi = {
         },
         {
           name: "solvers",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 20,
+              typeId: 25,
             },
           ],
         },
         {
           name: "assets",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
-              typeId: 21,
+              typeId: 26,
             },
           ],
         },
         {
           name: "amounts",
-          typeId: 25,
+          typeId: 30,
           typeArguments: [
             {
               name: "",
@@ -679,7 +789,7 @@ const abi = {
     },
     {
       type: "struct data_structures::SourcePair",
-      metadataTypeId: 15,
+      metadataTypeId: 16,
       components: [
         {
           name: "universe",
@@ -692,7 +802,7 @@ const abi = {
         },
         {
           name: "asset_id",
-          typeId: 21,
+          typeId: 26,
         },
         {
           name: "value",
@@ -703,11 +813,11 @@ const abi = {
     },
     {
       type: "struct events::Deposit",
-      metadataTypeId: 16,
+      metadataTypeId: 17,
       components: [
         {
           name: "from",
-          typeId: 20,
+          typeId: 25,
         },
         {
           name: "signed_message_hash",
@@ -718,11 +828,11 @@ const abi = {
     },
     {
       type: "struct events::Fill",
-      metadataTypeId: 17,
+      metadataTypeId: 18,
       components: [
         {
           name: "from",
-          typeId: 20,
+          typeId: 25,
         },
         {
           name: "signed_message_hash",
@@ -731,21 +841,50 @@ const abi = {
         },
         {
           name: "solver",
-          typeId: 20,
+          typeId: 25,
+        },
+      ],
+    },
+    {
+      type: "struct events::RefundEligibleRoleSet",
+      metadataTypeId: 19,
+      components: [
+        {
+          name: "identity",
+          typeId: 6,
+        },
+        {
+          name: "has_role",
+          typeId:
+            "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+        },
+      ],
+    },
+    {
+      type: "struct events::RefundEligibleRoleTransfer",
+      metadataTypeId: 20,
+      components: [
+        {
+          name: "old_identity",
+          typeId: 6,
+        },
+        {
+          name: "new_identity",
+          typeId: 6,
         },
       ],
     },
     {
       type: "struct events::Settle",
-      metadataTypeId: 18,
+      metadataTypeId: 21,
       components: [
         {
           name: "solver",
-          typeId: 20,
+          typeId: 25,
         },
         {
           name: "asset_id",
-          typeId: 21,
+          typeId: 26,
         },
         {
           name: "amount",
@@ -760,16 +899,45 @@ const abi = {
       ],
     },
     {
+      type: "struct events::SettlementVerifierRoleSet",
+      metadataTypeId: 22,
+      components: [
+        {
+          name: "identity",
+          typeId: 6,
+        },
+        {
+          name: "has_role",
+          typeId:
+            "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+        },
+      ],
+    },
+    {
+      type: "struct events::SettlementVerifierRoleTransfer",
+      metadataTypeId: 23,
+      components: [
+        {
+          name: "old_identity",
+          typeId: 6,
+        },
+        {
+          name: "new_identity",
+          typeId: 6,
+        },
+      ],
+    },
+    {
       type: "struct events::Withdraw",
-      metadataTypeId: 19,
+      metadataTypeId: 24,
       components: [
         {
           name: "to",
-          typeId: 5,
+          typeId: 6,
         },
         {
           name: "asset_id",
-          typeId: 21,
+          typeId: 26,
         },
         {
           name: "amount",
@@ -780,7 +948,7 @@ const abi = {
     },
     {
       type: "struct std::address::Address",
-      metadataTypeId: 20,
+      metadataTypeId: 25,
       components: [
         {
           name: "bits",
@@ -791,7 +959,7 @@ const abi = {
     },
     {
       type: "struct std::asset_id::AssetId",
-      metadataTypeId: 21,
+      metadataTypeId: 26,
       components: [
         {
           name: "bits",
@@ -802,7 +970,7 @@ const abi = {
     },
     {
       type: "struct std::b512::B512",
-      metadataTypeId: 22,
+      metadataTypeId: 27,
       components: [
         {
           name: "bits",
@@ -812,7 +980,7 @@ const abi = {
     },
     {
       type: "struct std::contract_id::ContractId",
-      metadataTypeId: 23,
+      metadataTypeId: 28,
       components: [
         {
           name: "bits",
@@ -823,11 +991,11 @@ const abi = {
     },
     {
       type: "struct std::vec::RawVec",
-      metadataTypeId: 24,
+      metadataTypeId: 29,
       components: [
         {
           name: "ptr",
-          typeId: 10,
+          typeId: 11,
         },
         {
           name: "cap",
@@ -835,19 +1003,19 @@ const abi = {
             "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0",
         },
       ],
-      typeParameters: [9],
+      typeParameters: [10],
     },
     {
       type: "struct std::vec::Vec",
-      metadataTypeId: 25,
+      metadataTypeId: 30,
       components: [
         {
           name: "buf",
-          typeId: 24,
+          typeId: 29,
           typeArguments: [
             {
               name: "",
-              typeId: 9,
+              typeId: 10,
             },
           ],
         },
@@ -857,15 +1025,39 @@ const abi = {
             "1506e6f44c1d6291cdf46395a8e573276a4fa79e8ace3fc891e092ef32d1b0a0",
         },
       ],
-      typeParameters: [9],
+      typeParameters: [10],
+    },
+    {
+      type: "struct sway_libs::ownership::events::OwnershipRenounced",
+      metadataTypeId: 31,
+      components: [
+        {
+          name: "previous_owner",
+          typeId: 6,
+        },
+      ],
     },
     {
       type: "struct sway_libs::ownership::events::OwnershipSet",
-      metadataTypeId: 26,
+      metadataTypeId: 32,
       components: [
         {
           name: "new_owner",
-          typeId: 5,
+          typeId: 6,
+        },
+      ],
+    },
+    {
+      type: "struct sway_libs::ownership::events::OwnershipTransferred",
+      metadataTypeId: 33,
+      components: [
+        {
+          name: "new_owner",
+          typeId: 6,
+        },
+        {
+          name: "previous_owner",
+          typeId: 6,
         },
       ],
     },
@@ -1435,6 +1627,116 @@ const abi = {
     {
       inputs: [
         {
+          name: "identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+      ],
+      name: "refund_eligible_role",
+      output:
+        "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Returns true if the given `identity` has the `refund eligible` role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read"],
+        },
+      ],
+    },
+    {
+      inputs: [],
+      name: "renounce_ownership",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Revokes ownership of the current owner and disallows any new owners.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only the contract `owner` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Reverts"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * When the sender is not the owner."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Writes: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
           name: "signed_message_hash",
           concreteTypeId:
             "7c5ee1cecf5f8eacd1284feb5f0bf2bdea533a51e2f0c9aabe9236d335989f3b",
@@ -1503,6 +1805,188 @@ const abi = {
         {
           name: "storage",
           arguments: ["read"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
+          name: "identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+        {
+          name: "has_role",
+          concreteTypeId:
+            "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+        },
+      ],
+      name: "set_refund_eligible_role",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Allows the `owner` to assign or revoke the `refund eligible` role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only the contract `owner` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Arguments"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [
+            " * `identity`: [Identity] - The `Identity` who's status as a `refund eligible` will be updated.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * `has_role`: [bool] - The status to be set."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Write: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
+          name: "identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+        {
+          name: "has_role",
+          concreteTypeId:
+            "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+        },
+      ],
+      name: "set_settlement_verifier_role",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Allows the `owner` to assign or revoke the `settlement verifier` role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only the contract `owner` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Arguments"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [
+            " * `identity`: [Identity] - The `Identity` who's status as a `settlement verifier` will be updated.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * `has_role`: [bool] - The status to be set."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Write: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
         },
       ],
     },
@@ -1716,6 +2200,324 @@ const abi = {
     {
       inputs: [
         {
+          name: "identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+      ],
+      name: "settlement_verifier_role",
+      output:
+        "b760f44fa5965c2474a3b471467a22c43185152129295af588b022ae50b50903",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Returns true if the given `identity` has the `settlement_verifier` role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
+          name: "new_owner",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+      ],
+      name: "transfer_ownership",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [" Transfers ownership to the passed identity."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only the contract `owner` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Arguments"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [
+            " * `new_owner`: [Identity] - The `Identity` that will be the next owner.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Reverts"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * When the sender is not the owner."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Write: `1`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
+          name: "new_identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+      ],
+      name: "transfer_refund_eligible_role",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [" Allows a `refund eligible` to transfer their role."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only a `refund eligible` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Arguments"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [
+            " * `new_identity`: [Identity] - The `Identity` who will receive the role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Reverts"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * When the sender is not a `refund eligible`."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Write: `2`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
+          name: "new_identity",
+          concreteTypeId:
+            "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
+        },
+      ],
+      name: "transfer_settlement_verifier_role",
+      output:
+        "2e38e77b22c314a449e91fafed92a43826ac6aa403ae6a8acb6cf58239fbaf5d",
+      attributes: [
+        {
+          name: "doc-comment",
+          arguments: [
+            " Allows a `settlement verifier` to transfer their role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Additional Information"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" Only a `settlement verifier` can call this method."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Arguments"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [
+            " * `new_identity`: [Identity] - The `Identity` who will receive the role.",
+          ],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Reverts"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * When the sender is not a `settlement verifier`."],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" # Number of Storage Accesses"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [""],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Reads: `1`"],
+        },
+        {
+          name: "doc-comment",
+          arguments: [" * Write: `2`"],
+        },
+        {
+          name: "storage",
+          arguments: ["read", "write"],
+        },
+      ],
+    },
+    {
+      inputs: [
+        {
           name: "request",
           concreteTypeId:
             "8f17cef827b9269639659b2f90120c93255dfedb8f58f7f69e7f2f2a9040077d",
@@ -1867,6 +2669,26 @@ const abi = {
         "e1ef35033ea9d2956f17c3292dea4a46ce7d61fdf37bbebe03b7b965073f43b5",
     },
     {
+      logId: "4571204900286667806",
+      concreteTypeId:
+        "3f702ea3351c9c1ece2b84048006c8034a24cbc2bad2e740d0412b4172951d3d",
+    },
+    {
+      logId: "4883303303013154842",
+      concreteTypeId:
+        "43c4fa7b3297401afbf300127e59ea913e5c8f0c7ae69abbec789ab0bb872bed",
+    },
+    {
+      logId: "7779943637668661670",
+      concreteTypeId:
+        "6bf7e984bfcd09a667a74ad394cc04dc36275dcc2610439ddd4eb06e138e0c99",
+    },
+    {
+      logId: "14984546834664376252",
+      concreteTypeId:
+        "cff3cdf4605fc7bc13714d42a1fa51fa0fd5743cc3ee2cebf512d2ee1f0541d0",
+    },
+    {
       logId: "5557842539076482339",
       concreteTypeId:
         "4d216c57b3357523323f59401c7355785b41bdf832f6e1106272186b94797038",
@@ -1877,9 +2699,24 @@ const abi = {
         "d33ab1a100ca3838867bc1b5bd324dbf7d8385b8c61195a20e87cf71d3d35d4f",
     },
     {
-      logId: "4571204900286667806",
+      logId: "12970362301975156672",
       concreteTypeId:
-        "3f702ea3351c9c1ece2b84048006c8034a24cbc2bad2e740d0412b4172951d3d",
+        "b3fffbcb3158d7c010c31b194b60fb7857adb4ad61bdcf4b8b42958951d9f308",
+    },
+    {
+      logId: "1861356391699522460",
+      concreteTypeId:
+        "19d4ddc6bfa7239c40e8a40045394730ec18e202048f5b6404eb6b453bb70362",
+    },
+    {
+      logId: "7624560394341238304",
+      concreteTypeId:
+        "69cfe1483138c6201ab36e7cf5e0b54aa9ee674f19318d289e55961bfdcc4ebf",
+    },
+    {
+      logId: "6332855713295737314",
+      concreteTypeId:
+        "57e2d2b7e4cba1e211aa57fd003552898667215676b5c12e9018c643d3177b08",
     },
     {
       logId: "3295166716781023771",
@@ -1893,13 +2730,13 @@ const abi = {
       name: "INITIAL_OWNER",
       concreteTypeId:
         "ab7cd04e05be58e3fc15d424c2c4a57f824a2a2d97d67252440a3925ebdc1335",
-      offset: 55520,
+      offset: 64088,
     },
     {
       name: "FUEL_IGNITION_CHAIN_ID",
       concreteTypeId:
         "1b5759d94094368cfd443019e7ca5ec4074300e544e5ea993a979f5da627261e",
-      offset: 55488,
+      offset: 64056,
     },
   ],
 };
@@ -1907,10 +2744,6 @@ const abi = {
 const storageSlots: StorageSlot[] = [];
 
 export class ArcanaVaultInterface extends Interface {
-  constructor() {
-    super(abi);
-  }
-
   declare functions: {
     owner: FunctionFragment;
     deposit: FunctionFragment;
@@ -1920,12 +2753,24 @@ export class ArcanaVaultInterface extends Interface {
     hash_request: FunctionFragment;
     hash_settle_data: FunctionFragment;
     initialize_vault: FunctionFragment;
+    refund_eligible_role: FunctionFragment;
+    renounce_ownership: FunctionFragment;
     requests: FunctionFragment;
+    set_refund_eligible_role: FunctionFragment;
+    set_settlement_verifier_role: FunctionFragment;
     settle: FunctionFragment;
     settle_nonce: FunctionFragment;
+    settlement_verifier_role: FunctionFragment;
+    transfer_ownership: FunctionFragment;
+    transfer_refund_eligible_role: FunctionFragment;
+    transfer_settlement_verifier_role: FunctionFragment;
     verify_request_signature: FunctionFragment;
     withdraw: FunctionFragment;
   };
+
+  constructor() {
+    super(abi);
+  }
 }
 
 export class ArcanaVault extends Contract {
@@ -1945,15 +2790,38 @@ export class ArcanaVault extends Contract {
     hash_request: InvokeFunction<[request: RequestInput], string>;
     hash_settle_data: InvokeFunction<[settle_data: SettleDataInput], string>;
     initialize_vault: InvokeFunction<[], void>;
+    refund_eligible_role: InvokeFunction<[identity: IdentityInput], boolean>;
+    renounce_ownership: InvokeFunction<[], void>;
     requests: InvokeFunction<
       [signed_message_hash: string],
       Option<RequestOutput>
+    >;
+    set_refund_eligible_role: InvokeFunction<
+      [identity: IdentityInput, has_role: boolean],
+      void
+    >;
+    set_settlement_verifier_role: InvokeFunction<
+      [identity: IdentityInput, has_role: boolean],
+      void
     >;
     settle: InvokeFunction<
       [settle_data: SettleDataInput, signature: string],
       void
     >;
     settle_nonce: InvokeFunction<[nonce: BigNumberish], Option<boolean>>;
+    settlement_verifier_role: InvokeFunction<
+      [identity: IdentityInput],
+      boolean
+    >;
+    transfer_ownership: InvokeFunction<[new_owner: IdentityInput], void>;
+    transfer_refund_eligible_role: InvokeFunction<
+      [new_identity: IdentityInput],
+      void
+    >;
+    transfer_settlement_verifier_role: InvokeFunction<
+      [new_identity: IdentityInput],
+      void
+    >;
     verify_request_signature: InvokeFunction<
       [request: RequestInput, signature: string],
       string
