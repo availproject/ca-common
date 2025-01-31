@@ -1,5 +1,5 @@
 import { Universe } from "../proto/definition";
-import { UniverseInput, UniverseOutput } from "../fuelcontracts/ArcanaVault";
+import { UniverseInput, UniverseOutput } from "../fuelcontracts";
 
 export function protobufUniverseToFuelUniverse(input: Universe): UniverseInput {
   switch (input) {
