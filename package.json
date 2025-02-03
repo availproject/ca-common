@@ -1,24 +1,26 @@
 {
-  "name": "ca-common",
+  "name": "@arcana/ca-common",
   "version": "0.0.1",
   "description": "common utilities for CA",
-  "main": "dist/index.js",
   "files": [
     "dist"
   ],
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "require": "./dist/index.js"
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js"
     },
     "./fuelcontracts": {
       "types": "./dist/types/fuelcontracts/index.d.ts",
-      "require": "./dist/fuelcontracts/index.ts"
+      "require": "./dist/cjs/fuelcontracts/index.ts",
+      "import": "./dist/esm/fuelcontracts/index.js"
     }
   },
   "scripts": {
-    "build": "run-s clean build:esm",
+    "build": "run-s clean build:esm build:cjs",
     "build:esm": "tsc --project tsconfig.json",
+    "build:cjs": "tsc --project tsconfig.cjs.json",
     "test": "echo \"Error: no test specified\" && exit 1",
     "lint": "eslint",
     "clean": "rimraf dist/",

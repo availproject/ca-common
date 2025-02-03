@@ -2,11 +2,11 @@
     "compilerOptions": {
       "lib": ["dom", "ES2020"],
       "target": "ES2020",
-      "module": "commonjs",
+      "module": "esnext",
       "moduleResolution": "node",
       "declaration": true,
       "declarationDir": "dist/types",
-      "outDir": "dist",
+      "outDir": "dist/esm",
       "strict": true,
       "noImplicitAny": true,
       "strictPropertyInitialization": false,
