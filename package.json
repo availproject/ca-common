@@ -13,7 +13,7 @@
     },
     "./fuelcontracts": {
       "types": "./dist/types/fuelcontracts/index.d.ts",
-      "require": "./dist/cjs/fuelcontracts/index.ts",
+      "require": "./dist/cjs/fuelcontracts/index.js",
       "import": "./dist/esm/fuelcontracts/index.js"
     }
   },
