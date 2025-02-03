@@ -5,7 +5,9 @@ export {
 export * from './proto/definition'
 export {
   QueryClientImpl,
-  Query
+  Query,
+  GrpcWebError,
+  GrpcWebImpl
 } from './proto/grpc'
 
 export * from './data'
