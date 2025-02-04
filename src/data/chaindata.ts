@@ -1,9 +1,8 @@
-import { Hex, toBytes, toHex } from "viem";
+import { Hex, pad, toHex } from "viem";
 
 import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
-import { zeroExtendBufToGivenSize } from "./zeroextn";
 
 const RawData = [
   {
@@ -747,8 +746,11 @@ class CurrencyMap {
     }
   }
 
-  get(input: Parameters<typeof toBytes>[0]) {
-    return this.map.get(toHex(zeroExtendBufToGivenSize(toBytes(input), 32)))
+  get(input: Parameters<typeof toHex>[0]) {
+    return this.map.get(pad(toHex(input), {
+      dir: 'left',
+      size: 32
+    }))
   }
 }
 
