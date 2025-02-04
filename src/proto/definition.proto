@@ -228,10 +228,15 @@ message QueryAllSettlementResponse {
 }
 
 message FixedFeeTuple {
-  Universe universe = 4;
-  bytes chainID = 1;
-  bytes tokenAddress = 2;
-  bytes fee = 3;
+  Universe universe = 1;
+  bytes chainID = 2;
+  bytes tokenAddress = 3;
+  bytes fee = 4;
+}
+
+message AdminFeeRecipient {
+  Universe universe = 1;
+  bytes address = 2;
 }
 
 message ProtocolFees {
@@ -239,6 +244,7 @@ message ProtocolFees {
   repeated FixedFeeTuple collectionFees = 2;
   repeated FixedFeeTuple fulfilmentFees = 3;
   string admin = 4;
+  repeated AdminFeeRecipient feeRecipients = 5;
 }
 
 message QueryGetProtocolFeesRequest {}
@@ -252,6 +258,7 @@ message MsgCreateProtocolFees {
   uint64 feeBP     = 2;
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
+  repeated AdminFeeRecipient feeRecipients = 5;
 }
 
 message MsgCreateProtocolFeesResponse {}
@@ -261,6 +268,7 @@ message MsgUpdateProtocolFees {
   uint64 feeBP     = 2;
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
+  repeated AdminFeeRecipient feeRecipients = 5;
 }
 
 message MsgUpdateProtocolFeesResponse {}
