@@ -1,8 +1,7 @@
-import { toBytes, toHex } from "viem";
+import { Hex, hexToBytes, toHex } from "viem";
 
-import { encodeChainID36, OmniversalChainID } from "../data";
+import { encodeChainID36, OmniversalChainID, zeroExtendBufToGivenSize } from "../data";
 import { Universe } from "../proto/definition";
-import { Bytes } from "../types";
 
 export enum Environment {
   DEV,
@@ -13,6 +12,7 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
   [Environment.DEV, [
     [encodeChainID36(Universe.ETHEREUM, 137), '0xc39a170bbffD3f2C306d6fEB43922Dcf9EBeBAf4'],
     [encodeChainID36(Universe.ETHEREUM, 10), '0xd985A5E0F31e61E9105C8d50eb52469984F86143'],
+    [encodeChainID36(Universe.ETHEREUM, 42161), '0xDA3fC817d09BE8747e19d441b67483438693Ef65'],
     [encodeChainID36(Universe.FUEL, 9889), '0x2694a7695ae19933a43403592eac1d5aab999a193833034941cf650de74a19cc']
   ]],
   [Environment.TESTNET, [
@@ -27,7 +27,7 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
 ])
 
 export class VaultContractMap {
-  map = new Map<string, string>()
+  map = new Map<string, Buffer>()
 
   constructor(environment: Environment) {
     const src = dataSets.get(environment)
@@ -35,17 +35,12 @@ export class VaultContractMap {
       throw new Error('Environment not found')
     }
     for (const tuple of src) {
-      this.map.set(toHex(tuple[0]), tuple[1])
+      this.map.set(toHex(tuple[0]), zeroExtendBufToGivenSize(hexToBytes(<Hex>tuple[1]), 32))
     }
   }
 
-  private getActual(k: string): Bytes | undefined {
-    const out = this.map.get(k)
-    return out != null ? toBytes(out) : out
-  }
-
   public getFromChainID36 (key: Buffer) {
-    return this.getActual(toHex(key))
+    return this.map.get(toHex(key))
   }
 
   public getFromOmniversalChainID(key: OmniversalChainID) {
