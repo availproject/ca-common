@@ -3,6 +3,7 @@ import { Hex, hexToBytes, pad, toHex } from "viem";
 import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
+import { PermitVariant } from "../permitutils";
 
 const RawData = [
   {
@@ -11,6 +12,8 @@ const RawData = [
     "Currencies": [
       {
         "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
         "TokenContractAddress": "0x0000000000000000000000003c499c542cef5e3811e1192ce70d8cc03d5c3359",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
@@ -18,6 +21,8 @@ const RawData = [
       },
       {
         "CurrencyID": 2,
+        "PermitVariant": PermitVariant.PolygonEMT,
+        "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000c2132d05d31c914a87c6611c10748aeb04b58e8f",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
@@ -25,6 +30,7 @@ const RawData = [
       },
       {
         "CurrencyID": 4,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
         "USDPriceOracleAddress": "0xab594600376ec9fd91f8e885dadf0ce036862de0",
@@ -38,6 +44,8 @@ const RawData = [
     "Currencies": [
       {
         "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000af88d065e77c8cc2239327c5edb3a432268e5831",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
@@ -45,6 +53,8 @@ const RawData = [
       },
       {
         "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
@@ -52,6 +62,7 @@ const RawData = [
       },
       {
         "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
         "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
@@ -65,6 +76,8 @@ const RawData = [
     "Currencies": [
       {
         "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
         "TokenContractAddress": "0x0000000000000000000000000b2c639c533813f4aa9d7837caf62653d097ff85",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
@@ -72,6 +85,7 @@ const RawData = [
       },
       {
         "CurrencyID": 2,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x00000000000000000000000094b008aa00579c1307b0ef2c499ad98a8ce58e58",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
@@ -79,6 +93,7 @@ const RawData = [
       },
       {
         "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
         "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
@@ -92,6 +107,7 @@ const RawData = [
     "Currencies": [
       {
         "CurrencyID": 1,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x286c479da40dc953bddc3bb4c453b608bba2e0ac483b077bd475174115395e6b",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
@@ -99,6 +115,7 @@ const RawData = [
       },
       {
         "CurrencyID": 2,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0xa0265fb5c32f6e8db3197af3c7eb05c48ae373605b8165b6f4a51c5b0ba4812e",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
@@ -106,6 +123,7 @@ const RawData = [
       },
       {
         "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
         "TokenDecimals": 9,
         "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
@@ -162,9 +180,17 @@ export type ChainDatum = {
 
 // Certain data fields are auto-generated while others are not.
 export const Chaindata: ChainDatum[] = RawData.map(ch => {
-  const ch32 = Buffer.from(hexToBytes(<`0x${string}`>ch.ChainID32))
+  const ch32 = Buffer.from(hexToBytes(<Hex>ch.ChainID32))
   const currencies = ch.Currencies.map(cur => {
-    return new Currency(cur.CurrencyID, hexToBytes(<`0x${string}`>cur.TokenContractAddress), cur.TokenDecimals, cur.IsGasToken, cur.USDPriceOracleAddress as Hex)
+    return new Currency(
+      cur.CurrencyID,
+      hexToBytes(<Hex>cur.TokenContractAddress),
+      cur.TokenDecimals,
+      cur.PermitVariant,
+      cur.PermitContractVersion,
+      cur.IsGasToken,
+      cur.USDPriceOracleAddress as Hex
+    )
   })
   return {
     Universe: ch.Universe,

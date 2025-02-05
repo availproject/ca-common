@@ -1,8 +1,9 @@
 import { bytesToBigInt, Hex, toBytes } from "viem";
+import Decimal from "decimal.js";
 
 import { Bytes } from "../types";
 import { zeroExtendBufToGivenSize } from "./zeroextn";
-import Decimal from "decimal.js";
+import { PermitVariant } from "../permitutils";
 
 export enum CurrencyID {
   USDC = 1,
@@ -21,7 +22,15 @@ export class Currency {
    */
   private readonly oneUnitToAtomicUnitRatio: Decimal
 
-  constructor(public readonly currencyID: CurrencyID, tokenAddress: string | Bytes | number[], public readonly decimals: number, public readonly isGasToken: boolean, public readonly polygonGasOracleAddress: Hex) {
+  constructor(
+    public readonly currencyID: CurrencyID,
+    tokenAddress: string | Bytes | number[],
+    public readonly decimals: number,
+    public readonly permitVariant: PermitVariant,
+    public readonly permitContractVersion = 0,
+    public readonly isGasToken: boolean,
+    public readonly polygonGasOracleAddress: Hex
+  ) {
     if (typeof tokenAddress === 'string') {
       this.tokenAddress = zeroExtendBufToGivenSize(toBytes(tokenAddress), 32)
     } else if (tokenAddress instanceof Uint8Array) {

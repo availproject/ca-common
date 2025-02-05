@@ -1,1243 +1,1243 @@
 export const VaultABI = [
   {
-    "inputs": [],
-    "stateMutability": "nonpayable",
-    "type": "constructor"
+    inputs: [],
+    stateMutability: "nonpayable",
+    type: "constructor",
   },
   {
-    "inputs": [],
-    "name": "AccessControlBadConfirmation",
-    "type": "error"
+    inputs: [],
+    name: "AccessControlBadConfirmation",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
       {
-        "internalType": "bytes32",
-        "name": "neededRole",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "neededRole",
+        type: "bytes32",
+      },
     ],
-    "name": "AccessControlUnauthorizedAccount",
-    "type": "error"
+    name: "AccessControlUnauthorizedAccount",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "target",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "target",
+        type: "address",
+      },
     ],
-    "name": "AddressEmptyCode",
-    "type": "error"
+    name: "AddressEmptyCode",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "ECDSAInvalidSignature",
-    "type": "error"
+    inputs: [],
+    name: "ECDSAInvalidSignature",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "length",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "length",
+        type: "uint256",
+      },
     ],
-    "name": "ECDSAInvalidSignatureLength",
-    "type": "error"
+    name: "ECDSAInvalidSignatureLength",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "s",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "s",
+        type: "bytes32",
+      },
     ],
-    "name": "ECDSAInvalidSignatureS",
-    "type": "error"
+    name: "ECDSAInvalidSignatureS",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "implementation",
+        type: "address",
+      },
     ],
-    "name": "ERC1967InvalidImplementation",
-    "type": "error"
+    name: "ERC1967InvalidImplementation",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "ERC1967NonPayable",
-    "type": "error"
+    inputs: [],
+    name: "ERC1967NonPayable",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "FailedCall",
-    "type": "error"
+    inputs: [],
+    name: "FailedCall",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "InvalidInitialization",
-    "type": "error"
+    inputs: [],
+    name: "InvalidInitialization",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "NotInitializing",
-    "type": "error"
+    inputs: [],
+    name: "NotInitializing",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "ReentrancyGuardReentrantCall",
-    "type": "error"
+    inputs: [],
+    name: "ReentrancyGuardReentrantCall",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "token",
+        type: "address",
+      },
     ],
-    "name": "SafeERC20FailedOperation",
-    "type": "error"
+    name: "SafeERC20FailedOperation",
+    type: "error",
   },
   {
-    "inputs": [],
-    "name": "UUPSUnauthorizedCallContext",
-    "type": "error"
+    inputs: [],
+    name: "UUPSUnauthorizedCallContext",
+    type: "error",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "slot",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "slot",
+        type: "bytes32",
+      },
     ],
-    "name": "UUPSUnsupportedProxiableUUID",
-    "type": "error"
+    name: "UUPSUnsupportedProxiableUUID",
+    type: "error",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "requestHash",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "requestHash",
+        type: "bytes32",
       },
       {
-        "indexed": false,
-        "internalType": "bool",
-        "name": "gasRefunded",
-        "type": "bool"
-      }
+        indexed: false,
+        internalType: "bool",
+        name: "gasRefunded",
+        type: "bool",
+      },
     ],
-    "name": "Deposit",
-    "type": "event"
+    name: "Deposit",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "requestHash",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "requestHash",
+        type: "bytes32",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "solver",
-        "type": "address"
-      }
+        indexed: false,
+        internalType: "address",
+        name: "solver",
+        type: "address",
+      },
     ],
-    "name": "Fill",
-    "type": "event"
+    name: "Fill",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "enum Vault.Function",
-        "name": "_function",
-        "type": "uint8"
+        indexed: true,
+        internalType: "enum Vault.Function",
+        name: "_function",
+        type: "uint8",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "overhead",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "overhead",
+        type: "uint256",
+      },
     ],
-    "name": "GasOverheadUpdate",
-    "type": "event"
+    name: "GasOverheadUpdate",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "gasPrice",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "gasPrice",
+        type: "uint256",
+      },
     ],
-    "name": "GasPriceUpdate",
-    "type": "event"
+    name: "GasPriceUpdate",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": false,
-        "internalType": "uint64",
-        "name": "version",
-        "type": "uint64"
-      }
+        indexed: false,
+        internalType: "uint64",
+        name: "version",
+        type: "uint64",
+      },
     ],
-    "name": "Initialized",
-    "type": "event"
+    name: "Initialized",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "from",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "from",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-    "name": "ReceiveETH",
-    "type": "event"
+    name: "ReceiveETH",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "previousAdminRole",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "previousAdminRole",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "newAdminRole",
-        "type": "bytes32"
-      }
+        indexed: true,
+        internalType: "bytes32",
+        name: "newAdminRole",
+        type: "bytes32",
+      },
     ],
-    "name": "RoleAdminChanged",
-    "type": "event"
+    name: "RoleAdminChanged",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
     ],
-    "name": "RoleGranted",
-    "type": "event"
+    name: "RoleGranted",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        indexed: true,
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "account",
+        type: "address",
       },
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "sender",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "sender",
+        type: "address",
+      },
     ],
-    "name": "RoleRevoked",
-    "type": "event"
+    name: "RoleRevoked",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "solver",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "solver",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
       },
       {
-        "indexed": true,
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
-      }
+        indexed: true,
+        internalType: "uint256",
+        name: "nonce",
+        type: "uint256",
+      },
     ],
-    "name": "Settle",
-    "type": "event"
+    name: "Settle",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "implementation",
-        "type": "address"
-      }
+        indexed: true,
+        internalType: "address",
+        name: "implementation",
+        type: "address",
+      },
     ],
-    "name": "Upgraded",
-    "type": "event"
+    name: "Upgraded",
+    type: "event",
   },
   {
-    "anonymous": false,
-    "inputs": [
+    anonymous: false,
+    inputs: [
       {
-        "indexed": true,
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
+        indexed: true,
+        internalType: "address",
+        name: "to",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        indexed: false,
+        internalType: "address",
+        name: "token",
+        type: "address",
       },
       {
-        "indexed": false,
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-    "name": "Withdraw",
-    "type": "event"
+    name: "Withdraw",
+    type: "event",
   },
   {
-    "inputs": [],
-    "name": "DEFAULT_ADMIN_ROLE",
-    "outputs": [
+    inputs: [],
+    name: "DEFAULT_ADMIN_ROLE",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "UPGRADE_INTERFACE_VERSION",
-    "outputs": [
+    inputs: [],
+    name: "UPGRADE_INTERFACE_VERSION",
+    outputs: [
       {
-        "internalType": "string",
-        "name": "",
-        "type": "string"
-      }
+        internalType: "string",
+        name: "",
+        type: "string",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "components": [
+        components: [
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "uint256",
-                "name": "chainID",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "chainID",
+                type: "uint256",
               },
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.SourcePair[]",
-            "name": "sources",
-            "type": "tuple[]"
+            internalType: "struct Vault.SourcePair[]",
+            name: "sources",
+            type: "tuple[]",
           },
           {
-            "internalType": "enum Vault.Universe",
-            "name": "destinationUniverse",
-            "type": "uint8"
+            internalType: "enum Vault.Universe",
+            name: "destinationUniverse",
+            type: "uint8",
           },
           {
-            "internalType": "uint256",
-            "name": "destinationChainID",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "destinationChainID",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.DestinationPair[]",
-            "name": "destinations",
-            "type": "tuple[]"
+            internalType: "struct Vault.DestinationPair[]",
+            name: "destinations",
+            type: "tuple[]",
           },
           {
-            "internalType": "uint256",
-            "name": "nonce",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
           },
           {
-            "internalType": "uint256",
-            "name": "expiry",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "bytes32",
-                "name": "address_",
-                "type": "bytes32"
-              }
+                internalType: "bytes32",
+                name: "address_",
+                type: "bytes32",
+              },
             ],
-            "internalType": "struct Vault.Party[]",
-            "name": "parties",
-            "type": "tuple[]"
-          }
+            internalType: "struct Vault.Party[]",
+            name: "parties",
+            type: "tuple[]",
+          },
         ],
-        "internalType": "struct Vault.Request",
-        "name": "request",
-        "type": "tuple"
+        internalType: "struct Vault.Request",
+        name: "request",
+        type: "tuple",
       },
       {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
       },
       {
-        "internalType": "uint256",
-        "name": "chainIndex",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "chainIndex",
+        type: "uint256",
+      },
     ],
-    "name": "deposit",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    name: "deposit",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "depositNonce",
-    "outputs": [
+    name: "depositNonce",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "components": [
+        components: [
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "uint256",
-                "name": "chainID",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "chainID",
+                type: "uint256",
               },
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.SourcePair[]",
-            "name": "sources",
-            "type": "tuple[]"
+            internalType: "struct Vault.SourcePair[]",
+            name: "sources",
+            type: "tuple[]",
           },
           {
-            "internalType": "enum Vault.Universe",
-            "name": "destinationUniverse",
-            "type": "uint8"
+            internalType: "enum Vault.Universe",
+            name: "destinationUniverse",
+            type: "uint8",
           },
           {
-            "internalType": "uint256",
-            "name": "destinationChainID",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "destinationChainID",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.DestinationPair[]",
-            "name": "destinations",
-            "type": "tuple[]"
+            internalType: "struct Vault.DestinationPair[]",
+            name: "destinations",
+            type: "tuple[]",
           },
           {
-            "internalType": "uint256",
-            "name": "nonce",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
           },
           {
-            "internalType": "uint256",
-            "name": "expiry",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "bytes32",
-                "name": "address_",
-                "type": "bytes32"
-              }
+                internalType: "bytes32",
+                name: "address_",
+                type: "bytes32",
+              },
             ],
-            "internalType": "struct Vault.Party[]",
-            "name": "parties",
-            "type": "tuple[]"
-          }
+            internalType: "struct Vault.Party[]",
+            name: "parties",
+            type: "tuple[]",
+          },
         ],
-        "internalType": "struct Vault.Request",
-        "name": "request",
-        "type": "tuple"
+        internalType: "struct Vault.Request",
+        name: "request",
+        type: "tuple",
       },
       {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
       },
       {
-        "internalType": "uint256",
-        "name": "chainIndex",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "chainIndex",
+        type: "uint256",
+      },
     ],
-    "name": "depositWithRefund",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    name: "depositWithRefund",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "components": [
+        components: [
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "uint256",
-                "name": "chainID",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "chainID",
+                type: "uint256",
               },
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.SourcePair[]",
-            "name": "sources",
-            "type": "tuple[]"
+            internalType: "struct Vault.SourcePair[]",
+            name: "sources",
+            type: "tuple[]",
           },
           {
-            "internalType": "enum Vault.Universe",
-            "name": "destinationUniverse",
-            "type": "uint8"
+            internalType: "enum Vault.Universe",
+            name: "destinationUniverse",
+            type: "uint8",
           },
           {
-            "internalType": "uint256",
-            "name": "destinationChainID",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "destinationChainID",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.DestinationPair[]",
-            "name": "destinations",
-            "type": "tuple[]"
+            internalType: "struct Vault.DestinationPair[]",
+            name: "destinations",
+            type: "tuple[]",
           },
           {
-            "internalType": "uint256",
-            "name": "nonce",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
           },
           {
-            "internalType": "uint256",
-            "name": "expiry",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "bytes32",
-                "name": "address_",
-                "type": "bytes32"
-              }
+                internalType: "bytes32",
+                name: "address_",
+                type: "bytes32",
+              },
             ],
-            "internalType": "struct Vault.Party[]",
-            "name": "parties",
-            "type": "tuple[]"
-          }
+            internalType: "struct Vault.Party[]",
+            name: "parties",
+            type: "tuple[]",
+          },
         ],
-        "internalType": "struct Vault.Request",
-        "name": "request",
-        "type": "tuple"
+        internalType: "struct Vault.Request",
+        name: "request",
+        type: "tuple",
       },
       {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
     ],
-    "name": "fill",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    name: "fill",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "fillNonce",
-    "outputs": [
+    name: "fillNonce",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
+      },
     ],
-    "name": "getRoleAdmin",
-    "outputs": [
+    name: "getRoleAdmin",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "grantRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "grantRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "hasRole",
-    "outputs": [
+    name: "hasRole",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "admin",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "admin",
+        type: "address",
+      },
     ],
-    "name": "initialize",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "initialize",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "maxGasPrice",
-    "outputs": [
+    inputs: [],
+    name: "maxGasPrice",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "enum Vault.Function",
-        "name": "",
-        "type": "uint8"
-      }
+        internalType: "enum Vault.Function",
+        name: "",
+        type: "uint8",
+      },
     ],
-    "name": "overhead",
-    "outputs": [
+    name: "overhead",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "proxiableUUID",
-    "outputs": [
+    inputs: [],
+    name: "proxiableUUID",
+    outputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "callerConfirmation",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "callerConfirmation",
+        type: "address",
+      },
     ],
-    "name": "renounceRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "renounceRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "name": "requests",
-    "outputs": [
+    name: "requests",
+    outputs: [
       {
-        "internalType": "enum Vault.Universe",
-        "name": "destinationUniverse",
-        "type": "uint8"
+        internalType: "enum Vault.Universe",
+        name: "destinationUniverse",
+        type: "uint8",
       },
       {
-        "internalType": "uint256",
-        "name": "destinationChainID",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "destinationChainID",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "nonce",
-        "type": "uint256"
+        internalType: "uint256",
+        name: "nonce",
+        type: "uint256",
       },
       {
-        "internalType": "uint256",
-        "name": "expiry",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "expiry",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes32",
-        "name": "role",
-        "type": "bytes32"
+        internalType: "bytes32",
+        name: "role",
+        type: "bytes32",
       },
       {
-        "internalType": "address",
-        "name": "account",
-        "type": "address"
-      }
+        internalType: "address",
+        name: "account",
+        type: "address",
+      },
     ],
-    "name": "revokeRole",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "revokeRole",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "_maxGasPrice",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "_maxGasPrice",
+        type: "uint256",
+      },
     ],
-    "name": "setMaxGasPrice",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "setMaxGasPrice",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "enum Vault.Function",
-        "name": "_function",
-        "type": "uint8"
+        internalType: "enum Vault.Function",
+        name: "_function",
+        type: "uint8",
       },
       {
-        "internalType": "uint256",
-        "name": "_overhead",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "_overhead",
+        type: "uint256",
+      },
     ],
-    "name": "setOverHead",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "setOverHead",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "components": [
+        components: [
           {
-            "internalType": "enum Vault.Universe",
-            "name": "universe",
-            "type": "uint8"
+            internalType: "enum Vault.Universe",
+            name: "universe",
+            type: "uint8",
           },
           {
-            "internalType": "uint256",
-            "name": "chainID",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "chainID",
+            type: "uint256",
           },
           {
-            "internalType": "address[]",
-            "name": "solvers",
-            "type": "address[]"
+            internalType: "address[]",
+            name: "solvers",
+            type: "address[]",
           },
           {
-            "internalType": "address[]",
-            "name": "tokens",
-            "type": "address[]"
+            internalType: "address[]",
+            name: "tokens",
+            type: "address[]",
           },
           {
-            "internalType": "uint256[]",
-            "name": "amounts",
-            "type": "uint256[]"
+            internalType: "uint256[]",
+            name: "amounts",
+            type: "uint256[]",
           },
           {
-            "internalType": "uint256",
-            "name": "nonce",
-            "type": "uint256"
-          }
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
+          },
         ],
-        "internalType": "struct Vault.SettleData",
-        "name": "settleData",
-        "type": "tuple"
+        internalType: "struct Vault.SettleData",
+        name: "settleData",
+        type: "tuple",
       },
       {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
     ],
-    "name": "settle",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "settle",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "name": "settleNonce",
-    "outputs": [
+    name: "settleNonce",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "bytes4",
-        "name": "interfaceId",
-        "type": "bytes4"
-      }
+        internalType: "bytes4",
+        name: "interfaceId",
+        type: "bytes4",
+      },
     ],
-    "name": "supportsInterface",
-    "outputs": [
+    name: "supportsInterface",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
-      }
+        internalType: "bool",
+        name: "",
+        type: "bool",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "newImplementation",
-        "type": "address"
+        internalType: "address",
+        name: "newImplementation",
+        type: "address",
       },
       {
-        "internalType": "bytes",
-        "name": "data",
-        "type": "bytes"
-      }
+        internalType: "bytes",
+        name: "data",
+        type: "bytes",
+      },
     ],
-    "name": "upgradeToAndCall",
-    "outputs": [],
-    "stateMutability": "payable",
-    "type": "function"
+    name: "upgradeToAndCall",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function",
   },
   {
-    "inputs": [],
-    "name": "vaultBalance",
-    "outputs": [
+    inputs: [],
+    name: "vaultBalance",
+    outputs: [
       {
-        "internalType": "uint256",
-        "name": "",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "",
+        type: "uint256",
+      },
     ],
-    "stateMutability": "view",
-    "type": "function"
+    stateMutability: "view",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "components": [
+        components: [
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "uint256",
-                "name": "chainID",
-                "type": "uint256"
+                internalType: "uint256",
+                name: "chainID",
+                type: "uint256",
               },
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.SourcePair[]",
-            "name": "sources",
-            "type": "tuple[]"
+            internalType: "struct Vault.SourcePair[]",
+            name: "sources",
+            type: "tuple[]",
           },
           {
-            "internalType": "enum Vault.Universe",
-            "name": "destinationUniverse",
-            "type": "uint8"
+            internalType: "enum Vault.Universe",
+            name: "destinationUniverse",
+            type: "uint8",
           },
           {
-            "internalType": "uint256",
-            "name": "destinationChainID",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "destinationChainID",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "bytes32",
-                "name": "tokenAddress",
-                "type": "bytes32"
+                internalType: "bytes32",
+                name: "tokenAddress",
+                type: "bytes32",
               },
               {
-                "internalType": "uint256",
-                "name": "value",
-                "type": "uint256"
-              }
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
             ],
-            "internalType": "struct Vault.DestinationPair[]",
-            "name": "destinations",
-            "type": "tuple[]"
+            internalType: "struct Vault.DestinationPair[]",
+            name: "destinations",
+            type: "tuple[]",
           },
           {
-            "internalType": "uint256",
-            "name": "nonce",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
           },
           {
-            "internalType": "uint256",
-            "name": "expiry",
-            "type": "uint256"
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
           },
           {
-            "components": [
+            components: [
               {
-                "internalType": "enum Vault.Universe",
-                "name": "universe",
-                "type": "uint8"
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
               },
               {
-                "internalType": "bytes32",
-                "name": "address_",
-                "type": "bytes32"
-              }
+                internalType: "bytes32",
+                name: "address_",
+                type: "bytes32",
+              },
             ],
-            "internalType": "struct Vault.Party[]",
-            "name": "parties",
-            "type": "tuple[]"
-          }
+            internalType: "struct Vault.Party[]",
+            name: "parties",
+            type: "tuple[]",
+          },
         ],
-        "internalType": "struct Vault.Request",
-        "name": "request",
-        "type": "tuple"
+        internalType: "struct Vault.Request",
+        name: "request",
+        type: "tuple",
       },
       {
-        "internalType": "bytes",
-        "name": "signature",
-        "type": "bytes"
-      }
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
     ],
-    "name": "verifyRequestSignature",
-    "outputs": [
+    name: "verifyRequestSignature",
+    outputs: [
       {
-        "internalType": "bool",
-        "name": "",
-        "type": "bool"
+        internalType: "bool",
+        name: "",
+        type: "bool",
       },
       {
-        "internalType": "bytes32",
-        "name": "",
-        "type": "bytes32"
-      }
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
     ],
-    "stateMutability": "pure",
-    "type": "function"
+    stateMutability: "pure",
+    type: "function",
   },
   {
-    "inputs": [
+    inputs: [
       {
-        "internalType": "address",
-        "name": "to",
-        "type": "address"
+        internalType: "address",
+        name: "to",
+        type: "address",
       },
       {
-        "internalType": "address",
-        "name": "token",
-        "type": "address"
+        internalType: "address",
+        name: "token",
+        type: "address",
       },
       {
-        "internalType": "uint256",
-        "name": "amount",
-        "type": "uint256"
-      }
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256",
+      },
     ],
-    "name": "withdraw",
-    "outputs": [],
-    "stateMutability": "nonpayable",
-    "type": "function"
+    name: "withdraw",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function",
   },
   {
-    "stateMutability": "payable",
-    "type": "receive"
-  }
-] as const
+    stateMutability: "payable",
+    type: "receive",
+  },
+] as const;
 export type VaultABIType = typeof VaultABI;

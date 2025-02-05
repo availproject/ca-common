@@ -12,6 +12,7 @@ export {
 
 export * from './data'
 export * from './vaultcontracts'
+export * from './permitutils'
 export * from './cosmos'
 export * from './rff/rff'
 export * from './types'
