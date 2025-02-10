@@ -130,7 +130,133 @@ const RawData = [
         "IsGasToken": true
       }
     ]
-  }
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x000000000000000000000000000000000000000000000000000000000000e708",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x000000000000000000000000176211869ca2b568f2a7d4ee941e073a821ee1ff",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x000000000000000000000000a219439258ca9da29e9cc4ce5596924745e12b93",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000082750",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x00000000000000000000000006efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x000000000000000000000000f55bec9cafdbe8730f096aa55dad6d22d44099df",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000000001",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000002105",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x000000000000000000000000fde4c96c8593536e31f229ea8f37b2ada2699bb2",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
 ]
 
 
