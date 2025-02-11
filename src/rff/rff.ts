@@ -17,7 +17,7 @@ export class OmniversalRFF {
   private evmRFF: EVMRFF | undefined
   private fuelRFF: FuelRFF | undefined
 
-  constructor(private readonly protobufRFF: RequestForFunds) {
+  constructor(public readonly protobufRFF: RequestForFunds) {
   }
 
   public asEVMRFF(): EVMRFF {
