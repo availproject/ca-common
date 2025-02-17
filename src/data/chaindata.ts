@@ -102,6 +102,38 @@ const RawData = [
     ]
   },
   {
+    "Universe": 0,
+    "ChainID32": "0x000000000000000000000000000000000000000000000000000000000000c3b8",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x0000000000000000000000009aa0f72392b5784ad86c6f3e899bcc053d00db4f",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x0000000000000000000000006386da73545ae4e2b2e0393688fa8b65bb9a7169",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "TokenContractAddress": "0x00000000000000000000000072af9f169b619d85a47dfa8fefbcd39de55c567d",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": false
+      }
+    ]
+  },
+  {
     "Universe": 1,
     "ChainID32": "0x00000000000000000000000000000000000000000000000000000000000026a1",
     "Currencies": [
@@ -269,6 +301,7 @@ class _RPCURLMap {
     [encodeChainID36(Universe.ETHEREUM, 1), 'https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 534352), 'https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 59144), 'https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 50104), 'https://rpc.sophon.xyz'],
     [encodeChainID36(Universe.FUEL, 9889), 'https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql']
   ]
   private readonly map = new Map<string, string>(this.dataset.map(z => [toHex(z[0]), z[1]]))
