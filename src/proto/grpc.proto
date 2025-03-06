@@ -1,6 +1,6 @@
 syntax = "proto3";
 import "definition.proto";
-package xarchain.chainabstraction.v1;
+package xarchain.chainabstraction;
 
 service Query {
   rpc RequestForFunds    (QueryGetRequestForFundsRequest) returns (QueryGetRequestForFundsResponse);

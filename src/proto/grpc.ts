@@ -27,7 +27,7 @@ import {
   QueryGetSolverDataResponse
 } from "./definition";
 
-export const protobufPackage = "xarchain.chainabstraction.v1";
+export const protobufPackage = "xarchain.chainabstraction";
 
 export interface Query {
   RequestForFunds(
@@ -175,7 +175,7 @@ export class QueryClientImpl implements Query {
   }
 }
 
-export const QueryDesc = { serviceName: "xarchain.chainabstraction.v1.Query" };
+export const QueryDesc = { serviceName: "xarchain.chainabstraction.Query" };
 
 export const QueryRequestForFundsDesc: UnaryMethodDefinitionish = {
   methodName: "RequestForFunds",
