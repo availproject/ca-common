@@ -17,6 +17,7 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
     [encodeChainID36(Universe.ETHEREUM, 534352), '0x38A633171E613705eA605e443eCee69D728E5781'],
     [encodeChainID36(Universe.ETHEREUM, 59144), '0x833d5D20B420ff58086c48c96E4D8d0f9e42De78'],
     [encodeChainID36(Universe.ETHEREUM, 8453), '0xdbDbaD325abB26E0719E54750a5d615376921727'],
+    [encodeChainID36(Universe.ETHEREUM, 43114), '0xfd2E3ce74A8dEF95d8A99D4f25E3E375A82486a8'],
     [encodeChainID36(Universe.FUEL, 9889), '0x2694a7695ae19933a43403592eac1d5aab999a193833034941cf650de74a19cc']
   ]],
   [Environment.TESTNET, [
