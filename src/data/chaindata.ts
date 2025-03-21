@@ -4,6 +4,7 @@ import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
 import { PermitVariant } from "../permitutils";
+import { ezPadTo32Hex } from "./zeroextn";
 
 const RawData = [
   {
@@ -322,11 +323,8 @@ class CurrencyMap {
     }
   }
 
-  get(input: Parameters<typeof toHex>[0]) {
-    return this.map.get(pad(toHex(input), {
-      dir: 'left',
-      size: 32
-    }))
+  get(input: Parameters<typeof ezPadTo32Hex>[0]) {
+    return this.map.get(ezPadTo32Hex(input))
   }
 }
 
