@@ -1,4 +1,4 @@
-import { Hex, hexToBytes, pad, toHex } from "viem";
+import { Hex, hexToBytes, toHex } from "viem";
 
 import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
@@ -291,11 +291,110 @@ const RawData = [
       }
     ]
   },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000066eee",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x00000000000000000000000075faf114eafb1bdbe2f0316df893fd58ce46aa4d",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x000000000000000000000000f954d4a5859b37de88a91bdbb8ad309056fb04b1",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000aa37dc",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x0000000000000000000000005fd84259d66cd46123540766be93dfe6d43130d7",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x0000000000000000000000006462693c2f21ac0e517f12641d404895030f7426",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 3,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x000000000000000000000000000000000000000000000000000000000000279f",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x000000000000000000000000f817257fed379853cde0fa4f97ab987181b1e5ea",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x0000000000000000000000001c56f176d6735888fbb6f8bd9adad8ad7a023a0b",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 4,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
+        "USDPriceOracleAddress": "0xf9680d99d6c9589e2a93a78a04a279e509205945",
+        "IsGasToken": true
+      }
+    ]
+  }
 ]
 
 
 class _RPCURLMap {
   private readonly dataset: [Buffer, string][] = [
+    [encodeChainID36(Universe.ETHEREUM, 421614), 'https://arb-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 11155420), 'https://opt-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 10143), 'https://monad-testnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
