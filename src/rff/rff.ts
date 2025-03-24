@@ -1,17 +1,11 @@
-import { ByteArray, bytesToBigInt, Hex, pad, toHex } from "viem";
+import { bytesToBigInt } from "viem";
 import { BN } from "fuels";
 
+import { ezPadTo32Hex } from "../data";
 import { RequestForFunds } from "../proto/definition";
 import { type EVMRFF } from "../vaultcontracts";
 import { RequestInput as FuelRFF } from "../fuelcontracts/ArcanaVault";
 import { protobufUniverseToFuelUniverse } from "./fuel";
-
-function ezPadTo32Hex(input: ByteArray | Hex): Hex {
-  return pad(toHex(input), {
-    dir: 'left',
-    size: 32
-  })
-}
 
 export class OmniversalRFF {
   private evmRFF: EVMRFF | undefined
