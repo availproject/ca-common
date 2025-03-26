@@ -2,6 +2,7 @@ import { bytesToBigInt, type Hex, hexToBigInt, toBytes, toHex } from "viem";
 
 import { Universe, universeFromJSON, universeToJSON } from "../proto/definition";
 import { Bytes } from "../types";
+import { convertToBufferIfNecessary } from "./zeroextn";
 
 export function encodeChainID36 (universe: Universe, chainID: Bytes | bigint | number): Buffer {
   let chainIDB: Uint8Array
@@ -50,6 +51,13 @@ export class OmniversalChainID {
 
   static fromJSON(input: { universe: string, chainID: Hex }): OmniversalChainID {
     return new OmniversalChainID(universeFromJSON(input.universe), hexToBigInt(input.chainID))
+  }
+
+  static fromChainID36(_input: Bytes): OmniversalChainID {
+    const input = convertToBufferIfNecessary(_input)
+    const univID = input.readUint32BE(0)
+    const rest = input.subarray(4)
+    return new OmniversalChainID(univID, rest)
   }
 
   // Do not modify the returned buffer. Make a copy if necessary.
