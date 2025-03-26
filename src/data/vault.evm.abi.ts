@@ -1,4 +1,4 @@
-export const VaultABI = [
+export const EVMVaultABI = [
   {
     inputs: [],
     stateMutability: "nonpayable",
@@ -1240,4 +1240,4 @@ export const VaultABI = [
     type: "receive",
   },
 ] as const;
-export type VaultABIType = typeof VaultABI;
+export type EVMVaultABIType = typeof EVMVaultABI;
