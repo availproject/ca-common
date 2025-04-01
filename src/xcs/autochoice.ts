@@ -1,11 +1,12 @@
-import { groupBy, orderBy } from "es-toolkit";
+import { groupBy, minBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
-import { inspect as utilInspect } from 'util'
+import { inspect as utilInspect } from "util";
+import Decimal from "decimal.js";
 
-import { Aggregator, Quote, QuoteRequestExactInput, QuoteType } from "./iface";
+import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
 import { ChaindataMap, Currency, OmniversalChainID } from "../data";
 import { Bytes } from "../types";
-import { FixedFeeTuple } from "../proto/definition";
+import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
 
 function ezInspect (input: unknown) {
   return utilInspect(input, {
@@ -14,11 +15,14 @@ function ezInspect (input: unknown) {
   })
 }
 
-export type Holding = {
-  chainID: OmniversalChainID;
+type Asset = {
   tokenAddress: Bytes;
   amount: bigint;
-};
+}
+
+export type Holding = {
+  chainID: OmniversalChainID;
+} & Asset;
 
 export class AutoSelectionError extends Error {}
 
@@ -161,4 +165,64 @@ export async function autoSelectSources(
   );
 
   return response;
+}
+
+export async function determineDestinationSwaps(chainID: OmniversalChainID, requirements: Asset[], aggregators: Aggregator[], collectionFees: PriceOracleDatum[], whitelistedCurrencies = new Set([1, 2])) {
+  const chaindata = ChaindataMap.get(chainID)
+  if (chaindata == null) {
+    throw new AutoSelectionError('Chain not found')
+  }
+
+  const quoteRequests: { price: Decimal, cur: Currency, req: QuoteRequestExactOutput }[] = [];
+  for (const cur of chaindata.Currencies) {
+    if (!whitelistedCurrencies.has(cur.currencyID)) {
+      continue
+    }
+
+    const priceTuple = collectionFees.find((cf) => {
+      return (
+        cf.universe === chaindata.Universe &&
+        Buffer.compare(cf.chainID, chaindata.ChainID32) === 0 &&
+        // output token is the CA one
+        Buffer.compare(cf.tokenAddress, cur.tokenAddress) === 0
+      );
+    });
+    const price = priceTuple != null ? Decimal.div(bytesToHex(priceTuple.price), Decimal.pow(10, priceTuple.decimals)) : new Decimal(0);
+
+    for (const req of requirements) {
+      quoteRequests.push({
+        price,
+        cur,
+        req: {
+          type: QuoteType.ExactOut,
+          chain: chainID,
+          // DO NOT COPY THESE, OTHERWISE THE GROUPING WON'T WORK
+          inputToken: cur.tokenAddress,
+          outputToken: req.tokenAddress,
+          outputAmount: req.amount,
+        }
+      })
+    }
+  }
+
+  const results = (await Promise.all(aggregators.map(async agg => {
+    const quotes = await agg.getQuotes(quoteRequests.map(qr => qr.req))
+    return quotes.map(((quote, qtid) => ({
+      ...quoteRequests[qtid]!,
+      quote,
+      agg
+    })))
+  }))).flat().filter(z => z.quote != null)
+  const byReq = Map.groupBy(results, quot => quot.req.outputToken)
+
+  // this is not in the order of the original requirements
+  const final: typeof results = []
+
+  for (const quotes of byReq.values()) {
+    final.push(minBy(quotes, quote => {
+      return quote.cur.convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n).mul(quote.price).toNumber()
+    })!) // finds the asset that is the minimum cost of acquiring the output token (which is the requirement)
+  }
+
+  return final
 }
