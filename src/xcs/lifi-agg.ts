@@ -47,8 +47,8 @@ export class LiFiAggregator implements Aggregator {
     });
   }
 
-  getQuotes(requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[]): Promise<(LiFiQuote | null)[]> {
-    return Promise.all(requests.map(async (r: QuoteRequestExactInput | QuoteRequestExactOutput): Promise<LiFiQuote | null> => {
+  async getQuotes(requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[]): Promise<(LiFiQuote | null)[]> {
+    const list = await Promise.allSettled(requests.map(async (r: QuoteRequestExactInput | QuoteRequestExactOutput): Promise<LiFiQuote | null> => {
       if (r.chain.universe !== Universe.ETHEREUM) {
         return null
       }
@@ -111,5 +111,17 @@ export class LiFiAggregator implements Aggregator {
         originalResponse: resp.data
       }
     }))
+
+    return list.map(item => {
+      switch (item.status) {
+        case 'fulfilled': {
+          return item.value
+        }
+        case 'rejected': {
+          console.error('Caught error in fetching LiFi quotes:', item.reason)
+          return null
+        }
+      }
+    })
   }
 }

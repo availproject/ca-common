@@ -213,16 +213,15 @@ export async function determineDestinationSwaps(chainID: OmniversalChainID, requ
       agg
     })))
   }))).flat().filter(z => z.quote != null)
-  const byReq = Map.groupBy(results, quot => quot.req.outputToken)
+  const byCur = Map.groupBy(results, quot => quot.cur)
 
   // this is not in the order of the original requirements
-  const final: typeof results = []
-
-  for (const quotes of byReq.values()) {
-    final.push(minBy(quotes, quote => {
-      return quote.cur.convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n).mul(quote.price).toNumber()
-    })!) // finds the asset that is the minimum cost of acquiring the output token (which is the requirement)
-  }
-
+  const final: typeof results = minBy(Array.from(byCur.values()), (quotes) => {
+    let total = new Decimal(0)
+    for (const quote of quotes) {
+      total = total.add(quote.cur.convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n).mul(quote.price))
+    }
+    return total.toNumber()
+  })!
   return final
 }
