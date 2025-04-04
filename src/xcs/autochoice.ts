@@ -97,7 +97,9 @@ export async function autoSelectSources(
       return responses;
     }),
   );
-  const quoteOutputs = _quoteOutputs.flat();
+  const quoteOutputs = _quoteOutputs
+    .flat()
+    .filter(quot => quot.quote != null);
 
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
   const orderedQuotes = orderBy(
