@@ -1,19 +1,11 @@
 import { groupBy, minBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
-import { inspect as utilInspect } from "util";
 import Decimal from "decimal.js";
 
 import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
 import { ChaindataMap, Currency, OmniversalChainID } from "../data";
 import { Bytes } from "../types";
 import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
-
-function ezInspect (input: unknown) {
-  return utilInspect(input, {
-    depth: null,
-    colors: true
-  })
-}
 
 type Asset = {
   tokenAddress: Bytes;
@@ -32,7 +24,7 @@ export async function autoSelectSources(
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
-  console.log('Holdings:', ezInspect(holdings))
+  console.log('Holdings:', holdings)
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -78,7 +70,7 @@ export async function autoSelectSources(
     }
   }
 
-  console.log('Quote Requests:', ezInspect(quoteRequests))
+  console.log('Quote Requests:', quoteRequests)
   // TODO: simplify?
   const _quoteOutputs = await Promise.all(
     aggregators.map(async (agg) => {
@@ -111,7 +103,7 @@ export async function autoSelectSources(
     ],
     ["asc", "desc"],
   );
-  console.log('Ordered:', ezInspect(quoteOutputs))
+  console.log('Ordered:', quoteOutputs)
 
   let remainder = outputRequired.amount;
   const finalQuotes: ((typeof quoteOutputs)[0] & {
