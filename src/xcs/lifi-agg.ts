@@ -57,6 +57,7 @@ export class LiFiAggregator implements Aggregator {
       const chIDStr = r.chain.chainID.toString()
       const inputTokenAddr = bytesToHex(r.inputToken.subarray(12))
       const outputTokenAddr = bytesToHex(r.outputToken.subarray(12))
+      const userAddrHex = bytesToHex(r.userAddress.subarray(12))
 
       switch (r.type) {
         case QuoteType.ExactIn: {
@@ -68,7 +69,7 @@ export class LiFiAggregator implements Aggregator {
               'toChain': chIDStr,
               'fromToken': inputTokenAddr,
               'toToken': outputTokenAddr,
-              'fromAddress': '0x0000000000000000000000000000000000000001',
+              'fromAddress': userAddrHex,
               'fromAmount': r.inputAmount.toString()
             }
           })
@@ -83,7 +84,7 @@ export class LiFiAggregator implements Aggregator {
               'toChain': chIDStr,
               'fromToken': inputTokenAddr,
               'toToken': outputTokenAddr,
-              'fromAddress': '0x0000000000000000000000000000000000000001',
+              'fromAddress': userAddrHex,
               'toAmount': r.outputAmount.toString()
             }
           })

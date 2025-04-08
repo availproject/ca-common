@@ -19,6 +19,7 @@ export type Holding = {
 export class AutoSelectionError extends Error {}
 
 export async function autoSelectSources(
+  userAddress: Bytes,
   holdings: Holding[],
   outputRequired: { currency: Currency; amount: bigint },
   aggregators: Aggregator[],
@@ -58,6 +59,7 @@ export async function autoSelectSources(
     for (const holding of holdings) {
       quoteRequests.push({
         req: {
+          userAddress,
           type: QuoteType.ExactIn,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -134,6 +136,7 @@ export async function autoSelectSources(
     Array.from(groupedByAgg.entries()).map(async ([agg, quotes]) => {
       const outs = await agg.getQuotes(
         quotes.map((quot) => ({
+          userAddress,
           type: QuoteType.ExactOut,
           chain: quot.req.chain,
           inputToken: quot.req.inputToken,
@@ -161,7 +164,7 @@ export async function autoSelectSources(
   return response;
 }
 
-export async function determineDestinationSwaps(chainID: OmniversalChainID, requirements: Asset[], aggregators: Aggregator[], collectionFees: PriceOracleDatum[], whitelistedCurrencies = new Set([1, 2])) {
+export async function determineDestinationSwaps(userAddress: Bytes, chainID: OmniversalChainID, requirements: Asset[], aggregators: Aggregator[], collectionFees: PriceOracleDatum[], whitelistedCurrencies = new Set([1, 2])) {
   const chaindata = ChaindataMap.get(chainID)
   if (chaindata == null) {
     throw new AutoSelectionError('Chain not found')
@@ -188,6 +191,7 @@ export async function determineDestinationSwaps(chainID: OmniversalChainID, requ
         price,
         cur,
         req: {
+          userAddress,
           type: QuoteType.ExactOut,
           chain: chainID,
           // DO NOT COPY THESE, OTHERWISE THE GROUPING WON'T WORK
