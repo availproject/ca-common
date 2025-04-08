@@ -60,7 +60,7 @@ export class VaultContractMap {
     return this.getFromChainID36(key.toBytes())
   }
 
-  public *entries(): Iterator<[OmniversalChainID, Buffer]> {
+  public *entries(): Generator<[OmniversalChainID, Buffer]> {
     for (const [key, value] of this.map.entries()) {
       yield [OmniversalChainID.fromChainID36(hexToBytes(<Hex>key)), value]
     }
