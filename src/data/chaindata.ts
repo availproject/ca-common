@@ -357,28 +357,42 @@ const RawData = [
   },
   {
     "Universe": 0,
-    "ChainID32": "0x000000000000000000000000000000000000000000000000000000000000279f",
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000013882",
     "Currencies": [
       {
         "CurrencyID": 1,
         "PermitVariant": PermitVariant.EIP2612Canonical,
         "PermitContractVersion": 2,
-        "TokenContractAddress": "0x000000000000000000000000f817257fed379853cde0fa4f97ab987181b1e5ea",
+        "TokenContractAddress": "0x00000000000000000000000041e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
         "IsGasToken": false
       },
       {
-        "CurrencyID": 2,
-        "PermitVariant": PermitVariant.EIP2612Canonical,
-        "PermitContractVersion": 1,
-        "TokenContractAddress": "0x0000000000000000000000001c56f176d6735888fbb6f8bd9adad8ad7a023a0b",
+        "CurrencyID": 4,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
+        "USDPriceOracleAddress": "0xab594600376ec9fd91f8e885dadf0ce036862de0",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000014a34",
+    "Currencies": [
+      {
+        "CurrencyID": 1,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 2,
+        "TokenContractAddress": "0x000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e",
+        "TokenDecimals": 6,
+        "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
         "IsGasToken": false
       },
       {
-        "CurrencyID": 4,
+        "CurrencyID": 3,
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
@@ -387,6 +401,7 @@ const RawData = [
       }
     ]
   }
+
 ]
 
 
@@ -394,7 +409,8 @@ class _RPCURLMap {
   private readonly dataset: [Buffer, string][] = [
     [encodeChainID36(Universe.ETHEREUM, 421614), 'https://arb-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 11155420), 'https://opt-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
-    [encodeChainID36(Universe.ETHEREUM, 10143), 'https://monad-testnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 80002), 'https://polygon-amoy.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
+    [encodeChainID36(Universe.ETHEREUM, 84532), 'https://base-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 137), 'https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 42161), 'https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 10), 'https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
