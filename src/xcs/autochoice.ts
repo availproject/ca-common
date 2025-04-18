@@ -57,6 +57,10 @@ export async function autoSelectSources(
     const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
 
     for (const holding of holdings) {
+      if (Buffer.compare(holding.tokenAddress, correspondingCurrency.tokenAddress) === 0) {
+        continue
+      }
+
       quoteRequests.push({
         req: {
           userAddress,
@@ -187,6 +191,10 @@ export async function determineDestinationSwaps(userAddress: Bytes, chainID: Omn
     const price = priceTuple != null ? Decimal.div(bytesToHex(priceTuple.price), Decimal.pow(10, priceTuple.decimals)) : new Decimal(0);
 
     for (const req of requirements) {
+      if (Buffer.compare(req.tokenAddress, cur.tokenAddress) === 0) {
+        continue
+      }
+
       quoteRequests.push({
         price,
         cur,
