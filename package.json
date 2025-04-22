@@ -44,17 +44,19 @@
     "typescript": "^5.8.2"
   },
   "peerDependencies": {
-    "long": "^5.3.1",
-    "viem": "^2.23.13",
-    "fuels": "^0.100.1",
     "@cosmjs/proto-signing": "^0.33.0",
     "@cosmjs/stargate": "^0.33.0",
-    "decimal.js": "^10.4.3"
+    "axios": "^1.8.4",
+    "decimal.js": "^10.4.3",
+    "fuels": "^0.100.1",
+    "long": "^5.3.1",
+    "viem": "^2.23.13"
   },
   "dependencies": {
     "@bufbuild/protobuf": "^2.2.5",
     "@improbable-eng/grpc-web": "^0.15.0",
     "browser-headers": "^0.4.1",
+    "es-toolkit": "^1.33.0",
     "tslib": "^2.8.1"
   }
 }
