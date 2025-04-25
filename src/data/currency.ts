@@ -10,6 +10,7 @@ export enum CurrencyID {
   USDT = 2,
   ETH = 3,
   POL = 4,
+  AVAX = 5,
 }
 
 export class Currency {
