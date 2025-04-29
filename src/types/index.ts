@@ -1,1 +1,2 @@
 export * from './binarytypes'
+export * from './msgpack-axios'
