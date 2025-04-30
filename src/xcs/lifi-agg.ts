@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import { bytesToHex } from "viem";
+import { bytesToHex, getAddress } from "viem";
 
 import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
 import { Universe } from "../proto/definition";
@@ -55,9 +55,9 @@ export class LiFiAggregator implements Aggregator {
 
       let respPromise: Promise<AxiosResponse<LiFiResponse>>
       const chIDStr = r.chain.chainID.toString()
-      const inputTokenAddr = bytesToHex(r.inputToken.subarray(12))
-      const outputTokenAddr = bytesToHex(r.outputToken.subarray(12))
-      const userAddrHex = bytesToHex(r.userAddress.subarray(12))
+      const inputTokenAddr = getAddress(bytesToHex(r.inputToken.subarray(12)))
+      const outputTokenAddr = getAddress(bytesToHex(r.outputToken.subarray(12)))
+      const userAddrHex = getAddress(bytesToHex(r.userAddress.subarray(12)))
 
       switch (r.type) {
         case QuoteType.ExactIn: {
