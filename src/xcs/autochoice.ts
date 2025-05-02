@@ -2,7 +2,13 @@ import { groupBy, minBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
 import Decimal from "decimal.js";
 
-import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
+import {
+  Aggregator,
+  Quote,
+  QuoteRequestExactInput,
+  QuoteRequestExactOutput,
+  QuoteType,
+} from "./iface";
 import { ChaindataMap, Currency, OmniversalChainID } from "../data";
 import { Bytes } from "../types";
 import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
@@ -10,7 +16,7 @@ import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
 type Asset = {
   tokenAddress: Bytes;
   amount: bigint;
-}
+};
 
 export type Holding = {
   chainID: OmniversalChainID;
@@ -25,7 +31,7 @@ export async function autoSelectSources(
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
-  console.log('Holdings:', holdings)
+  console.log("Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -51,14 +57,20 @@ export async function autoSelectSources(
         cf.universe === chain.Universe &&
         Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
         // output token is the CA one
-        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) === 0
+        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
+          0
       );
     });
     const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
 
     for (const holding of holdings) {
-      if (Buffer.compare(holding.tokenAddress, correspondingCurrency.tokenAddress) === 0) {
-        continue
+      if (
+        Buffer.compare(
+          holding.tokenAddress,
+          correspondingCurrency.tokenAddress,
+        ) === 0
+      ) {
+        continue;
       }
 
       quoteRequests.push({
@@ -76,7 +88,7 @@ export async function autoSelectSources(
     }
   }
 
-  console.log('Quote Requests:', quoteRequests)
+  console.log("Quote Requests:", quoteRequests);
   // TODO: simplify?
   const _quoteOutputs = await Promise.all(
     aggregators.map(async (agg) => {
@@ -84,12 +96,20 @@ export async function autoSelectSources(
       const responses: ((typeof quoteRequests)[0] & {
         quote: Quote;
         agg: Aggregator;
+        indicativePrice: Decimal; // this is calculated as outputAmountMinimum ÷ inputAmount
       })[] = new Array(quotes.length);
       for (let i = 0; i < quotes.length; i++) {
+        const qResp = quotes[i]!;
         responses[i] = {
           ...quoteRequests[i],
-          quote: quotes[i]!,
+          quote: qResp,
           agg,
+          indicativePrice:
+            qResp == null
+              ? new Decimal(0)
+              : new Decimal(qResp.outputAmountMinimum.toString()).div(
+                  new Decimal(qResp.inputAmount.toString()),
+                ),
         };
       }
       return responses;
@@ -97,7 +117,7 @@ export async function autoSelectSources(
   );
   const quoteOutputs = _quoteOutputs
     .flat()
-    .filter(quot => quot.quote != null);
+    .filter((quot) => quot.quote != null);
 
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
   const orderedQuotes = orderBy(
@@ -109,7 +129,7 @@ export async function autoSelectSources(
     ],
     ["asc", "desc"],
   );
-  console.log('Ordered:', quoteOutputs)
+  console.log("Ordered:", quoteOutputs);
 
   let remainder = outputRequired.amount;
   const finalQuotes: ((typeof quoteOutputs)[0] & {
@@ -139,45 +159,81 @@ export async function autoSelectSources(
   await Promise.all(
     Array.from(groupedByAgg.entries()).map(async ([agg, quotes]) => {
       const outs = await agg.getQuotes(
-        quotes.map((quot) => ({
-          userAddress,
-          type: QuoteType.ExactOut,
-          chain: quot.req.chain,
-          inputToken: quot.req.inputToken,
-          outputToken: quot.req.outputToken,
-          outputAmount: quot.amt,
-        })),
+        quotes.map((quot) => {
+          // we have the ratio of output tokens per input tokens in the indicativePrice
+          // we have the output amount we want, so we calculate output amount × (1 ÷ indicativePrice)
+          const inpAmt = BigInt(
+            new Decimal(quot.amt.toString())
+              .mul(new Decimal(1).div(quot.indicativePrice))
+              .ceil()
+              .toString(),
+          );
+
+          return {
+            userAddress,
+            type: QuoteType.ExactIn,
+            chain: quot.req.chain,
+            inputToken: quot.req.inputToken,
+            outputToken: quot.req.outputToken,
+            inputAmount: inpAmt,
+          };
+        }),
       );
       for (let i = 0; i < outs.length; i++) {
-        const newQuote = outs[i]
+        const newQuote = outs[i];
         if (newQuote == null) {
-          continue
+          continue;
         }
-        const oldQuote = quotes[i]!
+        const oldQuote = quotes[i]!;
 
         response.push({
           agg,
           cfee: oldQuote.cfee,
           quote: newQuote,
-          req: oldQuote.req
-        })
+          req: oldQuote.req,
+          indicativePrice: oldQuote.indicativePrice,
+        });
       }
     }),
   );
 
+  {
+    let sum = 0n;
+    for (const r of response) {
+      sum += r.quote.outputAmountLikely;
+    }
+    console.log("Sum:", sum, "\t| Req:", outputRequired.amount);
+    if (sum < outputRequired.amount) {
+      throw new AutoSelectionError(
+        "Failed to accumulate enough sources in the 2nd pass",
+      );
+    }
+  }
+
   return response;
 }
 
-export async function determineDestinationSwaps(userAddress: Bytes, chainID: OmniversalChainID, requirements: Asset[], aggregators: Aggregator[], collectionFees: PriceOracleDatum[], whitelistedCurrencies = new Set([1, 2])) {
-  const chaindata = ChaindataMap.get(chainID)
+export async function determineDestinationSwaps(
+  userAddress: Bytes,
+  chainID: OmniversalChainID,
+  requirements: Asset[],
+  aggregators: Aggregator[],
+  collectionFees: PriceOracleDatum[],
+  whitelistedCurrencies = new Set([1, 2]),
+) {
+  const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
-    throw new AutoSelectionError('Chain not found')
+    throw new AutoSelectionError("Chain not found");
   }
 
-  const quoteRequests: { price: Decimal, cur: Currency, req: QuoteRequestExactOutput }[] = [];
+  const quoteRequests: {
+    price: Decimal;
+    cur: Currency;
+    req: QuoteRequestExactOutput;
+  }[] = [];
   for (const cur of chaindata.Currencies) {
     if (!whitelistedCurrencies.has(cur.currencyID)) {
-      continue
+      continue;
     }
 
     const priceTuple = collectionFees.find((cf) => {
@@ -188,11 +244,17 @@ export async function determineDestinationSwaps(userAddress: Bytes, chainID: Omn
         Buffer.compare(cf.tokenAddress, cur.tokenAddress) === 0
       );
     });
-    const price = priceTuple != null ? Decimal.div(bytesToHex(priceTuple.price), Decimal.pow(10, priceTuple.decimals)) : new Decimal(0);
+    const price =
+      priceTuple != null
+        ? Decimal.div(
+            bytesToHex(priceTuple.price),
+            Decimal.pow(10, priceTuple.decimals),
+          )
+        : new Decimal(0);
 
     for (const req of requirements) {
       if (Buffer.compare(req.tokenAddress, cur.tokenAddress) === 0) {
-        continue
+        continue;
       }
 
       quoteRequests.push({
@@ -206,28 +268,38 @@ export async function determineDestinationSwaps(userAddress: Bytes, chainID: Omn
           inputToken: cur.tokenAddress,
           outputToken: req.tokenAddress,
           outputAmount: req.amount,
-        }
-      })
+        },
+      });
     }
   }
 
-  const results = (await Promise.all(aggregators.map(async agg => {
-    const quotes = await agg.getQuotes(quoteRequests.map(qr => qr.req))
-    return quotes.map(((quote, qtid) => ({
-      ...quoteRequests[qtid]!,
-      quote,
-      agg
-    })))
-  }))).flat().filter(z => z.quote != null)
-  const byCur = Map.groupBy(results, quot => quot.cur)
+  const results = (
+    await Promise.all(
+      aggregators.map(async (agg) => {
+        const quotes = await agg.getQuotes(quoteRequests.map((qr) => qr.req));
+        return quotes.map((quote, qtid) => ({
+          ...quoteRequests[qtid]!,
+          quote,
+          agg,
+        }));
+      }),
+    )
+  )
+    .flat()
+    .filter((z) => z.quote != null);
+  const byCur = Map.groupBy(results, (quot) => quot.cur);
 
   // this is not in the order of the original requirements
   const final: typeof results = minBy(Array.from(byCur.values()), (quotes) => {
-    let total = new Decimal(0)
+    let total = new Decimal(0);
     for (const quote of quotes) {
-      total = total.add(quote.cur.convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n).mul(quote.price))
+      total = total.add(
+        quote.cur
+          .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
+          .mul(quote.price),
+      );
     }
-    return total.toNumber()
-  })!
-  return final
+    return total.toNumber();
+  })!;
+  return final;
 }
