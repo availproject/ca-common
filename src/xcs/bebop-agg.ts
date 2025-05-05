@@ -134,7 +134,9 @@ export type BebopQuote = Quote & {
 
 export class BebopAggregator implements Aggregator {
   private static BASE_URL = "https://api.bebop.xyz/router";
-
+  private static COMMON_OPTIONS = {
+    approval_type: 'Standard'
+  }
   private readonly axios: AxiosInstance;
 
   public constructor() {
@@ -178,6 +180,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   sell_amounts: r.inputAmount.toString(),
+                  ...BebopAggregator.COMMON_OPTIONS
                 },
               });
               break;
@@ -191,6 +194,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   buy_amounts: r.outputAmount.toString(),
+                  ...BebopAggregator.COMMON_OPTIONS
                 },
               });
               break;
@@ -213,14 +217,18 @@ export class BebopAggregator implements Aggregator {
             }
             throw e;
           }
-          const bestRoute = resp.data.routes[0]
+          const bestRoute = resp.data.routes[0];
           if (bestRoute == null) {
-            return null
+            return null;
           }
-          const outputAmt = BigInt(bestRoute.quote.buyTokens[outputTokenAddr].amount)
+          const outputAmt = BigInt(
+            bestRoute.quote.buyTokens[outputTokenAddr].amount,
+          );
           return {
             type: r.type,
-            inputAmount: BigInt(bestRoute.quote.sellTokens[inputTokenAddr].amount),
+            inputAmount: BigInt(
+              bestRoute.quote.sellTokens[inputTokenAddr].amount,
+            ),
             outputAmountMinimum: outputAmt,
             outputAmountLikely: outputAmt,
             originalResponse: bestRoute,
