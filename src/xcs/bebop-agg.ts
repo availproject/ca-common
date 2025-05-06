@@ -221,7 +221,7 @@ export class BebopAggregator implements Aggregator {
             }
             throw e;
           }
-          const bestRoute = resp.data.routes[0];
+          const bestRoute = resp.data.routes?.at(0);
           if (bestRoute == null) {
             return null;
           }
