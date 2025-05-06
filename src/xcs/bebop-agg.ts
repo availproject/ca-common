@@ -31,6 +31,7 @@ const ChainNameMapping = new Map(
     superseed: 5330,
   }).map(([k, v]) => [bytesToHex(encodeChainID36(Universe.ETHEREUM, v)), k]),
 );
+const erc7528Addr = Buffer.from('000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'hex')
 
 export type BebopCommonQuote = {
   type: string;
@@ -158,6 +159,7 @@ export class BebopAggregator implements Aggregator {
           if (chainName == null) {
             return null;
           }
+          const gasless = Buffer.compare(r.inputToken, erc7528Addr) !== 0
 
           let respPromise: Promise<AxiosResponse<BebopResponse>>;
           const inputTokenAddr = getAddress(
@@ -180,6 +182,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   sell_amounts: r.inputAmount.toString(),
+                  gasless,
                   ...BebopAggregator.COMMON_OPTIONS
                 },
               });
@@ -194,6 +197,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   buy_amounts: r.outputAmount.toString(),
+                  gasless,
                   ...BebopAggregator.COMMON_OPTIONS
                 },
               });
