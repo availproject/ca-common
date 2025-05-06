@@ -96,7 +96,8 @@ export async function autoSelectSources(
       const responses: ((typeof quoteRequests)[0] & {
         quote: Quote;
         agg: Aggregator;
-        indicativePrice: Decimal; // this is calculated as outputAmountMinimum ÷ inputAmount
+        // this is calculated as inputAmount ÷ outputAmountMinimum
+        indicativePrice: Decimal;
       })[] = new Array(quotes.length);
       for (let i = 0; i < quotes.length; i++) {
         const qResp = quotes[i]!;
@@ -107,8 +108,8 @@ export async function autoSelectSources(
           indicativePrice:
             qResp == null
               ? new Decimal(0)
-              : new Decimal(qResp.outputAmountMinimum.toString()).div(
-                  new Decimal(qResp.inputAmount.toString()),
+              : new Decimal(qResp.inputAmount.toString()).div(
+                  new Decimal(qResp.outputAmountMinimum.toString()),
                 ),
         };
       }
@@ -160,11 +161,10 @@ export async function autoSelectSources(
     Array.from(groupedByAgg.entries()).map(async ([agg, quotes]) => {
       const outs = await agg.getQuotes(
         quotes.map((quot) => {
-          // we have the ratio of output tokens per input tokens in the indicativePrice
-          // we have the output amount we want, so we calculate output amount × (1 ÷ indicativePrice)
+          // we have the input units per output unit in the ‘indicativePrice’
           const inpAmt = BigInt(
             new Decimal(quot.amt.toString())
-              .mul(new Decimal(1).div(quot.indicativePrice))
+              .mul(quot.indicativePrice)
               .ceil()
               .toString(),
           );
