@@ -20,16 +20,16 @@ type Asset = {
 
 export type Holding = {
   chainID: OmniversalChainID;
+  value: number;
 } & Asset;
 
 export class AutoSelectionError extends Error {}
-const safetyMultiplier = new Decimal(1.02);
 
 export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
   outputRequired: { currency: Currency; amount: bigint },
-  aggregators: Aggregator[],
+  aggregator: Aggregator,
   collectionFees: FixedFeeTuple[],
 ) {
   console.log("Holdings:", holdings);
@@ -38,9 +38,10 @@ export async function autoSelectSources(
     bytesToHex(h.chainID.toBytes()),
   );
 
-  const quoteRequests: {
+  const firstQuotes: {
     req: QuoteRequestExactInput;
     cfee: bigint;
+    value: number; // rough valuation
   }[] = [];
   for (const holdings of Object.values(groupedByChainID)) {
     const chain = ChaindataMap.get(holdings[0].chainID);
@@ -74,7 +75,7 @@ export async function autoSelectSources(
         continue;
       }
 
-      quoteRequests.push({
+      firstQuotes.push({
         req: {
           userAddress,
           type: QuoteType.ExactIn,
@@ -85,133 +86,70 @@ export async function autoSelectSources(
         },
         // necessary for various purposes
         cfee,
+        value: holding.value,
       });
     }
   }
-
-  console.log("Quote Requests:", quoteRequests);
-  // TODO: simplify?
-  const _quoteOutputs = await Promise.all(
-    aggregators.map(async (agg) => {
-      const quotes = await agg.getQuotes(quoteRequests.map((qr) => qr.req));
-      const responses: ((typeof quoteRequests)[0] & {
-        quote: Quote;
-        agg: Aggregator;
-        // this is calculated as inputAmount ÷ outputAmountMinimum
-        indicativePrice: Decimal;
-      })[] = new Array(quotes.length);
-      for (let i = 0; i < quotes.length; i++) {
-        const qResp = quotes[i]!;
-        responses[i] = {
-          ...quoteRequests[i],
-          quote: qResp,
-          agg,
-          indicativePrice:
-            qResp == null
-              ? new Decimal(0)
-              : new Decimal(qResp.inputAmount.toString())
-                  .div(new Decimal(qResp.outputAmountLikely.toString()))
-                  .mul(safetyMultiplier),
-        };
-      }
-      return responses;
-    }),
-  );
-  const quoteOutputs = _quoteOutputs
-    .flat()
-    .filter((quot) => quot.quote != null);
-
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
-  const orderedQuotes = orderBy(
-    quoteOutputs,
+  const quotesByValue = orderBy(
+    firstQuotes,
     [
-      (quoteOut: (typeof quoteOutputs)[0]): unknown => quoteOut.cfee,
-      (quoteOut: (typeof quoteOutputs)[0]): unknown =>
-        quoteOut.quote.outputAmountMinimum, // once optimized for collections, we select the biggest asset we hold
+      (quoteOut: (typeof firstQuotes)[0]): unknown => quoteOut.cfee,
+      (quoteOut: (typeof firstQuotes)[0]): unknown => quoteOut.value, // once optimized for collections, we select the biggest asset we hold
     ],
     ["asc", "desc"],
   );
-  console.log("Ordered:", quoteOutputs);
-
-  let remainder = outputRequired.amount;
-  const finalQuotes: ((typeof quoteOutputs)[0] & {
-    amt: bigint;
+  const final: ((typeof firstQuotes)[0] & {
+    quote: Quote;
   })[] = [];
-  for (const quote of orderedQuotes) {
-    if (remainder === 0n) {
+  let remainder = outputRequired.amount;
+  for (const q of quotesByValue) {
+    if (remainder <= 0) {
       break;
     }
-    let amt = quote.quote.outputAmountMinimum;
-    if (remainder < amt) {
-      amt = remainder;
+    const resp = (await aggregator.getQuotes([q.req]))[0];
+    if (resp == null) {
+      continue;
     }
-    remainder -= amt;
-    finalQuotes.push({
-      ...quote,
-      amt,
-    });
-  }
-  if (remainder !== 0n) {
-    throw new AutoSelectionError("Failed to meet target!");
-  }
-
-  // we have to re-create the necessary quotes using QuoteExactOut
-  const groupedByAgg = Map.groupBy(finalQuotes, (qt) => qt.agg);
-  const response: typeof quoteOutputs = [];
-  await Promise.all(
-    Array.from(groupedByAgg.entries()).map(async ([agg, quotes]) => {
-      const outs = await agg.getQuotes(
-        quotes.map((quot) => {
-          // we have the input units per output unit in the ‘indicativePrice’
-          const inpAmt = BigInt(
-            new Decimal(quot.amt.toString())
-              .mul(quot.indicativePrice)
-              .ceil()
-              .toString(),
-          );
-
-          return {
-            userAddress,
-            type: QuoteType.ExactIn,
-            chain: quot.req.chain,
-            inputToken: quot.req.inputToken,
-            outputToken: quot.req.outputToken,
-            inputAmount: inpAmt,
-          };
-        }),
+    if (resp.outputAmountMinimum >= remainder) {
+      // input units per output units
+      const indicativePrice = new Decimal(resp.inputAmount.toString()).div(
+        resp.outputAmountMinimum.toString(),
       );
-      for (let i = 0; i < outs.length; i++) {
-        const newQuote = outs[i];
-        if (newQuote == null) {
-          continue;
-        }
-        const oldQuote = quotes[i]!;
-
-        response.push({
-          agg,
-          cfee: oldQuote.cfee,
-          quote: newQuote,
-          req: oldQuote.req,
-          indicativePrice: oldQuote.indicativePrice,
-        });
+      // remainder is the output we want, so the input amount is remainder ÷ indicativePrice
+      const expectedInput = BigInt(
+        new Decimal(remainder.toString())
+          .mul(indicativePrice)
+          .ceil()
+          .toString(),
+      );
+      const resp2 = (
+        await aggregator.getQuotes([
+          {
+            ...q.req,
+            inputAmount: expectedInput,
+          },
+        ])
+      )[0];
+      if (resp2 == null) {
+        continue;
       }
-    }),
-  );
 
-  {
-    let sum = 0n;
-    for (const r of response) {
-      sum += r.quote.outputAmountLikely;
-    }
-    console.log("Sum:", sum, "\t| Req:", outputRequired.amount);
-    if (sum < outputRequired.amount) {
-      throw new AutoSelectionError(
-        "Failed to accumulate enough sources in the 2nd pass",
-      );
+      final.push({
+        ...q,
+        quote: resp2,
+      });
+      remainder -= resp2.outputAmountMinimum;
+    } else {
+      final.push({
+        ...q,
+        quote: resp,
+      });
+      remainder -= resp.outputAmountMinimum;
     }
   }
 
-  return response;
+  return final;
 }
 
 export async function determineDestinationSwaps(
