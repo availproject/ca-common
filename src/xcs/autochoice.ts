@@ -23,7 +23,7 @@ export type Holding = {
 } & Asset;
 
 export class AutoSelectionError extends Error {}
-const safetyMultiplier = new Decimal(1.02)
+const safetyMultiplier = new Decimal(1.02);
 
 export async function autoSelectSources(
   userAddress: Bytes,
@@ -110,8 +110,8 @@ export async function autoSelectSources(
             qResp == null
               ? new Decimal(0)
               : new Decimal(qResp.inputAmount.toString())
-                .div(new Decimal(qResp.outputAmountMinimum.toString()))
-                .mul(safetyMultiplier),
+                  .div(new Decimal(qResp.outputAmountLikely.toString()))
+                  .mul(safetyMultiplier),
         };
       }
       return responses;
