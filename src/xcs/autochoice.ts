@@ -107,11 +107,14 @@ export async function autoSelectSources(
     if (remainder <= 0) {
       break;
     }
+    if (q.req.inputAmount === 0n) {
+      continue // no need to query for zero holdings
+    }
     const resp = (await aggregator.getQuotes([q.req]))[0];
     if (resp == null) {
       continue;
     }
-    if (resp.outputAmountMinimum >= remainder) {
+    if (resp.outputAmountMinimum > remainder) {
       // input units per output units
       const indicativePrice = new Decimal(resp.inputAmount.toString()).div(
         resp.outputAmountMinimum.toString(),
