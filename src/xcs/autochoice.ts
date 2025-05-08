@@ -102,7 +102,7 @@ export async function autoSelectSources(
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
   })[] = [];
-  let remainder = outputRequired.amount;
+  let remainder = outputRequired.amount; // assuming all that chains have the same amount of fixed point places
   for (const q of quotesByValue) {
     if (remainder <= 0) {
       break;
@@ -150,6 +150,9 @@ export async function autoSelectSources(
       });
       remainder -= resp.outputAmountMinimum;
     }
+  }
+  if (remainder > 0) {
+    throw new AutoSelectionError('Failed to accumulate enough swaps to meet requirement')
   }
 
   return final;
