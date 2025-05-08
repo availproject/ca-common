@@ -4,7 +4,7 @@ import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
 import { PermitVariant } from "../permitutils";
-import { ezPadTo32Hex } from "./zeroextn";
+import { ezPadTo32Hex } from "./utils";
 
 const RawData = [
   {

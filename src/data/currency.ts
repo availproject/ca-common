@@ -2,7 +2,7 @@ import { bytesToBigInt, Hex, toBytes } from "viem";
 import Decimal from "decimal.js";
 
 import { Bytes } from "../types";
-import { zeroExtendBufToGivenSize } from "./zeroextn";
+import { zeroExtendBufToGivenSize } from "./utils";
 import { PermitVariant } from "../permitutils";
 
 export enum CurrencyID {

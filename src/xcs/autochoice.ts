@@ -9,7 +9,13 @@ import {
   QuoteRequestExactOutput,
   QuoteType,
 } from "./iface";
-import { ChaindataMap, Currency, OmniversalChainID } from "../data";
+import {
+  ChaindataMap,
+  convertBigIntToDecimal,
+  convertDecimalToBigInt,
+  Currency,
+  OmniversalChainID,
+} from "../data";
 import { Bytes } from "../types";
 import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
 
@@ -117,15 +123,12 @@ export async function autoSelectSources(
     }
     if (resp.outputAmountMinimum > remainder) {
       // input units per output units
-      const indicativePrice = new Decimal(resp.inputAmount.toString()).div(
-        resp.outputAmountMinimum.toString(),
+      const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
+        convertBigIntToDecimal(resp.outputAmountMinimum),
       );
-      // remainder is the output we want, so the input amount is remainder ÷ indicativePrice
-      const expectedInput = BigInt(
-        new Decimal(remainder.toString())
-          .mul(indicativePrice)
-          .ceil()
-          .toString(),
+      // remainder is the output we want, so the input amount is remainder × indicativePrice
+      const expectedInput = convertDecimalToBigInt(
+        convertBigIntToDecimal(remainder).mul(indicativePrice),
       );
       const resp2 = (
         await aggregator.getQuotes([
@@ -157,7 +160,7 @@ export async function autoSelectSources(
       "Failed to accumulate enough swaps to meet requirement",
     );
   }
-  console.log('Final Sources:', final)
+  console.log("Final Sources:", final);
   return final;
 }
 
