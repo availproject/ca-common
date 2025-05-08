@@ -99,18 +99,19 @@ export async function autoSelectSources(
     ],
     ["asc", "desc"],
   );
+  const responses = await aggregator.getQuotes(
+    quotesByValue.map((fq) => fq.req),
+  );
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
   })[] = [];
   let remainder = outputRequired.amount; // assuming all that chains have the same amount of fixed point places
-  for (const q of quotesByValue) {
+  for (let i = 0; i < quotesByValue.length; i++) {
     if (remainder <= 0) {
       break;
     }
-    if (q.req.inputAmount === 0n) {
-      continue // no need to query for zero holdings
-    }
-    const resp = (await aggregator.getQuotes([q.req]))[0];
+    const q = quotesByValue[i];
+    const resp = responses[i];
     if (resp == null) {
       continue;
     }
@@ -152,9 +153,11 @@ export async function autoSelectSources(
     }
   }
   if (remainder > 0) {
-    throw new AutoSelectionError('Failed to accumulate enough swaps to meet requirement')
+    throw new AutoSelectionError(
+      "Failed to accumulate enough swaps to meet requirement",
+    );
   }
-
+  console.log('Final Sources:', final)
   return final;
 }
 
