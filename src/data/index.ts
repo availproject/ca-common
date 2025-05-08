@@ -1,6 +1,6 @@
 export * from './chaindata'
 export * from './chainid'
 export * from './currency'
-export * from './zeroextn'
+export * from './utils'
 export * from './vault.evm.abi'
 export * from './erc20.evm.abi'

@@ -2,7 +2,7 @@ import { bytesToBigInt, type Hex, hexToBigInt, toBytes, toHex } from "viem";
 
 import { Universe, universeFromJSON, universeToJSON } from "../proto/definition";
 import { Bytes } from "../types";
-import { convertToBufferIfNecessary } from "./zeroextn";
+import { convertToBufferIfNecessary } from "./utils";
 
 export function encodeChainID36 (universe: Universe, chainID: Bytes | bigint | number): Buffer {
   let chainIDB: Uint8Array
