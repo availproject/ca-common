@@ -34,7 +34,10 @@ export type LiFiQuote = Quote & {
 }
 
 export class LiFiAggregator implements Aggregator {
-  private static BASE_URL_V1 = "https://li.quest/v1";
+  private static readonly BASE_URL_V1 = "https://li.quest/v1";
+  private static readonly COMMON_OPTIONS = {
+    denyExchanges: 'openocean'
+  }
 
   private readonly axios: AxiosInstance;
 
@@ -70,7 +73,8 @@ export class LiFiAggregator implements Aggregator {
               'fromToken': inputTokenAddr,
               'toToken': outputTokenAddr,
               'fromAddress': userAddrHex,
-              'fromAmount': r.inputAmount.toString()
+              'fromAmount': r.inputAmount.toString(),
+              ...LiFiAggregator.COMMON_OPTIONS
             }
           })
           break
@@ -85,7 +89,8 @@ export class LiFiAggregator implements Aggregator {
               'fromToken': inputTokenAddr,
               'toToken': outputTokenAddr,
               'fromAddress': userAddrHex,
-              'toAmount': r.outputAmount.toString()
+              'toAmount': r.outputAmount.toString(),
+              ...LiFiAggregator.COMMON_OPTIONS
             }
           })
           break
