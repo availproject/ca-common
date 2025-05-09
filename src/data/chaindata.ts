@@ -273,6 +273,7 @@ const RawData = [
         "USDPriceOracleAddress": "0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7",
         "IsGasToken": false
       },
+      /*
       {
         "CurrencyID": 2,
         "PermitVariant": PermitVariant.Unsupported,
@@ -281,6 +282,7 @@ const RawData = [
         "USDPriceOracleAddress": "0x0a6513e40db6eb1b165753ad52e80663aea50545",
         "IsGasToken": false
       },
+       */
       {
         "CurrencyID": 3,
         "PermitVariant": PermitVariant.Unsupported,
