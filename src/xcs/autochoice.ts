@@ -31,6 +31,7 @@ export type Holding = {
 } & Asset;
 
 export class AutoSelectionError extends Error {}
+const safetyMultiplier = new Decimal("1.02");
 
 export async function aggregateAggregators(
   requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
@@ -185,7 +186,9 @@ export async function autoSelectSources(
       );
       // remainder is the output we want, so the input amount is remainder × indicativePrice
       const expectedInput = convertDecimalToBigInt(
-        convertBigIntToDecimal(remainder).mul(indicativePrice),
+        convertBigIntToDecimal(remainder)
+          .mul(indicativePrice)
+          .mul(safetyMultiplier),
       );
       const ends = await aggregateAggregators(
         [
@@ -204,10 +207,10 @@ export async function autoSelectSources(
       let resp2, resp2agg;
       if (ends[1] != null) {
         resp2 = ends[1].quote;
-        resp2agg = ends[1].aggregator
+        resp2agg = ends[1].aggregator;
       } else {
         resp2 = ends[0].quote;
-        resp2agg = ends[0].aggregator
+        resp2agg = ends[0].aggregator;
       }
       if (resp2 == null) {
         console.log("XCS | 2(a)(ii)", {
