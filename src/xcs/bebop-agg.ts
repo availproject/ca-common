@@ -134,8 +134,8 @@ export type BebopQuote = Quote & {
 };
 
 export class BebopAggregator implements Aggregator {
-  private static BASE_URL = "https://api.bebop.xyz/router";
-  private static COMMON_OPTIONS = {
+  private static readonly BASE_URL = "https://api.bebop.xyz/router";
+  private static readonly COMMON_OPTIONS = {
     approval_type: 'Standard'
   }
   private readonly axios: AxiosInstance;
