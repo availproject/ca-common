@@ -14,6 +14,7 @@ import {
   convertBigIntToDecimal,
   convertDecimalToBigInt,
   Currency,
+  maxByBigInt,
   OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
@@ -35,7 +36,7 @@ export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
   outputRequired: { currency: Currency; amount: bigint },
-  aggregator: Aggregator,
+  aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
   console.log("Holdings:", holdings);
@@ -105,11 +106,15 @@ export async function autoSelectSources(
     ],
     ["asc", "desc"],
   );
-  const responses = await aggregator.getQuotes(
-    quotesByValue.map((fq) => fq.req),
+  const responses = await Promise.all(
+    aggregators.map(async (agg) => ({
+      quotes: await agg.getQuotes(quotesByValue.map((fq) => fq.req)),
+      agg,
+    })),
   );
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
+    agg: Aggregator,
   })[] = [];
   let remainder = outputRequired.amount; // assuming all that chains have the same amount of fixed point places
   for (let i = 0; i < quotesByValue.length; i++) {
@@ -117,7 +122,10 @@ export async function autoSelectSources(
       break;
     }
     const q = quotesByValue[i];
-    const resp = responses[i];
+    const { quote: resp, agg } = maxByBigInt(
+      responses.map((ra) => ({ quote: ra.quotes[i], agg: ra.agg })),
+      (r) => r.quote?.outputAmountMinimum ?? 0n,
+    );
     if (resp == null) {
       continue;
     }
@@ -131,7 +139,7 @@ export async function autoSelectSources(
         convertBigIntToDecimal(remainder).mul(indicativePrice),
       );
       const resp2 = (
-        await aggregator.getQuotes([
+        await agg.getQuotes([
           {
             ...q.req,
             inputAmount: expectedInput,
@@ -145,12 +153,14 @@ export async function autoSelectSources(
       final.push({
         ...q,
         quote: resp2,
+        agg,
       });
       remainder -= resp2.outputAmountMinimum;
     } else {
       final.push({
         ...q,
         quote: resp,
+        agg,
       });
       remainder -= resp.outputAmountMinimum;
     }
