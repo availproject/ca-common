@@ -170,7 +170,7 @@ export async function autoSelectSources(
     if (resp == null) {
       continue;
     }
-    console.log("XCS | 173", {
+    console.log("XCS | 1", {
       i,
       remainder,
       q,
@@ -178,7 +178,7 @@ export async function autoSelectSources(
       agg,
     });
     if (resp.outputAmountMinimum > remainder) {
-      console.log("XCS | 181", resp);
+      console.log("XCS | 2(a)(i)", resp);
       // input units per output units
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
@@ -187,26 +187,37 @@ export async function autoSelectSources(
       const expectedInput = convertDecimalToBigInt(
         convertBigIntToDecimal(remainder).mul(indicativePrice),
       );
-      const { quote: resp2, aggregator: resp2agg } = (
-        await aggregateAggregators(
-          [
-            {
-              ...q.req,
-              inputAmount: expectedInput,
-            },
-          ],
-          aggregators,
-        )
-      )[0];
+      const ends = await aggregateAggregators(
+        [
+          {
+            ...q.req,
+            inputAmount: expectedInput,
+          },
+          {
+            ...q.req,
+            type: QuoteType.ExactOut,
+            outputAmount: remainder,
+          },
+        ],
+        aggregators,
+      );
+      let resp2, resp2agg;
+      if (ends[1] != null) {
+        resp2 = ends[1].quote;
+        resp2agg = ends[1].aggregator
+      } else {
+        resp2 = ends[0].quote;
+        resp2agg = ends[0].aggregator
+      }
       if (resp2 == null) {
-        console.log("XCS | 202", {
+        console.log("XCS | 2(a)(ii)", {
           resp2agg,
           expectedInput,
         });
         continue;
       }
 
-      console.log("XCS | 209");
+      console.log("XCS | 2(a)(iii)");
       final.push({
         ...q,
         quote: resp2,
@@ -214,7 +225,7 @@ export async function autoSelectSources(
       });
       remainder -= resp2.outputAmountMinimum;
     } else {
-      console.log("XCS | 217", resp);
+      console.log("XCS | 2(b)", resp);
       final.push({
         ...q,
         quote: resp,
@@ -223,7 +234,7 @@ export async function autoSelectSources(
       remainder -= resp.outputAmountMinimum;
     }
   }
-  console.log("XCS | 226", {
+  console.log("XCS | 3(a)", {
     remainder,
     final,
   });
@@ -232,7 +243,7 @@ export async function autoSelectSources(
       "Failed to accumulate enough swaps to meet requirement",
     );
   }
-  console.log("XCS | 235 Final Sources:", final);
+  console.log("XCS | Final:", final);
   return final;
 }
 
