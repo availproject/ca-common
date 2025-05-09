@@ -38,3 +38,11 @@ export function convertDecimalToBigInt(dec: Decimal): bigint {
 export function convertBigIntToDecimal(big: bigint): Decimal {
   return new Decimal(big.toString(10));
 }
+
+export function maxByBigInt<T>(items: readonly T[], getValue: (element: T) => bigint): T {
+  return items.reduce((m, e) => getValue(e) > getValue(m) ? e : m)
+}
+
+export function minByByBigInt<T>(items: readonly T[], getValue: (element: T) => bigint): T {
+  return items.reduce((m, e) => getValue(e) < getValue(m) ? e : m)
+}
