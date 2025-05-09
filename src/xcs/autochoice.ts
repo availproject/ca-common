@@ -32,6 +32,28 @@ export type Holding = {
 
 export class AutoSelectionError extends Error {}
 
+export async function aggregateAggregators(
+  requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
+  aggregators: Aggregator[],
+): Promise<{ quote: Quote | null; aggregator: Aggregator }[]> {
+  const responses = await Promise.all(
+    aggregators.map(async (agg) => ({
+      quotes: await agg.getQuotes(requests),
+      agg,
+    })),
+  );
+  const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
+    responses.length,
+  );
+  for (let i = 0; i < requests.length; i++) {
+    final[i] = maxByBigInt(
+      responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
+      (r) => r.quote?.outputAmountMinimum ?? 0n,
+    );
+  }
+  return final;
+}
+
 export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
@@ -39,7 +61,7 @@ export async function autoSelectSources(
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
-  console.log("Holdings:", holdings);
+  console.log("XCS | Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -106,15 +128,14 @@ export async function autoSelectSources(
     ],
     ["asc", "desc"],
   );
-  const responses = await Promise.all(
-    aggregators.map(async (agg) => ({
-      quotes: await agg.getQuotes(quotesByValue.map((fq) => fq.req)),
-      agg,
-    })),
+  const responses = await aggregateAggregators(
+    quotesByValue.map((fq) => fq.req),
+    aggregators,
   );
+  console.log("XCS | Responses:", responses);
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
-    agg: Aggregator,
+    agg: Aggregator;
   })[] = [];
   let remainder = outputRequired.amount; // assuming all that chains have the same amount of fixed point places
   for (let i = 0; i < quotesByValue.length; i++) {
@@ -122,14 +143,19 @@ export async function autoSelectSources(
       break;
     }
     const q = quotesByValue[i];
-    const { quote: resp, agg } = maxByBigInt(
-      responses.map((ra) => ({ quote: ra.quotes[i], agg: ra.agg })),
-      (r) => r.quote?.outputAmountMinimum ?? 0n,
-    );
+    const { quote: resp, aggregator: agg } = responses[i];
     if (resp == null) {
       continue;
     }
+    console.log("XCS | 133", {
+      i,
+      remainder,
+      q,
+      resp,
+      agg,
+    });
     if (resp.outputAmountMinimum > remainder) {
+      console.log("XCS | 141", resp);
       // input units per output units
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
@@ -138,25 +164,30 @@ export async function autoSelectSources(
       const expectedInput = convertDecimalToBigInt(
         convertBigIntToDecimal(remainder).mul(indicativePrice),
       );
-      const resp2 = (
-        await agg.getQuotes([
-          {
-            ...q.req,
-            inputAmount: expectedInput,
-          },
-        ])
+      const { quote: resp2, aggregator: resp2agg } = (
+        await aggregateAggregators(
+          [
+            {
+              ...q.req,
+              inputAmount: expectedInput,
+            },
+          ],
+          aggregators,
+        )
       )[0];
       if (resp2 == null) {
         continue;
       }
 
+      console.log("XCS | 162");
       final.push({
         ...q,
         quote: resp2,
-        agg,
+        agg: resp2agg,
       });
       remainder -= resp2.outputAmountMinimum;
     } else {
+      console.log("XCS | 170", resp);
       final.push({
         ...q,
         quote: resp,
@@ -165,6 +196,10 @@ export async function autoSelectSources(
       remainder -= resp.outputAmountMinimum;
     }
   }
+  console.log("XCS | 176", {
+    remainder,
+    final,
+  });
   if (remainder > 0) {
     throw new AutoSelectionError(
       "Failed to accumulate enough swaps to meet requirement",
