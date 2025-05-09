@@ -37,19 +37,38 @@ export async function aggregateAggregators(
   aggregators: Aggregator[],
 ): Promise<{ quote: Quote | null; aggregator: Aggregator }[]> {
   const responses = await Promise.all(
-    aggregators.map(async (agg) => ({
-      quotes: await agg.getQuotes(requests),
-      agg,
-    })),
+    aggregators.map(async (agg) => {
+      let quotes;
+      try {
+        quotes = await agg.getQuotes(requests);
+      } catch (e) {
+        console.log(
+          "XCS | Failed to get quote from",
+          agg,
+          "in aggregateAggregators.",
+          requests,
+          "with:",
+          e,
+        );
+        quotes = new Array(requests.length).fill(null);
+      }
+      return {
+        quotes,
+        agg,
+      };
+    }),
   );
   const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
     responses.length,
-  );
+  ).fill(null);
   for (let i = 0; i < requests.length; i++) {
-    final[i] = maxByBigInt(
+    const best = maxByBigInt(
       responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
       (r) => r.quote?.outputAmountMinimum ?? 0n,
     );
+    if (best != null) {
+      final[i] = best;
+    }
   }
   return final;
 }
@@ -81,6 +100,10 @@ export async function autoSelectSources(
       (cur) => cur.currencyID === outputRequired.currency.currencyID,
     );
     if (correspondingCurrency == null) {
+      console.log("XCS | Skipping because correspondingCurrency is null", {
+        chain,
+        correspondingCurrency,
+      });
       continue;
     }
     const cfeeTuple = collectionFees.find((cf) => {
@@ -147,7 +170,7 @@ export async function autoSelectSources(
     if (resp == null) {
       continue;
     }
-    console.log("XCS | 133", {
+    console.log("XCS | 173", {
       i,
       remainder,
       q,
@@ -155,7 +178,7 @@ export async function autoSelectSources(
       agg,
     });
     if (resp.outputAmountMinimum > remainder) {
-      console.log("XCS | 141", resp);
+      console.log("XCS | 181", resp);
       // input units per output units
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
@@ -176,10 +199,14 @@ export async function autoSelectSources(
         )
       )[0];
       if (resp2 == null) {
+        console.log("XCS | 202", {
+          resp2agg,
+          expectedInput,
+        });
         continue;
       }
 
-      console.log("XCS | 162");
+      console.log("XCS | 209");
       final.push({
         ...q,
         quote: resp2,
@@ -187,7 +214,7 @@ export async function autoSelectSources(
       });
       remainder -= resp2.outputAmountMinimum;
     } else {
-      console.log("XCS | 170", resp);
+      console.log("XCS | 217", resp);
       final.push({
         ...q,
         quote: resp,
@@ -196,7 +223,7 @@ export async function autoSelectSources(
       remainder -= resp.outputAmountMinimum;
     }
   }
-  console.log("XCS | 176", {
+  console.log("XCS | 226", {
     remainder,
     final,
   });
@@ -205,7 +232,7 @@ export async function autoSelectSources(
       "Failed to accumulate enough swaps to meet requirement",
     );
   }
-  console.log("Final Sources:", final);
+  console.log("XCS | 235 Final Sources:", final);
   return final;
 }
 
