@@ -14,8 +14,8 @@ import {
   convertBigIntToDecimal,
   convertDecimalToBigInt,
   Currency,
-  maxByBigInt,
-  OmniversalChainID,
+  maxByBigInt, minByByBigInt,
+  OmniversalChainID
 } from "../data";
 import { Bytes } from "../types";
 import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
@@ -33,13 +33,19 @@ export type Holding = {
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.02");
 
-export async function aggregateAggregators(
+const enum AggregateAggregatorsMode {
+  MaximizeOutput,
+  MinimizeInput,
+}
+
+async function aggregateAggregators(
   requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
   aggregators: Aggregator[],
+  mode: AggregateAggregatorsMode,
 ): Promise<{ quote: Quote | null; aggregator: Aggregator }[]> {
   const responses = await Promise.all(
     aggregators.map(async (agg) => {
-      let quotes;
+      let quotes: (Quote | null)[];
       try {
         quotes = await agg.getQuotes(requests);
       } catch (e) {
@@ -62,13 +68,30 @@ export async function aggregateAggregators(
   const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
     responses.length,
   ).fill(null);
-  for (let i = 0; i < requests.length; i++) {
-    const best = maxByBigInt(
-      responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
-      (r) => r.quote?.outputAmountMinimum ?? 0n,
-    );
-    if (best != null) {
-      final[i] = best;
+  switch (mode) {
+    case AggregateAggregatorsMode.MaximizeOutput: {
+      for (let i = 0; i < requests.length; i++) {
+        const best = maxByBigInt(
+          responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
+          (r) => r.quote?.outputAmountMinimum ?? 0n,
+        );
+        if (best != null) {
+          final[i] = best;
+        }
+      }
+      break;
+    }
+    case AggregateAggregatorsMode.MinimizeInput: {
+      for (let i = 0; i < requests.length; i++) {
+        const best = minByByBigInt(
+          responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
+          (r) => r.quote?.inputAmount ?? 0n,
+        );
+        if (best != null) {
+          final[i] = best;
+        }
+      }
+      break;
     }
   }
   return final;
@@ -155,6 +178,7 @@ export async function autoSelectSources(
   const responses = await aggregateAggregators(
     quotesByValue.map((fq) => fq.req),
     aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
   );
   console.log("XCS | Responses:", responses);
   const final: ((typeof firstQuotes)[0] & {
@@ -190,27 +214,36 @@ export async function autoSelectSources(
           .mul(indicativePrice)
           .mul(safetyMultiplier),
       );
-      const ends = await aggregateAggregators(
-        [
-          {
-            ...q.req,
-            inputAmount: expectedInput,
-          },
-          {
-            ...q.req,
-            type: QuoteType.ExactOut,
-            outputAmount: remainder,
-          },
-        ],
-        aggregators,
-      );
+      const ends = await Promise.all([
+        aggregateAggregators(
+          [
+            {
+              ...q.req,
+              inputAmount: expectedInput,
+            },
+          ],
+          aggregators,
+          AggregateAggregatorsMode.MaximizeOutput,
+        ),
+        aggregateAggregators(
+          [
+            {
+              ...q.req,
+              type: QuoteType.ExactOut,
+              outputAmount: remainder,
+            },
+          ],
+          aggregators,
+          AggregateAggregatorsMode.MinimizeInput,
+        ),
+      ]);
       let resp2, resp2agg;
-      if (ends[1] != null) {
-        resp2 = ends[1].quote;
-        resp2agg = ends[1].aggregator;
+      if (ends[1][0] != null) {
+        resp2 = ends[1][0].quote;
+        resp2agg = ends[1][0].aggregator;
       } else {
-        resp2 = ends[0].quote;
-        resp2agg = ends[0].aggregator;
+        resp2 = ends[0][0].quote;
+        resp2agg = ends[0][0].aggregator;
       }
       if (resp2 == null) {
         console.log("XCS | 2(a)(ii)", {
