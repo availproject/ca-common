@@ -14,8 +14,9 @@ import {
   convertBigIntToDecimal,
   convertDecimalToBigInt,
   Currency,
-  maxByBigInt, minByByBigInt,
-  OmniversalChainID
+  maxByBigInt,
+  minByByBigInt,
+  OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
 import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
@@ -354,9 +355,8 @@ export async function determineDestinationSwaps(
         }));
       }),
     )
-  )
-    .flat()
-    .filter((z) => z.quote != null);
+  ).flat();
+
   const byCur = Map.groupBy(results, (quot) => quot.cur);
 
   // this is not in the order of the original requirements
@@ -371,5 +371,93 @@ export async function determineDestinationSwaps(
     }
     return total.toNumber();
   })!;
+
+  if (final.length === 0) {
+    // last ditch: create synthetic output quotes
+    const step1Reqs: QuoteRequestExactInput[] = [];
+    for (const q of quoteRequests) {
+      step1Reqs.push({
+        type: QuoteType.ExactIn,
+        userAddress,
+        chain: chainID,
+        inputToken: q.req.outputToken,
+        outputToken: q.req.inputToken,
+        inputAmount: q.req.outputAmount,
+      });
+    }
+    const step1Best = await aggregateAggregators(
+      step1Reqs,
+      aggregators,
+      AggregateAggregatorsMode.MaximizeOutput,
+    );
+    const step2Reqs: QuoteRequestExactInput[] = [];
+    for (let i = 0; i < step1Best.length; i++) {
+      const sellQuote = step1Best[i];
+      // assume that buy and sell side are within 2% of each other
+      if (sellQuote.quote === null) {
+        console.error("XCS | DDS | Fallback state:", {
+          step1Reqs,
+          step1Best,
+        });
+        throw new AutoSelectionError("XCS | DDS | Fallback sell quote is null");
+      }
+      const req = step1Reqs[i];
+      step2Reqs.push({
+        type: QuoteType.ExactIn,
+        userAddress,
+        chain: chainID,
+        inputToken: req.outputToken,
+        outputToken: req.inputToken,
+        inputAmount: convertDecimalToBigInt(
+          convertBigIntToDecimal(sellQuote.quote.outputAmountLikely).mul(
+            safetyMultiplier,
+          ),
+        ),
+      });
+    }
+    const step2Quotes = await aggregateAggregators(
+      step2Reqs,
+      aggregators,
+      AggregateAggregatorsMode.MaximizeOutput,
+    );
+    const step2WithMetadata: {
+      quote: Quote | null;
+      agg: Aggregator;
+      price: Decimal;
+      cur: Currency;
+      req: QuoteRequestExactInput;
+    }[] = new Array(step2Quotes.length);
+    for (let j = 0; j < step2Quotes.length; j++) {
+      const q = step2Quotes[j];
+      const qreq = quoteRequests[j];
+      step2WithMetadata[j] = {
+        quote: q.quote,
+        agg: q.aggregator,
+        cur: qreq.cur,
+        price: qreq.price,
+        req: step2Reqs[j],
+      };
+    }
+
+    const byCur = Map.groupBy(step2WithMetadata, (quot) => quot.cur);
+
+    // this is not in the order of the original requirements
+    const actualFinal: typeof step2WithMetadata = minBy(
+      Array.from(byCur.values()),
+      (quotes) => {
+        let total = new Decimal(0);
+        for (const quote of quotes) {
+          total = total.add(
+            quote.cur
+              .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
+              .mul(quote.price),
+          );
+        }
+        return total.toNumber();
+      },
+    )!;
+    return actualFinal;
+  }
+
   return final;
 }
