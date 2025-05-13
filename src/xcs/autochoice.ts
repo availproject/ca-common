@@ -105,7 +105,7 @@ export async function autoSelectSources(
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
-  console.log("XCS | Holdings:", holdings);
+  console.log("XCS | SS | Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -125,7 +125,7 @@ export async function autoSelectSources(
       (cur) => cur.currencyID === outputRequired.currency.currencyID,
     );
     if (correspondingCurrency == null) {
-      console.log("XCS | Skipping because correspondingCurrency is null", {
+      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
         chain,
         correspondingCurrency,
       });
@@ -181,7 +181,7 @@ export async function autoSelectSources(
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
-  console.log("XCS | Responses:", responses);
+  console.log("XCS | SS |  Responses:", responses);
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
     agg: Aggregator;
@@ -196,7 +196,7 @@ export async function autoSelectSources(
     if (resp == null) {
       continue;
     }
-    console.log("XCS | 1", {
+    console.log("XCS | SS | 1", {
       i,
       remainder,
       q,
@@ -204,7 +204,7 @@ export async function autoSelectSources(
       agg,
     });
     if (resp.outputAmountMinimum > remainder) {
-      console.log("XCS | 2(a)(i)", resp);
+      console.log("XCS | 2⒜⑴", resp);
       // input units per output units
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
@@ -247,14 +247,14 @@ export async function autoSelectSources(
         resp2agg = ends[0][0].aggregator;
       }
       if (resp2 == null) {
-        console.log("XCS | 2(a)(ii)", {
+        console.log("XCS | SS | 2⒜⑵", {
           resp2agg,
           expectedInput,
         });
         continue;
       }
 
-      console.log("XCS | 2(a)(iii)");
+      console.log("XCS | SS | 2⒜⑶");
       final.push({
         ...q,
         quote: resp2,
@@ -262,7 +262,7 @@ export async function autoSelectSources(
       });
       remainder -= resp2.outputAmountMinimum;
     } else {
-      console.log("XCS | 2(b)", resp);
+      console.log("XCS | SS | 2⒝", resp);
       final.push({
         ...q,
         quote: resp,
@@ -271,7 +271,7 @@ export async function autoSelectSources(
       remainder -= resp.outputAmountMinimum;
     }
   }
-  console.log("XCS | 3(a)", {
+  console.log("XCS | SS | 3⒜", {
     remainder,
     final,
   });
@@ -280,7 +280,7 @@ export async function autoSelectSources(
       "Failed to accumulate enough swaps to meet requirement",
     );
   }
-  console.log("XCS | Final:", final);
+  console.log("XCS | SS | Final:", final);
   return final;
 }
 
@@ -356,7 +356,10 @@ export async function determineDestinationSwaps(
       }),
     )
   ).flat();
-
+  console.log("XCS | DDS | 1⒜", {
+    results,
+    quoteRequests,
+  });
   const byCur = Map.groupBy(results, (quot) => quot.cur);
 
   // this is not in the order of the original requirements
@@ -371,6 +374,10 @@ export async function determineDestinationSwaps(
     }
     return total.toNumber();
   })!;
+  console.log("XCS | DDS | 1⒝", {
+    byCur,
+    final,
+  });
 
   if (final.length === 0) {
     // last ditch: create synthetic output quotes
@@ -438,6 +445,13 @@ export async function determineDestinationSwaps(
         req: step2Reqs[j],
       };
     }
+    console.log("XCS | DDS | 2⒜", {
+      step1Reqs,
+      step1Best,
+      step2Reqs,
+      step2Quotes,
+      step2WithMetadata,
+    });
 
     const byCur = Map.groupBy(step2WithMetadata, (quot) => quot.cur);
 
@@ -456,6 +470,12 @@ export async function determineDestinationSwaps(
         return total.toNumber();
       },
     )!;
+
+    console.log("XCS | DDS | 2⒝", {
+      byCur,
+      actualFinal,
+    });
+
     return actualFinal;
   }
 
