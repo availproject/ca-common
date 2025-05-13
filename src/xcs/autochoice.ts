@@ -67,7 +67,7 @@ async function aggregateAggregators(
     }),
   );
   const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
-    responses.length,
+    requests.length,
   );
   switch (mode) {
     case AggregateAggregatorsMode.MaximizeOutput: {
