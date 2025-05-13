@@ -375,7 +375,7 @@ export async function determineDestinationSwaps(
       );
     }
     return total.toNumber();
-  })!;
+  }) ?? [];
   console.log("XCS | DDS | 1⒝", {
     byCur,
     final,
@@ -472,7 +472,7 @@ export async function determineDestinationSwaps(
         }
         return total.toNumber();
       },
-    )!;
+    ) ?? [];
 
     console.log("XCS | DDS | 2⒝", {
       byCur,
