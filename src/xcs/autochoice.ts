@@ -355,7 +355,9 @@ export async function determineDestinationSwaps(
         }));
       }),
     )
-  ).flat();
+  )
+    .flat()
+    .filter((z) => z.quote != null);
   console.log("XCS | DDS | 1⒜", {
     results,
     quoteRequests,
@@ -427,7 +429,7 @@ export async function determineDestinationSwaps(
       aggregators,
       AggregateAggregatorsMode.MaximizeOutput,
     );
-    const step2WithMetadata: {
+    let step2WithMetadata: {
       quote: Quote | null;
       agg: Aggregator;
       price: Decimal;
@@ -452,6 +454,7 @@ export async function determineDestinationSwaps(
       step2Quotes,
       step2WithMetadata,
     });
+    step2WithMetadata = step2WithMetadata.filter((s) => s.quote !== null);
 
     const byCur = Map.groupBy(step2WithMetadata, (quot) => quot.cur);
 
