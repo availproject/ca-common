@@ -68,7 +68,7 @@ async function aggregateAggregators(
   );
   const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
     responses.length,
-  ).fill(null);
+  );
   switch (mode) {
     case AggregateAggregatorsMode.MaximizeOutput: {
       for (let i = 0; i < requests.length; i++) {
@@ -78,6 +78,11 @@ async function aggregateAggregators(
         );
         if (best != null) {
           final[i] = best;
+        } else {
+          final[i] = {
+            quote: null,
+            aggregator: aggregators[0],
+          };
         }
       }
       break;
@@ -90,6 +95,11 @@ async function aggregateAggregators(
         );
         if (best != null) {
           final[i] = best;
+        } else {
+          final[i] = {
+            quote: null,
+            aggregator: aggregators[0],
+          };
         }
       }
       break;
@@ -365,17 +375,18 @@ export async function determineDestinationSwaps(
   const byCur = Map.groupBy(results, (quot) => quot.cur);
 
   // this is not in the order of the original requirements
-  const final: typeof results = minBy(Array.from(byCur.values()), (quotes) => {
-    let total = new Decimal(0);
-    for (const quote of quotes) {
-      total = total.add(
-        quote.cur
-          .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
-          .mul(quote.price),
-      );
-    }
-    return total.toNumber();
-  }) ?? [];
+  const final: typeof results =
+    minBy(Array.from(byCur.values()), (quotes) => {
+      let total = new Decimal(0);
+      for (const quote of quotes) {
+        total = total.add(
+          quote.cur
+            .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
+            .mul(quote.price),
+        );
+      }
+      return total.toNumber();
+    }) ?? [];
   console.log("XCS | DDS | 1⒝", {
     byCur,
     final,
@@ -402,7 +413,6 @@ export async function determineDestinationSwaps(
     const step2Reqs: QuoteRequestExactInput[] = [];
     for (let i = 0; i < step1Best.length; i++) {
       const sellQuote = step1Best[i];
-      // assume that buy and sell side are within 2% of each other
       if (sellQuote.quote === null) {
         console.error("XCS | DDS | Fallback state:", {
           step1Reqs,
@@ -410,6 +420,7 @@ export async function determineDestinationSwaps(
         });
         throw new AutoSelectionError("XCS | DDS | Fallback sell quote is null");
       }
+      // assume that buy and sell side are within 2% of each other
       const req = step1Reqs[i];
       step2Reqs.push({
         type: QuoteType.ExactIn,
@@ -459,9 +470,8 @@ export async function determineDestinationSwaps(
     const byCur = Map.groupBy(step2WithMetadata, (quot) => quot.cur);
 
     // this is not in the order of the original requirements
-    const actualFinal: typeof step2WithMetadata = minBy(
-      Array.from(byCur.values()),
-      (quotes) => {
+    const actualFinal: typeof step2WithMetadata =
+      minBy(Array.from(byCur.values()), (quotes) => {
         let total = new Decimal(0);
         for (const quote of quotes) {
           total = total.add(
@@ -471,8 +481,7 @@ export async function determineDestinationSwaps(
           );
         }
         return total.toNumber();
-      },
-    ) ?? [];
+      }) ?? [];
 
     console.log("XCS | DDS | 2⒝", {
       byCur,
