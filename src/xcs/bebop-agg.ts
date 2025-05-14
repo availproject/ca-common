@@ -124,9 +124,9 @@ export type BebopJAMv2Quote = {
 };
 
 type BebopResponse = {
-  routes: (BebopPMMv3Quote | BebopJAMv2Quote)[],
-  errors: Record<string, never>
-  link: string
+  routes: (BebopPMMv3Quote | BebopJAMv2Quote)[];
+  errors: Record<string, never>;
+  link: string;
 };
 
 export type BebopQuote = Quote & {
@@ -136,16 +136,21 @@ export type BebopQuote = Quote & {
 export class BebopAggregator implements Aggregator {
   private static readonly BASE_URL = "https://api.bebop.xyz/router";
   private static readonly COMMON_OPTIONS = {
-    approval_type: 'Standard',
-    skip_validation: 'true',
+    approval_type: "Standard",
+    skip_validation: "true",
     gasless: false,
-  }
+  };
   private readonly axios: AxiosInstance;
 
-  public constructor() {
+  public constructor(apiKey: string) {
     this.axios = axios.create({
       baseURL: BebopAggregator.BASE_URL,
-      // Note that Bebop doesn't require any API keys
+      headers: {
+        "Source-Auth": apiKey,
+      },
+      params: {
+        source: "arcana",
+      },
     });
   }
 
@@ -183,7 +188,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   sell_amounts: r.inputAmount.toString(),
-                  ...BebopAggregator.COMMON_OPTIONS
+                  ...BebopAggregator.COMMON_OPTIONS,
                 },
               });
               break;
@@ -197,7 +202,7 @@ export class BebopAggregator implements Aggregator {
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
                   buy_amounts: r.outputAmount.toString(),
-                  ...BebopAggregator.COMMON_OPTIONS
+                  ...BebopAggregator.COMMON_OPTIONS,
                 },
               });
               break;
