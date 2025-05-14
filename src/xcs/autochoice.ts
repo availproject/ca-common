@@ -159,6 +159,11 @@ export async function autoSelectSources(
           correspondingCurrency.tokenAddress,
         ) === 0
       ) {
+        console.log(
+          "XCS | SS | Disqualifying",
+          holding,
+          "because holding.tokenAddress = CA asset",
+        );
         continue;
       }
 
@@ -191,7 +196,7 @@ export async function autoSelectSources(
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
-  console.log("XCS | SS |  Responses:", responses);
+  console.log("XCS | SS | Responses:", responses);
   const final: ((typeof firstQuotes)[0] & {
     quote: Quote;
     agg: Aggregator;
