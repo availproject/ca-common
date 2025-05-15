@@ -36,7 +36,8 @@ export type LiFiQuote = Quote & {
 export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
   private static readonly COMMON_OPTIONS = {
-    denyExchanges: 'openocean'
+    denyExchanges: 'openocean',
+    slippage: '0.04'
   }
 
   private readonly axios: AxiosInstance;

@@ -1,4 +1,4 @@
-import { groupBy, minBy, orderBy } from "es-toolkit";
+import { groupBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
 import Decimal from "decimal.js";
 
@@ -19,7 +19,7 @@ import {
   OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
-import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
+import { FixedFeeTuple } from "../proto/definition";
 
 type Asset = {
   tokenAddress: Bytes;
@@ -32,7 +32,7 @@ export type Holding = {
 } & Asset;
 
 export class AutoSelectionError extends Error {}
-const safetyMultiplier = new Decimal("1.02");
+const safetyMultiplier = new Decimal("1.05");
 
 const enum AggregateAggregatorsMode {
   MaximizeOutput,
@@ -111,7 +111,7 @@ async function aggregateAggregators(
 export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
-  outputRequired: { currency: Currency; amount: bigint },
+  outputRequired: bigint,
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
@@ -121,10 +121,10 @@ export async function autoSelectSources(
     bytesToHex(h.chainID.toBytes()),
   );
 
-  const firstQuotes: {
+  const fullLiquidationQuotes: {
     req: QuoteRequestExactInput;
     cfee: bigint;
-    value: number; // rough valuation
+    originalHolding: Holding;
   }[] = [];
   for (const holdings of Object.values(groupedByChainID)) {
     const chain = ChaindataMap.get(holdings[0].chainID);
@@ -132,7 +132,7 @@ export async function autoSelectSources(
       throw new AutoSelectionError("Chain not found");
     }
     const correspondingCurrency = chain.Currencies.find(
-      (cur) => cur.currencyID === outputRequired.currency.currencyID,
+      (cur) => cur.currencyID === 1,
     );
     if (correspondingCurrency == null) {
       console.log("XCS | SS | Skipping because correspondingCurrency is null", {
@@ -167,7 +167,7 @@ export async function autoSelectSources(
         continue;
       }
 
-      firstQuotes.push({
+      fullLiquidationQuotes.push({
         req: {
           userAddress,
           type: QuoteType.ExactIn,
@@ -178,16 +178,18 @@ export async function autoSelectSources(
         },
         // necessary for various purposes
         cfee,
-        value: holding.value,
+        originalHolding: holding,
       });
     }
   }
+
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
   const quotesByValue = orderBy(
-    firstQuotes,
+    fullLiquidationQuotes,
     [
-      (quoteOut: (typeof firstQuotes)[0]): unknown => quoteOut.cfee,
-      (quoteOut: (typeof firstQuotes)[0]): unknown => quoteOut.value, // once optimized for collections, we select the biggest asset we hold
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown => quoteOut.cfee,
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown =>
+        quoteOut.originalHolding.value, // once optimized for collections, we select the biggest asset we hold
     ],
     ["asc", "desc"],
   );
@@ -197,11 +199,12 @@ export async function autoSelectSources(
     AggregateAggregatorsMode.MaximizeOutput,
   );
   console.log("XCS | SS | Responses:", responses);
-  const final: ((typeof firstQuotes)[0] & {
+  const final: ((typeof fullLiquidationQuotes)[0] & {
     quote: Quote;
     agg: Aggregator;
   })[] = [];
-  let remainder = outputRequired.amount; // assuming all that chains have the same amount of fixed point places
+
+  let remainder = outputRequired; // assuming all that chains have the same amount of fixed point places
   for (let i = 0; i < quotesByValue.length; i++) {
     if (remainder <= 0) {
       break;
@@ -219,63 +222,59 @@ export async function autoSelectSources(
       agg,
     });
     if (resp.outputAmountMinimum > remainder) {
-      console.log("XCS | 2⒜⑴", resp);
-      // input units per output units
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
       );
       // remainder is the output we want, so the input amount is remainder × indicativePrice
-      const expectedInput = convertDecimalToBigInt(
-        convertBigIntToDecimal(remainder)
-          .mul(indicativePrice)
-          .mul(safetyMultiplier),
-      );
-      const ends = await Promise.all([
-        aggregateAggregators(
+      let expectedInput = convertBigIntToDecimal(remainder)
+        .mul(indicativePrice)
+        .mul(safetyMultiplier);
+      const userBal = convertBigIntToDecimal(q.originalHolding.amount);
+      while (true) {
+        console.log('XCS | SS | 2⒜', {
+          indicativePrice,
+          expectedInput,
+          userBal,
+        })
+        const adequateQuoteResult = await aggregateAggregators(
           [
             {
               ...q.req,
-              inputAmount: expectedInput,
+              inputAmount: convertDecimalToBigInt(expectedInput),
             },
           ],
           aggregators,
           AggregateAggregatorsMode.MaximizeOutput,
-        ),
-        aggregateAggregators(
-          [
-            {
-              ...q.req,
-              type: QuoteType.ExactOut,
-              outputAmount: remainder,
-            },
-          ],
-          aggregators,
-          AggregateAggregatorsMode.MinimizeInput,
-        ),
-      ]);
-      let resp2, resp2agg;
-      if (ends[1][0] != null) {
-        resp2 = ends[1][0].quote;
-        resp2agg = ends[1][0].aggregator;
-      } else {
-        resp2 = ends[0][0].quote;
-        resp2agg = ends[0][0].aggregator;
+        );
+        if (adequateQuoteResult.length !== 1) {
+          throw new AutoSelectionError("???");
+        }
+        const adequateQuote = adequateQuoteResult[0];
+        if (adequateQuote.quote == null) {
+          throw new AutoSelectionError("Couldn't get buy quote");
+        }
+        console.log('XCS | SS | 2⒜⑴', {
+          adequateQuote
+        })
+        if (adequateQuote.quote.outputAmountMinimum >= remainder) {
+          final.push({
+            ...q,
+            quote: adequateQuote.quote,
+            agg: adequateQuote.aggregator,
+          });
+          remainder -= adequateQuote.quote.outputAmountMinimum;
+          break;
+        } else if (expectedInput.eq(userBal)) {
+          throw new AutoSelectionError(
+            "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
+          );
+        } else {
+          expectedInput = Decimal.min(
+            expectedInput.mul(safetyMultiplier),
+            userBal,
+          ); // try again with higher amount
+        }
       }
-      if (resp2 == null) {
-        console.log("XCS | SS | 2⒜⑵", {
-          resp2agg,
-          expectedInput,
-        });
-        continue;
-      }
-
-      console.log("XCS | SS | 2⒜⑶");
-      final.push({
-        ...q,
-        quote: resp2,
-        agg: resp2agg,
-      });
-      remainder -= resp2.outputAmountMinimum;
     } else {
       console.log("XCS | SS | 2⒝", resp);
       final.push({
@@ -302,199 +301,68 @@ export async function autoSelectSources(
 export async function determineDestinationSwaps(
   userAddress: Bytes,
   chainID: OmniversalChainID,
-  requirements: Asset[],
+  requirement: Asset,
   aggregators: Aggregator[],
-  collectionFees: PriceOracleDatum[],
-  whitelistedCurrencies = new Set([1, 2]),
-) {
+): Promise<{ quote: Quote | null; aggregator: Aggregator }> {
   const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
     throw new AutoSelectionError("Chain not found");
   }
 
-  const quoteRequests: {
-    price: Decimal;
-    cur: Currency;
-    req: QuoteRequestExactOutput;
-  }[] = [];
-  for (const cur of chaindata.Currencies) {
-    if (!whitelistedCurrencies.has(cur.currencyID)) {
-      continue;
-    }
-
-    const priceTuple = collectionFees.find((cf) => {
-      return (
-        cf.universe === chaindata.Universe &&
-        Buffer.compare(cf.chainID, chaindata.ChainID32) === 0 &&
-        // output token is the CA one
-        Buffer.compare(cf.tokenAddress, cur.tokenAddress) === 0
-      );
-    });
-    const price =
-      priceTuple != null
-        ? Decimal.div(
-            bytesToHex(priceTuple.price),
-            Decimal.pow(10, priceTuple.decimals),
-          )
-        : new Decimal(0);
-
-    for (const req of requirements) {
-      if (Buffer.compare(req.tokenAddress, cur.tokenAddress) === 0) {
-        continue;
-      }
-
-      quoteRequests.push({
-        price,
-        cur,
-        req: {
+  const USDC = chaindata.Currencies.find((cur) => cur.currencyID === 1);
+  if (USDC == null) {
+    throw new AutoSelectionError("What chain doesn't have USDC");
+  }
+  // what happens if we happen to sell the requirement for USDC, what would the amount be?
+  const fullLiquidationQR: QuoteRequestExactInput = {
+    type: QuoteType.ExactIn,
+    chain: chainID,
+    userAddress,
+    inputToken: requirement.tokenAddress,
+    outputToken: USDC.tokenAddress,
+    inputAmount: requirement.amount,
+  };
+  const fullLiquidationResult = await aggregateAggregators(
+    [fullLiquidationQR],
+    aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
+  );
+  if (fullLiquidationResult.length !== 1) {
+    throw new AutoSelectionError("???");
+  }
+  const fullLiquidationQuote = fullLiquidationResult[0];
+  if (fullLiquidationQuote.quote == null) {
+    throw new AutoSelectionError("Couldn't get full liquidation quote");
+  }
+  let curAmount = convertBigIntToDecimal(
+    fullLiquidationQuote.quote.outputAmountLikely,
+  ).mul(safetyMultiplier);
+  while (true) {
+    const buyQuoteResult = await aggregateAggregators(
+      [
+        {
+          type: QuoteType.ExactIn,
           userAddress,
-          type: QuoteType.ExactOut,
           chain: chainID,
-          // DO NOT COPY THESE, OTHERWISE THE GROUPING WON'T WORK
-          inputToken: cur.tokenAddress,
-          outputToken: req.tokenAddress,
-          outputAmount: req.amount,
+          inputToken: USDC.tokenAddress,
+          outputToken: requirement.tokenAddress,
+          inputAmount: convertDecimalToBigInt(curAmount),
         },
-      });
-    }
-  }
-
-  const results = (
-    await Promise.all(
-      aggregators.map(async (agg) => {
-        const quotes = await agg.getQuotes(quoteRequests.map((qr) => qr.req));
-        return quotes.map((quote, qtid) => ({
-          ...quoteRequests[qtid]!,
-          quote,
-          agg,
-        }));
-      }),
-    )
-  )
-    .flat()
-    .filter((z) => z.quote != null);
-  console.log("XCS | DDS | 1⒜", {
-    results,
-    quoteRequests,
-  });
-  const byCur = Map.groupBy(results, (quot) => quot.cur);
-
-  // this is not in the order of the original requirements
-  const final: typeof results =
-    minBy(Array.from(byCur.values()), (quotes) => {
-      let total = new Decimal(0);
-      for (const quote of quotes) {
-        total = total.add(
-          quote.cur
-            .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
-            .mul(quote.price),
-        );
-      }
-      return total.toNumber();
-    }) ?? [];
-  console.log("XCS | DDS | 1⒝", {
-    byCur,
-    final,
-  });
-
-  if (final.length === 0) {
-    // last ditch: create synthetic output quotes
-    const step1Reqs: QuoteRequestExactInput[] = [];
-    for (const q of quoteRequests) {
-      step1Reqs.push({
-        type: QuoteType.ExactIn,
-        userAddress,
-        chain: chainID,
-        inputToken: q.req.outputToken,
-        outputToken: q.req.inputToken,
-        inputAmount: q.req.outputAmount,
-      });
-    }
-    const step1Best = await aggregateAggregators(
-      step1Reqs,
+      ],
       aggregators,
       AggregateAggregatorsMode.MaximizeOutput,
     );
-    const step2Reqs: QuoteRequestExactInput[] = [];
-    for (let i = 0; i < step1Best.length; i++) {
-      const sellQuote = step1Best[i];
-      if (sellQuote.quote === null) {
-        console.error("XCS | DDS | Fallback state:", {
-          step1Reqs,
-          step1Best,
-        });
-        throw new AutoSelectionError("XCS | DDS | Fallback sell quote is null");
-      }
-      // assume that buy and sell side are within 2% of each other
-      const req = step1Reqs[i];
-      step2Reqs.push({
-        type: QuoteType.ExactIn,
-        userAddress,
-        chain: chainID,
-        inputToken: req.outputToken,
-        outputToken: req.inputToken,
-        inputAmount: convertDecimalToBigInt(
-          convertBigIntToDecimal(sellQuote.quote.outputAmountLikely).mul(
-            safetyMultiplier,
-          ),
-        ),
-      });
+    if (buyQuoteResult.length !== 1) {
+      throw new AutoSelectionError("???");
     }
-    const step2Quotes = await aggregateAggregators(
-      step2Reqs,
-      aggregators,
-      AggregateAggregatorsMode.MaximizeOutput,
-    );
-    let step2WithMetadata: {
-      quote: Quote | null;
-      agg: Aggregator;
-      price: Decimal;
-      cur: Currency;
-      req: QuoteRequestExactInput;
-    }[] = new Array(step2Quotes.length);
-    for (let j = 0; j < step2Quotes.length; j++) {
-      const q = step2Quotes[j];
-      const qreq = quoteRequests[j];
-      step2WithMetadata[j] = {
-        quote: q.quote,
-        agg: q.aggregator,
-        cur: qreq.cur,
-        price: qreq.price,
-        req: step2Reqs[j],
-      };
+    const buyQuote = buyQuoteResult[0];
+    if (buyQuote.quote == null) {
+      throw new AutoSelectionError("Couldn't get buy quote");
     }
-    console.log("XCS | DDS | 2⒜", {
-      step1Reqs,
-      step1Best,
-      step2Reqs,
-      step2Quotes,
-      step2WithMetadata,
-    });
-    step2WithMetadata = step2WithMetadata.filter((s) => s.quote !== null);
-
-    const byCur = Map.groupBy(step2WithMetadata, (quot) => quot.cur);
-
-    // this is not in the order of the original requirements
-    const actualFinal: typeof step2WithMetadata =
-      minBy(Array.from(byCur.values()), (quotes) => {
-        let total = new Decimal(0);
-        for (const quote of quotes) {
-          total = total.add(
-            quote.cur
-              .convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n)
-              .mul(quote.price),
-          );
-        }
-        return total.toNumber();
-      }) ?? [];
-
-    console.log("XCS | DDS | 2⒝", {
-      byCur,
-      actualFinal,
-    });
-
-    return actualFinal;
+    if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
+      return buyQuote;
+    } else {
+      curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
+    }
   }
-
-  return final;
 }
