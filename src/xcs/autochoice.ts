@@ -225,17 +225,20 @@ export async function autoSelectSources(
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
       );
-      // remainder is the output we want, so the input amount is remainder × indicativePrice
-      let expectedInput = convertBigIntToDecimal(remainder)
-        .mul(indicativePrice)
-        .mul(safetyMultiplier);
       const userBal = convertBigIntToDecimal(q.originalHolding.amount);
+      // remainder is the output we want, so the input amount is remainder × indicativePrice
+      let expectedInput = Decimal.min(
+        convertBigIntToDecimal(remainder)
+          .mul(indicativePrice)
+          .mul(safetyMultiplier),
+        userBal,
+      );
       while (true) {
-        console.log('XCS | SS | 2⒜', {
+        console.log("XCS | SS | 2⒜", {
           indicativePrice,
           expectedInput,
           userBal,
-        })
+        });
         const adequateQuoteResult = await aggregateAggregators(
           [
             {
@@ -253,9 +256,9 @@ export async function autoSelectSources(
         if (adequateQuote.quote == null) {
           throw new AutoSelectionError("Couldn't get buy quote");
         }
-        console.log('XCS | SS | 2⒜⑴', {
-          adequateQuote
-        })
+        console.log("XCS | SS | 2⒜⑴", {
+          adequateQuote,
+        });
         if (adequateQuote.quote.outputAmountMinimum >= remainder) {
           final.push({
             ...q,
@@ -337,11 +340,11 @@ export async function determineDestinationSwaps(
   let curAmount = convertBigIntToDecimal(
     fullLiquidationQuote.quote.outputAmountLikely,
   ).mul(safetyMultiplier);
-  console.log('XCS | DDS | 1⒜', {
+  console.log("XCS | DDS | 1⒜", {
     fullLiquidationQR,
     fullLiquidationResult,
-    USDC
-  })
+    USDC,
+  });
   while (true) {
     const buyQuoteResult = await aggregateAggregators(
       [
@@ -364,10 +367,10 @@ export async function determineDestinationSwaps(
     if (buyQuote.quote == null) {
       throw new AutoSelectionError("Couldn't get buy quote");
     }
-    console.log('XCS | DDS | 2⒜ iteration', {
+    console.log("XCS | DDS | 2⒜ iteration", {
       buyQuote,
-      curAmount
-    })
+      curAmount,
+    });
     if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
       return buyQuote;
     } else {
