@@ -337,6 +337,11 @@ export async function determineDestinationSwaps(
   let curAmount = convertBigIntToDecimal(
     fullLiquidationQuote.quote.outputAmountLikely,
   ).mul(safetyMultiplier);
+  console.log('XCS | DDS | 1⒜', {
+    fullLiquidationQR,
+    fullLiquidationResult,
+    USDC
+  })
   while (true) {
     const buyQuoteResult = await aggregateAggregators(
       [
@@ -359,6 +364,10 @@ export async function determineDestinationSwaps(
     if (buyQuote.quote == null) {
       throw new AutoSelectionError("Couldn't get buy quote");
     }
+    console.log('XCS | DDS | 2⒜ iteration', {
+      buyQuote,
+      curAmount
+    })
     if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
       return buyQuote;
     } else {
