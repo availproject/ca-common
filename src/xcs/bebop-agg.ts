@@ -229,16 +229,14 @@ export class BebopAggregator implements Aggregator {
           if (bestRoute == null) {
             return null;
           }
-          const outputAmt = BigInt(
-            bestRoute.quote.buyTokens[outputTokenAddr].amount,
-          );
+          const buyT = bestRoute.quote.buyTokens[outputTokenAddr]
           return {
             type: r.type,
             inputAmount: BigInt(
               bestRoute.quote.sellTokens[inputTokenAddr].amount,
             ),
-            outputAmountMinimum: outputAmt,
-            outputAmountLikely: outputAmt,
+            outputAmountMinimum: BigInt(buyT.minimumAmount),
+            outputAmountLikely: BigInt(buyT.amount),
             originalResponse: bestRoute,
           };
         },
