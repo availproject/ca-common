@@ -7,6 +7,7 @@ export enum QuoteType {
 }
 
 export interface Quote {
+  originalResponse: unknown;
   type: QuoteType;
   inputAmount: bigint;
   outputAmountMinimum: bigint;
