@@ -4,7 +4,7 @@ import { bytesToHex, getAddress } from "viem";
 import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
 import { Universe } from "../proto/definition";
 
-type LiFiResponse = {
+export type LiFiResponse = {
   type: string
   id: string
   estimate: {
