@@ -78,6 +78,13 @@ export type BebopCommonQuote = {
   requiredSignatures: Array<never>;
   priceImpact: number;
   warnings: Array<never>;
+  tx: {
+    from: Hex;
+    to: Hex;
+    value: Hex;
+    data: Hex;
+    gas: number;
+  };
 };
 
 export type BebopPMMv3Quote = {
@@ -98,6 +105,10 @@ export type BebopPMMv3Quote = {
       packed_commands: string;
     };
     onchainOrderType: string;
+    tx: BebopCommonQuote["tx"] & {
+      gasPrice: number;
+      chainId: number;
+    };
   };
 };
 
@@ -229,7 +240,7 @@ export class BebopAggregator implements Aggregator {
           if (bestRoute == null) {
             return null;
           }
-          const buyT = bestRoute.quote.buyTokens[outputTokenAddr]
+          const buyT = bestRoute.quote.buyTokens[outputTokenAddr];
           return {
             type: r.type,
             inputAmount: BigInt(
