@@ -296,7 +296,7 @@ const RawData = [
     "ChainID32": "0x00000000000000000000000000000000000000000000000000000000000003e7",
     "Currencies": [
       {
-        "CurrencyID": 1,
+        "CurrencyID": 2,
         "PermitVariant": PermitVariant.EIP2612Canonical,
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000B8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
