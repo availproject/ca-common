@@ -16,6 +16,7 @@ import {
   MsgCreateRequestForFundsResponse,
   MsgCreateSolverData,
   MsgCreateSolverDataResponse,
+  MsgDoubleCheckTx,
   MsgRefundReq,
   MsgRefundReqResponse,
   MsgUpdateSolverData,
@@ -54,6 +55,7 @@ export const Registry = new CosmosRegistry(defaultRegistryTypes);
     "/xarchain.chainabstraction.MsgRefundReqResponse",
     MsgRefundReqResponse,
   );
+  Registry.register("/xarchain.chainabstraction.MsgDoubleCheckTx", MsgDoubleCheckTx);
 }
 
 export function createCosmosWallet(
