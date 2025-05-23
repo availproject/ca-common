@@ -298,7 +298,7 @@ const RawData = [
       {
         "CurrencyID": 2,
         "PermitVariant": PermitVariant.EIP2612Canonical,
-        "PermitContractVersion": 2,
+        "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000B8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
         "TokenDecimals": 6,
         "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
