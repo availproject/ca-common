@@ -170,6 +170,7 @@ export async function autoSelectSources(
       fullLiquidationQuotes.push({
         req: {
           userAddress,
+          receiverAddress: null,
           type: QuoteType.ExactIn,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -303,6 +304,7 @@ export async function autoSelectSources(
 
 export async function determineDestinationSwaps(
   userAddress: Bytes,
+  receiverAddress: Bytes | null,
   chainID: OmniversalChainID,
   requirement: Asset,
   aggregators: Aggregator[],
@@ -321,6 +323,7 @@ export async function determineDestinationSwaps(
     type: QuoteType.ExactIn,
     chain: chainID,
     userAddress,
+    receiverAddress: null,
     inputToken: requirement.tokenAddress,
     outputToken: USDC.tokenAddress,
     inputAmount: requirement.amount,
@@ -351,6 +354,7 @@ export async function determineDestinationSwaps(
         {
           type: QuoteType.ExactIn,
           userAddress,
+          receiverAddress,
           chain: chainID,
           inputToken: USDC.tokenAddress,
           outputToken: requirement.tokenAddress,

@@ -16,6 +16,7 @@ export interface Quote {
 
 type CommonQuoteParameters = {
   userAddress: Bytes;
+  receiverAddress: Bytes | null;
   chain: OmniversalChainID;
   inputToken: Bytes;
   outputToken: Bytes;
