@@ -131,15 +131,15 @@ export const EVMVaultABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
         internalType: "bytes32",
         name: "requestHash",
         type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "from",
+        type: "address",
       },
       {
         indexed: false,
@@ -156,15 +156,15 @@ export const EVMVaultABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: true,
         internalType: "bytes32",
         name: "requestHash",
         type: "bytes32",
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "from",
+        type: "address",
       },
       {
         indexed: false,
@@ -906,27 +906,12 @@ export const EVMVaultABI = [
         type: "bytes32",
       },
     ],
-    name: "requests",
+    name: "requestState",
     outputs: [
       {
-        internalType: "enum Vault.Universe",
-        name: "destinationUniverse",
+        internalType: "enum Vault.RFFState",
+        name: "",
         type: "uint8",
-      },
-      {
-        internalType: "uint256",
-        name: "destinationChainID",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "nonce",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "expiry",
-        type: "uint256",
       },
     ],
     stateMutability: "view",
@@ -1210,6 +1195,25 @@ export const EVMVaultABI = [
       },
     ],
     stateMutability: "pure",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        internalType: "bytes32",
+        name: "",
+        type: "bytes32",
+      },
+    ],
+    name: "winningSolver",
+    outputs: [
+      {
+        internalType: "address",
+        name: "",
+        type: "address",
+      },
+    ],
+    stateMutability: "view",
     type: "function",
   },
   {
