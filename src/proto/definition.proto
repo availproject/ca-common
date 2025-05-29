@@ -320,3 +320,30 @@ message MsgDoubleCheckTx {
     FillVEPacket fillPacket = 6;
   }
 }
+
+message ChainParams {
+  bytes chainID = 1;
+  bool allTokensDisabled = 2;
+  repeated bytes disabledTokens = 3;
+}
+
+message UniverseParams {
+  Universe universe = 1;
+  bool allChainsDisabled = 2;
+  repeated ChainParams chainParams = 3;
+}
+
+// Params defines the parameters for the module.
+message Params {
+  bool newRFFDisabled = 1;
+  repeated UniverseParams universeParams = 2;
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+ // params holds all the parameters of this module.
+  Params params = 1;
+}

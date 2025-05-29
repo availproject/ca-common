@@ -11,4 +11,5 @@ service Query {
   rpc SettlementAll      (QueryAllSettlementRequest)      returns (QueryAllSettlementResponse);
   rpc ProtocolFees       (QueryGetProtocolFeesRequest)    returns (QueryGetProtocolFeesResponse);
   rpc PriceOracleData    (QueryGetPriceOracleDataRequest) returns (QueryGetPriceOracleDataResponse);
+  rpc Params             (QueryParamsRequest)             returns (QueryParamsResponse);
 }
