@@ -43,7 +43,7 @@ export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
   private static readonly COMMON_OPTIONS = {
     denyExchanges: "openocean",
-    slippage: "0.04",
+    slippage: "0.01",
   };
 
   private readonly axios: AxiosInstance;

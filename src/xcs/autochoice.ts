@@ -32,7 +32,7 @@ export type Holding = {
 } & Asset;
 
 export class AutoSelectionError extends Error {}
-const safetyMultiplier = new Decimal("1.05");
+const safetyMultiplier = new Decimal("1.025");
 
 const enum AggregateAggregatorsMode {
   MaximizeOutput,
