@@ -112,14 +112,14 @@ message RequestForFunds {
 }
 
 message MsgCreateRequestForFunds {
-  repeated RFFSourcePair      sources             = 1;
+  repeated RFFSourcePair      sources = 1;
   Universe           destinationUniverse = 2;
-  bytes              destinationChainID  = 3;
-  repeated RFFDestinationPair destinations        = 4;
-  bytes              nonce               = 5;
-  uint64             expiry              = 6;
-  string             user                = 7;
-  repeated SignatureDatum     signatureData       = 8;
+  bytes              destinationChainID = 3;
+  repeated RFFDestinationPair destinations = 4;
+  bytes              nonce = 5;
+  uint64             expiry = 6;
+  string             user = 7;
+  repeated SignatureDatum     signatureData = 8;
 }
 
 message MsgCreateRequestForFundsResponse {
@@ -140,7 +140,7 @@ message QueryAllRequestForFundsRequest {
 
 message QueryAllRequestForFundsResponse {
   repeated RequestForFunds requestForFunds = 1;
-  PageResponse pagination      = 2;
+  PageResponse pagination = 2;
 }
 
 message RouteFee {
@@ -185,7 +185,7 @@ message QueryAllSolverDataResponse {
 }
 
 message MsgCreateSolverData {
-  string   cosmosAddress  = 1;
+  string   cosmosAddress = 1;
   repeated RouteFee advertisedFees = 2;
   repeated SolverAddress addresses = 3;
 }
@@ -193,7 +193,7 @@ message MsgCreateSolverData {
 message MsgCreateSolverDataResponse {}
 
 message MsgUpdateSolverData {
-  string   cosmosAddress  = 1;
+  string   cosmosAddress = 1;
   repeated RouteFee advertisedFees = 2;
   repeated SolverAddress addresses = 3;
 }
@@ -227,6 +227,11 @@ message QueryAllSettlementResponse {
   PageResponse pagination = 2;
 }
 
+message QueryRequestForFundsByAddressRequest {
+  string account = 1;
+  PageRequest pagination = 2;
+}
+
 message FixedFeeTuple {
   Universe universe = 1;
   bytes chainID = 2;
@@ -255,7 +260,7 @@ message QueryGetProtocolFeesResponse {
 
 message MsgCreateProtocolFees {
   string creator = 1;
-  uint64 feeBP     = 2;
+  uint64 feeBP = 2;
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
   repeated AdminFeeRecipient feeRecipients = 5;
@@ -265,7 +270,7 @@ message MsgCreateProtocolFeesResponse {}
 
 message MsgUpdateProtocolFees {
   string creator = 1;
-  uint64 feeBP     = 2;
+  uint64 feeBP = 2;
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
   repeated AdminFeeRecipient feeRecipients = 5;
