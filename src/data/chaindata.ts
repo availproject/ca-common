@@ -17,7 +17,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x0000000000000000000000003c499c542cef5e3811e1192ce70d8cc03d5c3359",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -26,7 +25,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000c2132d05d31c914a87c6611c10748aeb04b58e8f",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -34,7 +32,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x82BA56a2fADF9C14f17D08bc51bDA0bDB83A8934",
         "IsGasToken": true
       }
     ]
@@ -49,7 +46,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000af88d065e77c8cc2239327c5edb3a432268e5831",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -58,7 +54,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000fd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -66,7 +61,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -81,7 +75,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x0000000000000000000000000b2c639c533813f4aa9d7837caf62653d097ff85",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -89,7 +82,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x00000000000000000000000094b008aa00579c1307b0ef2c499ad98a8ce58e58",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -97,7 +89,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -112,7 +103,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000b97ef9ef8734c71904d8002f8b6bc66dd9c48a6e",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -121,7 +111,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x0000000000000000000000009702230a8ea53601f5cd2dc00fdbc13d4df4a8c7",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -130,7 +119,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x8bf61728eeDCE2F32c456454d87B5d6eD6150208",
         "IsGasToken": true
       }
     ]
@@ -144,7 +132,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x286c479da40dc953bddc3bb4c453b608bba2e0ac483b077bd475174115395e6b",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -152,7 +139,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0xa0265fb5c32f6e8db3197af3c7eb05c48ae373605b8165b6f4a51c5b0ba4812e",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -160,7 +146,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0xf8f8b6283d7fa5b672b530cbb84fcccb4ff8dc40f8176ef4544ddb1f1952ad07",
         "TokenDecimals": 9,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -175,7 +160,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000176211869ca2b568f2a7d4ee941e073a821ee1ff",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -184,7 +168,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000a219439258ca9da29e9cc4ce5596924745e12b93",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -192,7 +175,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -207,7 +189,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x00000000000000000000000006efdbff2a14a7c8e15944d1f4a48f9f95f663a4",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -216,7 +197,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000f55bec9cafdbe8730f096aa55dad6d22d44099df",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -224,7 +204,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -239,7 +218,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000a0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -247,7 +225,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x000000000000000000000000dac17f958d2ee523a2206206994597c13d831ec7",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -255,7 +232,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -270,7 +246,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000833589fcd6edb6e08f4c7c32d4f71b54bda02913",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -278,7 +253,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x000000000000000000000000fde4c96c8593536e31f229ea8f37b2ada2699bb2",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -286,7 +260,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -301,15 +274,34 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000B8CE59FC3717ada4C02eaDF9682A9e934F625ebb",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
-        "CurrencyID": CurrencyID.HYPE,
+        "CurrencyID": 16,
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x24B820870F726dA9B0D83B0B28a93885061dbF50",
+        "IsGasToken": true
+      }
+    ]
+  },
+  {
+    "Universe": 0,
+    "ChainID32": "0x0000000000000000000000000000000000000000000000000000000000002019",
+    "Currencies": [
+      {
+        "CurrencyID": 2,
+        "PermitVariant": PermitVariant.EIP2612Canonical,
+        "PermitContractVersion": 1,
+        "TokenContractAddress": "0x0000000000000000000000005c13e303a62fc5dedf5b52d66873f2e59fedadc2",
+        "TokenDecimals": 6,
+        "IsGasToken": false
+      },
+      {
+        "CurrencyID": 17,
+        "PermitVariant": PermitVariant.Unsupported,
+        "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
+        "TokenDecimals": 18,
         "IsGasToken": true
       }
     ]
@@ -324,7 +316,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x00000000000000000000000075faf114eafb1bdbe2f0316df893fd58ce46aa4d",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -333,7 +324,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x000000000000000000000000f954d4a5859b37de88a91bdbb8ad309056fb04b1",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -341,7 +331,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -356,7 +345,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x0000000000000000000000005fd84259d66cd46123540766be93dfe6d43130d7",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -365,7 +353,6 @@ const RawData = [
         "PermitContractVersion": 1,
         "TokenContractAddress": "0x0000000000000000000000006462693c2f21ac0e517f12641d404895030f7426",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0x3f3f5dF88dC9F13eac63DF89EC16ef6e7E25DdE7",
         "IsGasToken": false
       },
       {
@@ -373,7 +360,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -388,7 +374,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x00000000000000000000000041e94eb019c0762f9bfcf9fb1e58725bfb0e7582",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -396,7 +381,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xab594600376ec9fd91f8e885dadf0ce036862de0",
         "IsGasToken": true
       }
     ]
@@ -411,7 +395,6 @@ const RawData = [
         "PermitContractVersion": 2,
         "TokenContractAddress": "0x000000000000000000000000036cbd53842c5426634e7929541ec2318f3dcf7e",
         "TokenDecimals": 6,
-        "USDPriceOracleAddress": "0x50834F3163758fcC1Df9973b6e91f0F0F0434aD3",
         "IsGasToken": false
       },
       {
@@ -419,7 +402,6 @@ const RawData = [
         "PermitVariant": PermitVariant.Unsupported,
         "TokenContractAddress": "0x0000000000000000000000000000000000000000000000000000000000000000",
         "TokenDecimals": 18,
-        "USDPriceOracleAddress": "0xf9ce4fE2F0EcE0362cb416844AE179a49591D567",
         "IsGasToken": true
       }
     ]
@@ -443,6 +425,7 @@ class _RPCURLMap {
     [encodeChainID36(Universe.ETHEREUM, 59144), 'https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 43114), 'https://avax-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq'],
     [encodeChainID36(Universe.ETHEREUM, 999), 'https://rpc.hyperliquid.xyz/evm'], // Alchemy doesn't support this.
+    [encodeChainID36(Universe.ETHEREUM, 8217), 'https://go.getblock.io/d7094dbd80ab474ba7042603fe912332'], // Alchemy doesn't support this.
     [encodeChainID36(Universe.FUEL, 9889), 'https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql']
   ]
   private readonly map = new Map<string, string>(this.dataset.map(z => [toHex(z[0]), z[1]]))
@@ -486,7 +469,6 @@ export const Chaindata: ChainDatum[] = RawData.map(ch => {
       cur.PermitVariant,
       cur.PermitContractVersion,
       cur.IsGasToken,
-      cur.USDPriceOracleAddress as Hex
     )
   })
   return {
