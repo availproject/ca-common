@@ -12,6 +12,7 @@ export enum CurrencyID {
   POL = 4,
   AVAX = 5,
   HYPE = 0x10,
+  KAIA = 0x11
 }
 
 export class Currency {
@@ -31,7 +32,6 @@ export class Currency {
     public readonly permitVariant: PermitVariant,
     public readonly permitContractVersion = 0,
     public readonly isGasToken: boolean,
-    public readonly polygonGasOracleAddress: Hex
   ) {
     if (typeof tokenAddress === 'string') {
       this.tokenAddress = zeroExtendBufToGivenSize(toBytes(tokenAddress), 32)
