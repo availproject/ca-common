@@ -4,7 +4,7 @@ import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
 import { Currency, CurrencyID } from "./currency";
 import { PermitVariant } from "../permitutils";
-import { ezPadTo32Hex } from "./zeroextn";
+import { ezPadTo32Hex } from "./utils";
 
 const RawData = [
   {
@@ -248,6 +248,7 @@ const RawData = [
         "TokenDecimals": 6,
         "IsGasToken": false
       },
+      /*
       {
         "CurrencyID": 2,
         "PermitVariant": PermitVariant.Unsupported,
@@ -255,6 +256,7 @@ const RawData = [
         "TokenDecimals": 6,
         "IsGasToken": false
       },
+       */
       {
         "CurrencyID": 3,
         "PermitVariant": PermitVariant.Unsupported,

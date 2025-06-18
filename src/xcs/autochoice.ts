@@ -1,39 +1,130 @@
-import { groupBy, minBy, orderBy } from "es-toolkit";
+import { groupBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
 import Decimal from "decimal.js";
 
-import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
-import { ChaindataMap, Currency, OmniversalChainID } from "../data";
+import {
+  Aggregator,
+  Quote,
+  QuoteRequestExactInput,
+  QuoteRequestExactOutput,
+  QuoteType,
+} from "./iface";
+import {
+  ChaindataMap,
+  convertBigIntToDecimal,
+  convertDecimalToBigInt,
+  Currency,
+  maxByBigInt,
+  minByByBigInt,
+  OmniversalChainID,
+} from "../data";
 import { Bytes } from "../types";
-import { FixedFeeTuple, PriceOracleDatum } from "../proto/definition";
+import { FixedFeeTuple } from "../proto/definition";
 
 type Asset = {
   tokenAddress: Bytes;
   amount: bigint;
-}
+};
 
 export type Holding = {
   chainID: OmniversalChainID;
+  value: number;
 } & Asset;
 
 export class AutoSelectionError extends Error {}
+const safetyMultiplier = new Decimal("1.025");
+
+const enum AggregateAggregatorsMode {
+  MaximizeOutput,
+  MinimizeInput,
+}
+
+async function aggregateAggregators(
+  requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
+  aggregators: Aggregator[],
+  mode: AggregateAggregatorsMode,
+): Promise<{ quote: Quote | null; aggregator: Aggregator }[]> {
+  const responses = await Promise.all(
+    aggregators.map(async (agg) => {
+      let quotes: (Quote | null)[];
+      try {
+        quotes = await agg.getQuotes(requests);
+      } catch (e) {
+        console.log(
+          "XCS | Failed to get quote from",
+          agg,
+          "in aggregateAggregators.",
+          requests,
+          "with:",
+          e,
+        );
+        quotes = new Array(requests.length).fill(null);
+      }
+      return {
+        quotes,
+        agg,
+      };
+    }),
+  );
+  const final: { quote: Quote | null; aggregator: Aggregator }[] = new Array(
+    requests.length,
+  );
+  switch (mode) {
+    case AggregateAggregatorsMode.MaximizeOutput: {
+      for (let i = 0; i < requests.length; i++) {
+        const best = maxByBigInt(
+          responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
+          (r) => r.quote?.outputAmountMinimum ?? 0n,
+        );
+        if (best != null) {
+          final[i] = best;
+        } else {
+          final[i] = {
+            quote: null,
+            aggregator: aggregators[0],
+          };
+        }
+      }
+      break;
+    }
+    case AggregateAggregatorsMode.MinimizeInput: {
+      for (let i = 0; i < requests.length; i++) {
+        const best = minByByBigInt(
+          responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
+          (r) => r.quote?.inputAmount ?? 0n,
+        );
+        if (best != null) {
+          final[i] = best;
+        } else {
+          final[i] = {
+            quote: null,
+            aggregator: aggregators[0],
+          };
+        }
+      }
+      break;
+    }
+  }
+  return final;
+}
 
 export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
-  outputRequired: { currency: Currency; amount: bigint },
+  outputRequired: bigint,
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
-  console.log('Holdings:', holdings)
+  console.log("XCS | SS | Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
   );
 
-  const quoteRequests: {
+  const fullLiquidationQuotes: {
     req: QuoteRequestExactInput;
     cfee: bigint;
+    originalHolding: Holding;
   }[] = [];
   for (const holdings of Object.values(groupedByChainID)) {
     const chain = ChaindataMap.get(holdings[0].chainID);
@@ -41,9 +132,13 @@ export async function autoSelectSources(
       throw new AutoSelectionError("Chain not found");
     }
     const correspondingCurrency = chain.Currencies.find(
-      (cur) => cur.currencyID === outputRequired.currency.currencyID,
+      (cur) => cur.currencyID === 1,
     );
     if (correspondingCurrency == null) {
+      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
+        chain,
+        correspondingCurrency,
+      });
       continue;
     }
     const cfeeTuple = collectionFees.find((cf) => {
@@ -51,19 +146,31 @@ export async function autoSelectSources(
         cf.universe === chain.Universe &&
         Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
         // output token is the CA one
-        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) === 0
+        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
+          0
       );
     });
     const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
 
     for (const holding of holdings) {
-      if (Buffer.compare(holding.tokenAddress, correspondingCurrency.tokenAddress) === 0) {
-        continue
+      if (
+        Buffer.compare(
+          holding.tokenAddress,
+          correspondingCurrency.tokenAddress,
+        ) === 0
+      ) {
+        console.log(
+          "XCS | SS | Disqualifying",
+          holding,
+          "because holding.tokenAddress = CA asset",
+        );
+        continue;
       }
 
-      quoteRequests.push({
+      fullLiquidationQuotes.push({
         req: {
           userAddress,
+          receiverAddress: null,
           type: QuoteType.ExactIn,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -72,162 +179,206 @@ export async function autoSelectSources(
         },
         // necessary for various purposes
         cfee,
+        originalHolding: holding,
       });
     }
   }
 
-  console.log('Quote Requests:', quoteRequests)
-  // TODO: simplify?
-  const _quoteOutputs = await Promise.all(
-    aggregators.map(async (agg) => {
-      const quotes = await agg.getQuotes(quoteRequests.map((qr) => qr.req));
-      const responses: ((typeof quoteRequests)[0] & {
-        quote: Quote;
-        agg: Aggregator;
-      })[] = new Array(quotes.length);
-      for (let i = 0; i < quotes.length; i++) {
-        responses[i] = {
-          ...quoteRequests[i],
-          quote: quotes[i]!,
-          agg,
-        };
-      }
-      return responses;
-    }),
-  );
-  const quoteOutputs = _quoteOutputs
-    .flat()
-    .filter(quot => quot.quote != null);
-
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
-  const orderedQuotes = orderBy(
-    quoteOutputs,
+  const quotesByValue = orderBy(
+    fullLiquidationQuotes,
     [
-      (quoteOut: (typeof quoteOutputs)[0]): unknown => quoteOut.cfee,
-      (quoteOut: (typeof quoteOutputs)[0]): unknown =>
-        quoteOut.quote.outputAmountMinimum, // once optimized for collections, we select the biggest asset we hold
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown => quoteOut.cfee,
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown =>
+        quoteOut.originalHolding.value, // once optimized for collections, we select the biggest asset we hold
     ],
     ["asc", "desc"],
   );
-  console.log('Ordered:', quoteOutputs)
-
-  let remainder = outputRequired.amount;
-  const finalQuotes: ((typeof quoteOutputs)[0] & {
-    amt: bigint;
+  const responses = await aggregateAggregators(
+    quotesByValue.map((fq) => fq.req),
+    aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
+  );
+  console.log("XCS | SS | Responses:", responses);
+  const final: ((typeof fullLiquidationQuotes)[0] & {
+    quote: Quote;
+    agg: Aggregator;
   })[] = [];
-  for (const quote of orderedQuotes) {
-    if (remainder === 0n) {
+
+  let remainder = outputRequired; // assuming all that chains have the same amount of fixed point places
+  for (let i = 0; i < quotesByValue.length; i++) {
+    if (remainder <= 0) {
       break;
     }
-    let amt = quote.quote.outputAmountMinimum;
-    if (remainder < amt) {
-      amt = remainder;
+    const q = quotesByValue[i];
+    const { quote: resp, aggregator: agg } = responses[i];
+    if (resp == null) {
+      continue;
     }
-    remainder -= amt;
-    finalQuotes.push({
-      ...quote,
-      amt,
+    console.log("XCS | SS | 1", {
+      i,
+      remainder,
+      q,
+      resp,
+      agg,
     });
-  }
-  if (remainder !== 0n) {
-    throw new AutoSelectionError("Failed to meet target!");
-  }
-
-  // we have to re-create the necessary quotes using QuoteExactOut
-  const groupedByAgg = Map.groupBy(finalQuotes, (qt) => qt.agg);
-  const response: typeof quoteOutputs = [];
-  await Promise.all(
-    Array.from(groupedByAgg.entries()).map(async ([agg, quotes]) => {
-      const outs = await agg.getQuotes(
-        quotes.map((quot) => ({
-          userAddress,
-          type: QuoteType.ExactOut,
-          chain: quot.req.chain,
-          inputToken: quot.req.inputToken,
-          outputToken: quot.req.outputToken,
-          outputAmount: quot.amt,
-        })),
+    if (resp.outputAmountMinimum > remainder) {
+      const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
+        convertBigIntToDecimal(resp.outputAmountMinimum),
       );
-      for (let i = 0; i < outs.length; i++) {
-        const newQuote = outs[i]
-        if (newQuote == null) {
-          continue
+      const userBal = convertBigIntToDecimal(q.originalHolding.amount);
+      // remainder is the output we want, so the input amount is remainder × indicativePrice
+      let expectedInput = Decimal.min(
+        convertBigIntToDecimal(remainder)
+          .mul(indicativePrice)
+          .mul(safetyMultiplier),
+        userBal,
+      );
+      while (true) {
+        console.log("XCS | SS | 2⒜", {
+          indicativePrice,
+          expectedInput,
+          userBal,
+        });
+        const adequateQuoteResult = await aggregateAggregators(
+          [
+            {
+              ...q.req,
+              inputAmount: convertDecimalToBigInt(expectedInput),
+            },
+          ],
+          aggregators,
+          AggregateAggregatorsMode.MaximizeOutput,
+        );
+        if (adequateQuoteResult.length !== 1) {
+          throw new AutoSelectionError("???");
         }
-        const oldQuote = quotes[i]!
-
-        response.push({
-          agg,
-          cfee: oldQuote.cfee,
-          quote: newQuote,
-          req: oldQuote.req
-        })
+        const adequateQuote = adequateQuoteResult[0];
+        if (adequateQuote.quote == null) {
+          throw new AutoSelectionError("Couldn't get buy quote");
+        }
+        console.log("XCS | SS | 2⒜⑴", {
+          adequateQuote,
+        });
+        if (adequateQuote.quote.outputAmountMinimum >= remainder) {
+          final.push({
+            ...q,
+            quote: adequateQuote.quote,
+            agg: adequateQuote.aggregator,
+          });
+          remainder -= adequateQuote.quote.outputAmountMinimum;
+          break;
+        } else if (expectedInput.eq(userBal)) {
+          throw new AutoSelectionError(
+            "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
+          );
+        } else {
+          expectedInput = Decimal.min(
+            expectedInput.mul(safetyMultiplier),
+            userBal,
+          ); // try again with higher amount
+        }
       }
-    }),
-  );
-
-  return response;
+    } else {
+      console.log("XCS | SS | 2⒝", resp);
+      final.push({
+        ...q,
+        quote: resp,
+        agg,
+      });
+      remainder -= resp.outputAmountMinimum;
+    }
+  }
+  console.log("XCS | SS | 3⒜", {
+    remainder,
+    final,
+  });
+  if (remainder > 0) {
+    throw new AutoSelectionError(
+      "Failed to accumulate enough swaps to meet requirement",
+    );
+  }
+  console.log("XCS | SS | Final:", final);
+  return final;
 }
 
-export async function determineDestinationSwaps(userAddress: Bytes, chainID: OmniversalChainID, requirements: Asset[], aggregators: Aggregator[], collectionFees: PriceOracleDatum[], whitelistedCurrencies = new Set([1, 2])) {
-  const chaindata = ChaindataMap.get(chainID)
+export async function determineDestinationSwaps(
+  userAddress: Bytes,
+  receiverAddress: Bytes | null,
+  chainID: OmniversalChainID,
+  requirement: Asset,
+  aggregators: Aggregator[],
+): Promise<{ quote: Quote | null; aggregator: Aggregator }> {
+  const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
-    throw new AutoSelectionError('Chain not found')
+    throw new AutoSelectionError("Chain not found");
   }
 
-  const quoteRequests: { price: Decimal, cur: Currency, req: QuoteRequestExactOutput }[] = [];
-  for (const cur of chaindata.Currencies) {
-    if (!whitelistedCurrencies.has(cur.currencyID)) {
-      continue
-    }
-
-    const priceTuple = collectionFees.find((cf) => {
-      return (
-        cf.universe === chaindata.Universe &&
-        Buffer.compare(cf.chainID, chaindata.ChainID32) === 0 &&
-        // output token is the CA one
-        Buffer.compare(cf.tokenAddress, cur.tokenAddress) === 0
-      );
-    });
-    const price = priceTuple != null ? Decimal.div(bytesToHex(priceTuple.price), Decimal.pow(10, priceTuple.decimals)) : new Decimal(0);
-
-    for (const req of requirements) {
-      if (Buffer.compare(req.tokenAddress, cur.tokenAddress) === 0) {
-        continue
-      }
-
-      quoteRequests.push({
-        price,
-        cur,
-        req: {
+  const USDC = chaindata.Currencies.find((cur) => cur.currencyID === 1);
+  if (USDC == null) {
+    throw new AutoSelectionError("What chain doesn't have USDC");
+  }
+  // what happens if we happen to sell the requirement for USDC, what would the amount be?
+  const fullLiquidationQR: QuoteRequestExactInput = {
+    type: QuoteType.ExactIn,
+    chain: chainID,
+    userAddress,
+    receiverAddress: null,
+    inputToken: requirement.tokenAddress,
+    outputToken: USDC.tokenAddress,
+    inputAmount: requirement.amount,
+  };
+  const fullLiquidationResult = await aggregateAggregators(
+    [fullLiquidationQR],
+    aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
+  );
+  if (fullLiquidationResult.length !== 1) {
+    throw new AutoSelectionError("???");
+  }
+  const fullLiquidationQuote = fullLiquidationResult[0];
+  if (fullLiquidationQuote.quote == null) {
+    throw new AutoSelectionError("Couldn't get full liquidation quote");
+  }
+  let curAmount = convertBigIntToDecimal(
+    fullLiquidationQuote.quote.outputAmountLikely,
+  ).mul(safetyMultiplier);
+  console.log("XCS | DDS | 1⒜", {
+    fullLiquidationQR,
+    fullLiquidationResult,
+    USDC,
+  });
+  while (true) {
+    const buyQuoteResult = await aggregateAggregators(
+      [
+        {
+          type: QuoteType.ExactIn,
           userAddress,
-          type: QuoteType.ExactOut,
+          receiverAddress,
           chain: chainID,
-          // DO NOT COPY THESE, OTHERWISE THE GROUPING WON'T WORK
-          inputToken: cur.tokenAddress,
-          outputToken: req.tokenAddress,
-          outputAmount: req.amount,
-        }
-      })
+          inputToken: USDC.tokenAddress,
+          outputToken: requirement.tokenAddress,
+          inputAmount: convertDecimalToBigInt(curAmount),
+        },
+      ],
+      aggregators,
+      AggregateAggregatorsMode.MaximizeOutput,
+    );
+    if (buyQuoteResult.length !== 1) {
+      throw new AutoSelectionError("???");
+    }
+    const buyQuote = buyQuoteResult[0];
+    if (buyQuote.quote == null) {
+      throw new AutoSelectionError("Couldn't get buy quote");
+    }
+    console.log("XCS | DDS | 2⒜ iteration", {
+      buyQuote,
+      curAmount,
+    });
+    if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
+      return buyQuote;
+    } else {
+      curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
     }
   }
-
-  const results = (await Promise.all(aggregators.map(async agg => {
-    const quotes = await agg.getQuotes(quoteRequests.map(qr => qr.req))
-    return quotes.map(((quote, qtid) => ({
-      ...quoteRequests[qtid]!,
-      quote,
-      agg
-    })))
-  }))).flat().filter(z => z.quote != null)
-  const byCur = Map.groupBy(results, quot => quot.cur)
-
-  // this is not in the order of the original requirements
-  const final: typeof results = minBy(Array.from(byCur.values()), (quotes) => {
-    let total = new Decimal(0)
-    for (const quote of quotes) {
-      total = total.add(quote.cur.convertUnitsToAmountDecimal(quote.quote?.inputAmount ?? 0n).mul(quote.price))
-    }
-    return total.toNumber()
-  })!
-  return final
 }
