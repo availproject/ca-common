@@ -122,7 +122,7 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
       ],
       [
         encodeChainID36(Universe.FUEL, 9889),
-        "0x18bf9116890a9ca862b3dd2157314e818b3ba1434b21039592a84ab23740a588",
+        "0xe2586f908cc885e630cec6d8d578f02e6ade66983baf23f82757be502127dfb1",
       ],
     ],
   ],
