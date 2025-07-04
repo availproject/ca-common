@@ -505,6 +505,32 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 0,
+    ChainID32:
+      "0x0000000000000000000000000000000000000000000000000000000000aa36a7",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x0000000000000000000000001c7d4b196cb0c7b01d743fbc6116a902379c7238",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 2,
+        TokenDecimals: 6,
+        USDPriceOracleAddress: "0x0000000000000000000000000000000000000000",
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 3,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        USDPriceOracleAddress: "0x0000000000000000000000000000000000000000",
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class _RPCURLMap {
@@ -524,6 +550,10 @@ class _RPCURLMap {
     [
       encodeChainID36(Universe.ETHEREUM, 84532),
       "https://base-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    ],
+    [
+      encodeChainID36(Universe.ETHEREUM, 11155111),
+      "https://eth-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
     ],
     [
       encodeChainID36(Universe.ETHEREUM, 137),
