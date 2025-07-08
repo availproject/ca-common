@@ -2,7 +2,7 @@ import { Hex, hexToBytes, toHex } from "viem";
 
 import { Universe } from "../proto/definition";
 import { encodeChainID36, OmniversalChainID } from "./chainid";
-import { Currency, CurrencyID } from "./currency";
+import { Currency } from "./currency";
 import { PermitVariant } from "../permitutils";
 import { ezPadTo32Hex } from "./utils";
 
@@ -361,6 +361,45 @@ const RawData = [
     ],
   },
   {
+    Universe: 0,
+    ChainID32:
+      "0x0000000000000000000000000000000000000000000000000000000000000038",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        PermitVariant: PermitVariant.Unsupported,
+        TokenContractAddress:
+          "0x0000000000000000000000008ac76a51cc950d9822d68b83fe1ad97b32cd580d",
+        TokenDecimals: 18,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 2,
+        PermitVariant: PermitVariant.Unsupported,
+        TokenContractAddress:
+          "0x00000000000000000000000055d398326f99059ff775485246999027b3197955",
+        TokenDecimals: 18,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 3,
+        PermitVariant: PermitVariant.Unsupported,
+        TokenContractAddress:
+          "0x0000000000000000000000002170ed0880ac9a755fd29b2688956bd959f933f8",
+        TokenDecimals: 18,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 6,
+        PermitVariant: PermitVariant.Unsupported,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
+  {
     Universe: 1,
     ChainID32:
       "0x00000000000000000000000000000000000000000000000000000000000026a1",
@@ -596,6 +635,10 @@ class _RPCURLMap {
       "https://go.getblock.io/d7094dbd80ab474ba7042603fe912332",
     ], // Alchemy doesn't support this.
     [encodeChainID36(Universe.ETHEREUM, 50104), "https://rpc.sophon.xyz"], // Alchemy doesn't support this.
+    [
+      encodeChainID36(Universe.ETHEREUM, 56),
+      "https://bnb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    ],
     [
       encodeChainID36(Universe.FUEL, 9889),
       "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
