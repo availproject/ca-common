@@ -224,18 +224,16 @@ export async function autoSelectSources(
       resp,
       agg,
     });
-    const divisor = Decimal.pow(10, q.cur.decimals)
-    const oamD = convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor)
+    const divisor = Decimal.pow(10, q.cur.decimals);
+    const oamD = convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor);
     if (oamD.gt(remainder)) {
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
       );
-      const userBal = convertBigIntToDecimal(q.originalHolding.amount).div(divisor);
+      const userBal = convertBigIntToDecimal(q.originalHolding.amount);
       // remainder is the output we want, so the input amount is remainder × indicativePrice
       let expectedInput = Decimal.min(
-        remainder
-          .mul(indicativePrice)
-          .mul(safetyMultiplier),
+        remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
         userBal,
       );
       while (true) {
@@ -264,7 +262,9 @@ export async function autoSelectSources(
         console.log("XCS | SS | 2⒜⑴", {
           adequateQuote,
         });
-        const oam2D = convertBigIntToDecimal(adequateQuote.quote.outputAmountMinimum).div(divisor)
+        const oam2D = convertBigIntToDecimal(
+          adequateQuote.quote.outputAmountMinimum,
+        ).div(divisor);
         if (oam2D.gte(remainder)) {
           final.push({
             ...q,
@@ -291,7 +291,9 @@ export async function autoSelectSources(
         quote: resp,
         agg,
       });
-      remainder = remainder.minus(convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor));
+      remainder = remainder.minus(
+        convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor),
+      );
     }
   }
   console.log("XCS | SS | 3⒜", {
@@ -313,7 +315,7 @@ export async function determineDestinationSwaps(
   chainID: OmniversalChainID,
   requirement: Asset,
   aggregators: Aggregator[],
-): Promise<{ quote: Quote | null; aggregator: Aggregator }> {
+): Promise<{ quote: Quote | null; aggregator: Aggregator; inputAmount: Decimal }> {
   const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
     throw new AutoSelectionError("Chain not found");
@@ -381,7 +383,12 @@ export async function determineDestinationSwaps(
       curAmount,
     });
     if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
-      return buyQuote;
+      return {
+        ...buyQuote,
+        inputAmount: convertBigIntToDecimal(buyQuote.quote.inputAmount).div(
+          Decimal.pow(10, USDC.decimals),
+        ),
+      };
     } else {
       curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
     }
