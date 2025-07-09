@@ -111,7 +111,7 @@ async function aggregateAggregators(
 export async function autoSelectSources(
   userAddress: Bytes,
   holdings: Holding[],
-  outputRequired: bigint,
+  outputRequired: Decimal,
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
 ) {
@@ -125,6 +125,7 @@ export async function autoSelectSources(
     req: QuoteRequestExactInput;
     cfee: bigint;
     originalHolding: Holding;
+    cur: Currency;
   }[] = [];
   for (const holdings of Object.values(groupedByChainID)) {
     const chain = ChaindataMap.get(holdings[0].chainID);
@@ -180,6 +181,7 @@ export async function autoSelectSources(
         // necessary for various purposes
         cfee,
         originalHolding: holding,
+        cur: correspondingCurrency,
       });
     }
   }
@@ -207,7 +209,7 @@ export async function autoSelectSources(
 
   let remainder = outputRequired; // assuming all that chains have the same amount of fixed point places
   for (let i = 0; i < quotesByValue.length; i++) {
-    if (remainder <= 0) {
+    if (remainder.lte(0)) {
       break;
     }
     const q = quotesByValue[i];
@@ -222,14 +224,16 @@ export async function autoSelectSources(
       resp,
       agg,
     });
-    if (resp.outputAmountMinimum > remainder) {
+    const divisor = Decimal.pow(10, q.cur.decimals)
+    const oamD = convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor)
+    if (oamD.gt(remainder)) {
       const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
         convertBigIntToDecimal(resp.outputAmountMinimum),
       );
-      const userBal = convertBigIntToDecimal(q.originalHolding.amount);
+      const userBal = convertBigIntToDecimal(q.originalHolding.amount).div(divisor);
       // remainder is the output we want, so the input amount is remainder × indicativePrice
       let expectedInput = Decimal.min(
-        convertBigIntToDecimal(remainder)
+        remainder
           .mul(indicativePrice)
           .mul(safetyMultiplier),
         userBal,
@@ -260,13 +264,14 @@ export async function autoSelectSources(
         console.log("XCS | SS | 2⒜⑴", {
           adequateQuote,
         });
-        if (adequateQuote.quote.outputAmountMinimum >= remainder) {
+        const oam2D = convertBigIntToDecimal(adequateQuote.quote.outputAmountMinimum).div(divisor)
+        if (oam2D.gte(remainder)) {
           final.push({
             ...q,
             quote: adequateQuote.quote,
             agg: adequateQuote.aggregator,
           });
-          remainder -= adequateQuote.quote.outputAmountMinimum;
+          remainder = remainder.minus(oam2D);
           break;
         } else if (expectedInput.eq(userBal)) {
           throw new AutoSelectionError(
@@ -286,14 +291,14 @@ export async function autoSelectSources(
         quote: resp,
         agg,
       });
-      remainder -= resp.outputAmountMinimum;
+      remainder = remainder.minus(convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor));
     }
   }
   console.log("XCS | SS | 3⒜", {
     remainder,
     final,
   });
-  if (remainder > 0) {
+  if (remainder.gt(0)) {
     throw new AutoSelectionError(
       "Failed to accumulate enough swaps to meet requirement",
     );
