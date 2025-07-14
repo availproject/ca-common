@@ -1,6 +1,7 @@
 import { Hex, hexToBytes, toHex } from "viem";
 
 import {
+  ChainIDKeyedMap,
   encodeChainID36,
   OmniversalChainID,
   zeroExtendBufToGivenSize,
@@ -14,28 +15,28 @@ export enum Environment {
   JADE, // Main-net with main-net tokens
 }
 
-const dataSets = new Map<Environment, [Buffer, string][]>([
+const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
   [
     Environment.FOLLY,
     [
       [
-        encodeChainID36(Universe.ETHEREUM, 421614),
+        new OmniversalChainID(Universe.ETHEREUM, 421614),
         "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 11155420),
+        new OmniversalChainID(Universe.ETHEREUM, 11155420),
         "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 80002),
+        new OmniversalChainID(Universe.ETHEREUM, 80002),
         "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 84532),
+        new OmniversalChainID(Universe.ETHEREUM, 84532),
         "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 11155111),
+        new OmniversalChainID(Universe.ETHEREUM, 11155111),
         "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
       ],
     ],
@@ -44,43 +45,43 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
     Environment.CERISE,
     [
       [
-        encodeChainID36(Universe.ETHEREUM, 137),
+        new OmniversalChainID(Universe.ETHEREUM, 137),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 10),
+        new OmniversalChainID(Universe.ETHEREUM, 10),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 42161),
+        new OmniversalChainID(Universe.ETHEREUM, 42161),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 8453),
+        new OmniversalChainID(Universe.ETHEREUM, 8453),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 43114),
+        new OmniversalChainID(Universe.ETHEREUM, 43114),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 534352),
+        new OmniversalChainID(Universe.ETHEREUM, 534352),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 8217),
+        new OmniversalChainID(Universe.ETHEREUM, 8217),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 50104),
+        new OmniversalChainID(Universe.ETHEREUM, 50104),
         "0x0A8eb0237524D1A8Fa8cbecF49e54FE627Ed781f",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 56),
+        new OmniversalChainID(Universe.ETHEREUM, 56),
         "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
       ],
       [
-        encodeChainID36(Universe.FUEL, 9889),
+        new OmniversalChainID(Universe.FUEL, 9889),
         "0x6cd9b8d7e13762f4cb98cbd733640138aeb65395c4b38d84a7d46f6f6c6b42e4",
       ],
     ],
@@ -89,80 +90,62 @@ const dataSets = new Map<Environment, [Buffer, string][]>([
     Environment.CORAL,
     [
       [
-        encodeChainID36(Universe.ETHEREUM, 1),
+        new OmniversalChainID(Universe.ETHEREUM, 1),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 10),
+        new OmniversalChainID(Universe.ETHEREUM, 10),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 137),
+        new OmniversalChainID(Universe.ETHEREUM, 137),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 42161),
+        new OmniversalChainID(Universe.ETHEREUM, 42161),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 534352),
+        new OmniversalChainID(Universe.ETHEREUM, 534352),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 8453),
+        new OmniversalChainID(Universe.ETHEREUM, 8453),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 43114),
+        new OmniversalChainID(Universe.ETHEREUM, 43114),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 999),
+        new OmniversalChainID(Universe.ETHEREUM, 999),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 8217),
+        new OmniversalChainID(Universe.ETHEREUM, 8217),
         "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
       ],
       [
-        encodeChainID36(Universe.ETHEREUM, 50104),
+        new OmniversalChainID(Universe.ETHEREUM, 50104),
         "0xB61fAdeBccCb15823b64bf47829d32eeb4A08930",
       ],
       [
-        encodeChainID36(Universe.FUEL, 9889),
+        new OmniversalChainID(Universe.FUEL, 9889),
         "0xe2586f908cc885e630cec6d8d578f02e6ade66983baf23f82757be502127dfb1",
       ],
     ],
   ],
 ]);
 
-export class VaultContractMap {
-  map = new Map<string, Buffer>();
-
-  constructor(environment: Environment) {
-    const src = dataSets.get(environment);
-    if (src == null) {
-      throw new Error("Environment not found");
-    }
-    for (const tuple of src) {
-      this.map.set(
-        toHex(tuple[0]),
-        zeroExtendBufToGivenSize(hexToBytes(<Hex>tuple[1]), 32),
-      );
-    }
+export function getVaultContractMap(environment: Environment) {
+  const src = dataSets.get(environment);
+  if (src == null) {
+    throw new Error("Environment not found");
   }
-
-  public getFromChainID36(key: Buffer) {
-    return this.map.get(toHex(key));
-  }
-
-  public getFromOmniversalChainID(key: OmniversalChainID) {
-    return this.getFromChainID36(key.toBytes());
-  }
-
-  public *entries(): Generator<[OmniversalChainID, Buffer]> {
-    for (const [key, value] of this.map.entries()) {
-      yield [OmniversalChainID.fromChainID36(hexToBytes(<Hex>key)), value];
-    }
-  }
+  return new ChainIDKeyedMap<Buffer>(
+    src.map((t) => [
+      t[0],
+      zeroExtendBufToGivenSize(hexToBytes(t[1] as Hex), 32),
+    ]),
+  );
 }

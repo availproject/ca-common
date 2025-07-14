@@ -1,7 +1,7 @@
 import { Hex, hexToBytes, toHex } from "viem";
 
 import { Universe } from "../proto/definition";
-import { encodeChainID36, OmniversalChainID } from "./chainid";
+import { ChainIDKeyedMap, OmniversalChainID } from "./chainid";
 import { Currency } from "./currency";
 import { PermitVariant } from "../permitutils";
 import { ezPadTo32Hex } from "./utils";
@@ -572,88 +572,6 @@ const RawData = [
   },
 ];
 
-class _RPCURLMap {
-  private readonly dataset: [Buffer, string][] = [
-    [
-      encodeChainID36(Universe.ETHEREUM, 421614),
-      "https://arb-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 11155420),
-      "https://opt-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 80002),
-      "https://polygon-amoy.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 84532),
-      "https://base-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 11155111),
-      "https://eth-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 137),
-      "https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 42161),
-      "https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 10),
-      "https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 8453),
-      "https://base-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 1),
-      "https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 534352),
-      "https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 59144),
-      "https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 43114),
-      "https://avax-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.ETHEREUM, 999),
-      "https://rpc.hyperliquid.xyz/evm",
-    ], // Alchemy doesn't support this.
-    [
-      encodeChainID36(Universe.ETHEREUM, 8217),
-      "https://go.getblock.io/d7094dbd80ab474ba7042603fe912332",
-    ], // Alchemy doesn't support this.
-    [encodeChainID36(Universe.ETHEREUM, 50104), "https://rpc.sophon.xyz"], // Alchemy doesn't support this.
-    [
-      encodeChainID36(Universe.ETHEREUM, 56),
-      "https://bnb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-    ],
-    [
-      encodeChainID36(Universe.FUEL, 9889),
-      "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
-    ],
-  ];
-  private readonly map = new Map<string, string>(
-    this.dataset.map((z) => [toHex(z[0]), z[1]]),
-  );
-
-  public get(key: OmniversalChainID) {
-    return this.map.get(toHex(key.toBytes()));
-  }
-}
-export const RPCURLMap = new _RPCURLMap();
-
 class CurrencyMap {
   private readonly map = new Map<string, Currency>();
 
@@ -698,18 +616,73 @@ export const Chaindata: ChainDatum[] = RawData.map((ch) => {
   };
 });
 
-class _ChaindataMap {
-  private readonly map = new Map<string, ChainDatum>();
-
-  constructor() {
-    for (const datum of Chaindata) {
-      this.map.set(toHex(datum.ChainID.toBytes()), datum);
-    }
-  }
-
-  get(key: OmniversalChainID) {
-    return this.map.get(toHex(key.toBytes()));
-  }
-}
-
-export const ChaindataMap = new _ChaindataMap();
+export const ChaindataMap = new ChainIDKeyedMap(
+  Chaindata.map((ch) => [ch.ChainID, ch]),
+);
+export const RPCURLMap = new ChainIDKeyedMap([
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 421614),
+    "https://arb-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 11155420),
+    "https://opt-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 80002),
+    "https://polygon-amoy.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 84532),
+    "https://base-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 11155111),
+    "https://eth-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 137),
+    "https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 42161),
+    "https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 10),
+    "https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 8453),
+    "https://base-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 1),
+    "https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 534352),
+    "https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 59144),
+    "https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 43114),
+    "https://avax-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 999),
+    "https://rpc.hyperliquid.xyz/evm",
+  ], // Alchemy doesn't support this.
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 8217),
+    "https://go.getblock.io/d7094dbd80ab474ba7042603fe912332",
+  ], // Alchemy doesn't support this.
+  [new OmniversalChainID(Universe.ETHEREUM, 50104), "https://rpc.sophon.xyz"], // Alchemy doesn't support this.
+  [
+    new OmniversalChainID(Universe.FUEL, 9889),
+    "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
+  ],
+]);
