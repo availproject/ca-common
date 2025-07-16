@@ -682,6 +682,10 @@ export const RPCURLMap = new ChainIDKeyedMap([
   ], // Alchemy doesn't support this.
   [new OmniversalChainID(Universe.ETHEREUM, 50104), "https://rpc.sophon.xyz"], // Alchemy doesn't support this.
   [
+    new OmniversalChainID(Universe.ETHEREUM, 56),
+    "https://bnb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
     new OmniversalChainID(Universe.FUEL, 9889),
     "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
   ],
