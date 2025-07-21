@@ -14,6 +14,7 @@ import {
   convertBigIntToDecimal,
   convertDecimalToBigInt,
   Currency,
+  CurrencyID,
   maxByBigInt,
   minByByBigInt,
   OmniversalChainID,
@@ -39,7 +40,7 @@ const enum AggregateAggregatorsMode {
   MinimizeInput,
 }
 
-async function aggregateAggregators(
+export async function aggregateAggregators(
   requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
   aggregators: Aggregator[],
   mode: AggregateAggregatorsMode,
@@ -114,6 +115,7 @@ export async function autoSelectSources(
   outputRequired: Decimal,
   aggregators: Aggregator[],
   collectionFees: FixedFeeTuple[],
+  commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ) {
   console.log("XCS | SS | Holdings:", holdings);
 
@@ -133,7 +135,7 @@ export async function autoSelectSources(
       throw new AutoSelectionError("Chain not found");
     }
     const correspondingCurrency = chain.Currencies.find(
-      (cur) => cur.currencyID === 1,
+      (cur) => cur.currencyID === commonCurrencyID,
     );
     if (correspondingCurrency == null) {
       console.log("XCS | SS | Skipping because correspondingCurrency is null", {
@@ -315,24 +317,31 @@ export async function determineDestinationSwaps(
   chainID: OmniversalChainID,
   requirement: Asset,
   aggregators: Aggregator[],
-): Promise<{ quote: Quote | null; aggregator: Aggregator; inputAmount: Decimal }> {
+  commonCurrencyID: CurrencyID = CurrencyID.USDC,
+): Promise<{
+  quote: Quote | null;
+  aggregator: Aggregator;
+  inputAmount: Decimal;
+}> {
   const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
     throw new AutoSelectionError("Chain not found");
   }
 
-  const USDC = chaindata.Currencies.find((cur) => cur.currencyID === 1);
-  if (USDC == null) {
-    throw new AutoSelectionError("What chain doesn't have USDC");
+  const COT = chaindata.Currencies.find(
+    (cur) => cur.currencyID === commonCurrencyID,
+  );
+  if (COT == null) {
+    throw new AutoSelectionError("COT not present on the destination chain");
   }
-  // what happens if we happen to sell the requirement for USDC, what would the amount be?
+  // what happens if we happen to sell the requirement for the COT, what would the amount be?
   const fullLiquidationQR: QuoteRequestExactInput = {
     type: QuoteType.ExactIn,
     chain: chainID,
     userAddress,
     receiverAddress: null,
     inputToken: requirement.tokenAddress,
-    outputToken: USDC.tokenAddress,
+    outputToken: COT.tokenAddress,
     inputAmount: requirement.amount,
   };
   const fullLiquidationResult = await aggregateAggregators(
@@ -353,7 +362,7 @@ export async function determineDestinationSwaps(
   console.log("XCS | DDS | 1⒜", {
     fullLiquidationQR,
     fullLiquidationResult,
-    USDC,
+    COT,
   });
   while (true) {
     const buyQuoteResult = await aggregateAggregators(
@@ -363,7 +372,7 @@ export async function determineDestinationSwaps(
           userAddress,
           receiverAddress,
           chain: chainID,
-          inputToken: USDC.tokenAddress,
+          inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
         },
@@ -386,7 +395,7 @@ export async function determineDestinationSwaps(
       return {
         ...buyQuote,
         inputAmount: convertBigIntToDecimal(buyQuote.quote.inputAmount).div(
-          Decimal.pow(10, USDC.decimals),
+          Decimal.pow(10, COT.decimals),
         ),
       };
     } else {
