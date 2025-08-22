@@ -78,7 +78,7 @@ export type ZeroExQuote = Quote & {
 export class ZeroExAggregator implements Aggregator {
   private static readonly BASE_URL = "https://api.0x.org/";
   private static readonly COMMON_OPTIONS = {
-    slippageBps: 100, // 0.01 pp = 100 bp
+    slippageBps: 100, // 1 pp = 100 bp
   };
 
   private readonly axios: AxiosInstance;
