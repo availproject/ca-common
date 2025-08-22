@@ -86,7 +86,7 @@ export class LiFiAggregator implements Aggregator {
               : userAddrHex;
 
           switch (r.type) {
-            case QuoteType.ExactIn: {
+            case QuoteType.EXACT_IN: {
               respPromise = this.axios({
                 method: "GET",
                 url: "/quote",
@@ -103,7 +103,7 @@ export class LiFiAggregator implements Aggregator {
               });
               break;
             }
-            case QuoteType.ExactOut: {
+            case QuoteType.EXACT_OUT: {
               respPromise = this.axios({
                 method: "GET",
                 url: "/quote/toAmount",

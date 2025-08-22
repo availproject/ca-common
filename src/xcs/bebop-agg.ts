@@ -194,7 +194,7 @@ export class BebopAggregator implements Aggregator {
               : userAddrHex;
 
           switch (r.type) {
-            case QuoteType.ExactIn: {
+            case QuoteType.EXACT_IN: {
               respPromise = this.axios({
                 method: "GET",
                 url: `/${chainName}/v1/quote`,
@@ -209,7 +209,7 @@ export class BebopAggregator implements Aggregator {
               });
               break;
             }
-            case QuoteType.ExactOut: {
+            case QuoteType.EXACT_OUT: {
               respPromise = this.axios({
                 method: "GET",
                 url: `/${chainName}/v1/quote`,

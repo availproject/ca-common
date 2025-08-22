@@ -74,11 +74,11 @@ export class YieldYakAggregator implements Aggregator {
         let args: [bigint, Hex, Hex, number, number]
 
         switch (req.req.type) {
-          case QuoteType.ExactIn: {
+          case QuoteType.EXACT_IN: {
             args = [req.req.inputAmount, inputTokenHex, outputTokenHex, 0, 1]
             break
           }
-          case QuoteType.ExactOut: {
+          case QuoteType.EXACT_OUT: {
             args = [req.req.outputAmount, outputTokenHex, inputTokenHex, 0, 1]
             break
           }
@@ -120,7 +120,7 @@ export class YieldYakAggregator implements Aggregator {
         }
 
         // we have to reverse everything
-        if (req.req.type === QuoteType.ExactOut) {
+        if (req.req.type === QuoteType.EXACT_OUT) {
           optimalChoice.adapters.reverse()
           optimalChoice.amounts.reverse()
           optimalChoice.path.reverse()

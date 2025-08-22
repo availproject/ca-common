@@ -16,7 +16,7 @@ import {
   Currency,
   CurrencyID,
   maxByBigInt,
-  minByByBigInt,
+  minByBigInt,
   OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
@@ -90,7 +90,7 @@ export async function aggregateAggregators(
     }
     case AggregateAggregatorsMode.MinimizeInput: {
       for (let i = 0; i < requests.length; i++) {
-        const best = minByByBigInt(
+        const best = minByBigInt(
           responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
           (r) => r.quote?.inputAmount ?? 0n,
         );
@@ -174,11 +174,12 @@ export async function autoSelectSources(
         req: {
           userAddress,
           receiverAddress: null,
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
+          serious: false,
         },
         // necessary for various purposes
         cfee,
@@ -248,6 +249,7 @@ export async function autoSelectSources(
           [
             {
               ...q.req,
+              serious: true,
               inputAmount: convertDecimalToBigInt(expectedInput),
             },
           ],
@@ -337,13 +339,14 @@ export async function determineDestinationSwaps(
   }
   // what happens if we happen to sell the requirement for the COT, what would the amount be?
   const fullLiquidationQR: QuoteRequestExactInput = {
-    type: QuoteType.ExactIn,
+    type: QuoteType.EXACT_IN,
     chain: chainID,
     userAddress,
     receiverAddress: null,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amount,
+    serious: false,
   };
   const fullLiquidationResult = await aggregateAggregators(
     [fullLiquidationQR],
@@ -369,13 +372,14 @@ export async function determineDestinationSwaps(
     const buyQuoteResult = await aggregateAggregators(
       [
         {
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           userAddress,
           receiverAddress,
           chain: chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
+          serious: true,
         },
       ],
       aggregators,
