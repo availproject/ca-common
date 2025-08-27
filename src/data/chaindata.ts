@@ -570,6 +570,37 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 0,
+    ChainID32:
+      "0x000000000000000000000000000000000000000000000000000000000000279f",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x000000000000000000000000f817257fed379853cde0fa4f97ab987181b1e5ea",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 2,
+        TokenContractAddress:
+          "0x0000000000000000000000001c56f176d6735888fbb6f8bd9adad8ad7a023a0b",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 20,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class CurrencyMap {
@@ -684,6 +715,10 @@ export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.ETHEREUM, 56),
     "https://bnb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 10143),
+    "https://lb.drpc.org/monad-testnet/Am5nENoJmEuovqui8_LMxzp4ChJzW7kR8JfPrqRhf0fE",
   ],
   [
     new OmniversalChainID(Universe.FUEL, 9889),
