@@ -15,6 +15,7 @@ export enum CurrencyID {
   HYPE = 0x10,
   KAIA = 0x11,
   SOPH = 0x12,
+  MON = 0x14,
 }
 
 export class Currency {
