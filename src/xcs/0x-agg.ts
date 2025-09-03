@@ -123,7 +123,7 @@ export class ZeroExAggregator implements Aggregator {
               respPromise = this.axios({
                 method: "GET",
                 url:
-                  r.serious === QuoteSeriousness.SERIOUS
+                  r.seriousness === QuoteSeriousness.SERIOUS
                     ? "/swap/allowance-holder/quote"
                     : "/swap/allowance-holder/price",
                 params: {

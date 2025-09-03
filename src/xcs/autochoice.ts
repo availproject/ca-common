@@ -179,7 +179,7 @@ export async function autoSelectSources(
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
-          serious: QuoteSeriousness.PRICE_SURVEY,
+          seriousness: QuoteSeriousness.PRICE_SURVEY,
         },
         // necessary for various purposes
         cfee,
@@ -249,7 +249,7 @@ export async function autoSelectSources(
           [
             {
               ...q.req,
-              serious: QuoteSeriousness.SERIOUS,
+              seriousness: QuoteSeriousness.SERIOUS,
               inputAmount: convertDecimalToBigInt(expectedInput),
             },
           ],
@@ -344,7 +344,7 @@ export async function determineDestinationSwaps(
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amount,
-    serious: QuoteSeriousness.PRICE_SURVEY,
+    seriousness: QuoteSeriousness.PRICE_SURVEY,
   };
   const fullLiquidationResult = await aggregateAggregators(
     [fullLiquidationQR],
@@ -376,7 +376,7 @@ export async function determineDestinationSwaps(
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
-          serious: QuoteSeriousness.SERIOUS,
+          seriousness: QuoteSeriousness.SERIOUS,
         },
       ],
       aggregators,

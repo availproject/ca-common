@@ -24,7 +24,7 @@ type CommonQuoteParameters = {
   chain: OmniversalChainID;
   inputToken: Bytes;
   outputToken: Bytes;
-  serious: QuoteSeriousness;
+  seriousness: QuoteSeriousness;
 }
 
 export type QuoteRequestExactInput = CommonQuoteParameters & {
