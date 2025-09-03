@@ -7,6 +7,7 @@ import {
   Quote,
   QuoteRequestExactInput,
   QuoteRequestExactOutput,
+  QuoteSeriousness,
   QuoteType,
 } from "./iface";
 import {
@@ -173,13 +174,12 @@ export async function autoSelectSources(
       fullLiquidationQuotes.push({
         req: {
           userAddress,
-          receiverAddress: null,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
-          serious: false,
+          serious: QuoteSeriousness.PRICE_SURVEY,
         },
         // necessary for various purposes
         cfee,
@@ -249,7 +249,7 @@ export async function autoSelectSources(
           [
             {
               ...q.req,
-              serious: true,
+              serious: QuoteSeriousness.SERIOUS,
               inputAmount: convertDecimalToBigInt(expectedInput),
             },
           ],
@@ -315,7 +315,6 @@ export async function autoSelectSources(
 
 export async function determineDestinationSwaps(
   userAddress: Bytes,
-  receiverAddress: Bytes | null,
   chainID: OmniversalChainID,
   requirement: Asset,
   aggregators: Aggregator[],
@@ -342,11 +341,10 @@ export async function determineDestinationSwaps(
     type: QuoteType.EXACT_IN,
     chain: chainID,
     userAddress,
-    receiverAddress: null,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amount,
-    serious: false,
+    serious: QuoteSeriousness.PRICE_SURVEY,
   };
   const fullLiquidationResult = await aggregateAggregators(
     [fullLiquidationQR],
@@ -374,12 +372,11 @@ export async function determineDestinationSwaps(
         {
           type: QuoteType.EXACT_IN,
           userAddress,
-          receiverAddress,
           chain: chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
-          serious: true,
+          serious: QuoteSeriousness.SERIOUS,
         },
       ],
       aggregators,
