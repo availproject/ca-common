@@ -276,6 +276,15 @@ const RawData = [
       "0x00000000000000000000000000000000000000000000000000000000000003e7",
     Currencies: [
       {
+        CurrencyID: 1,
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 2,
+        TokenContractAddress:
+          "0x000000000000000000000000b88339cb7199b77e23db6e890353e22632ba630f",
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
         CurrencyID: 2,
         PermitVariant: PermitVariant.EIP2612Canonical,
         PermitContractVersion: 1,
