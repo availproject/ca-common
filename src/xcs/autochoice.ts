@@ -322,6 +322,7 @@ export async function determineDestinationSwaps(
   quote: Quote | null;
   aggregator: Aggregator;
   inputAmount: Decimal;
+  outputAmount: bigint;
 }> {
   const chaindata = ChaindataMap.get(chainID);
   if (chaindata == null) {
@@ -397,9 +398,180 @@ export async function determineDestinationSwaps(
         inputAmount: convertBigIntToDecimal(buyQuote.quote.inputAmount).div(
           Decimal.pow(10, COT.decimals),
         ),
+        outputAmount: requirement.amount,
       };
     } else {
       curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
     }
   }
+}
+
+export async function liquidateInputHoldings(
+  userAddress: Bytes,
+  holdings: Holding[],
+  aggregators: Aggregator[],
+  collectionFees: FixedFeeTuple[],
+  commonCurrencyID = CurrencyID.USDC,
+) {
+  console.log("XCS | LIH | Holdings:", holdings);
+  const groupedByChainID = groupBy(holdings, (h) =>
+    bytesToHex(h.chainID.toBytes()),
+  );
+
+  const fullLiquidationQuotes: {
+    req: QuoteRequestExactInput;
+    cfee: bigint;
+    originalHolding: Holding;
+    cur: Currency;
+  }[] = [];
+
+  for (const holdings of Object.values(groupedByChainID)) {
+    const chain = ChaindataMap.get(holdings[0].chainID);
+    if (chain == null) {
+      throw new AutoSelectionError("Chain not found");
+    }
+    const correspondingCurrency = chain.Currencies.find(
+      (cur) => cur.currencyID === commonCurrencyID,
+    );
+    if (correspondingCurrency == null) {
+      console.log(
+        "XCS | LIH | Skipping because correspondingCurrency is null",
+        {
+          chain,
+          correspondingCurrency,
+        },
+      );
+      continue;
+    }
+    const cfeeTuple = collectionFees.find((cf) => {
+      return (
+        cf.universe === chain.Universe &&
+        Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
+        // output token is the CA one
+        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
+          0
+      );
+    });
+
+    const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
+
+    for (const holding of holdings) {
+      if (
+        Buffer.compare(
+          holding.tokenAddress,
+          correspondingCurrency.tokenAddress,
+        ) === 0
+      ) {
+        console.log(
+          "XCS | LIH | Disqualifying",
+          holding,
+          "because holding.tokenAddress = CA asset",
+        );
+        continue;
+      }
+      fullLiquidationQuotes.push({
+        req: {
+          userAddress,
+          type: QuoteType.ExactIn,
+          chain: chain.ChainID,
+          receiverAddress: null,
+          inputToken: holding.tokenAddress,
+          inputAmount: holding.amount,
+          outputToken: correspondingCurrency.tokenAddress,
+        },
+        // necessary for various purposes
+        cfee,
+        originalHolding: holding,
+        cur: correspondingCurrency,
+      });
+    }
+  }
+
+  const responses = await aggregateAggregators(
+    fullLiquidationQuotes.map((fq) => fq.req),
+    aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
+  );
+
+  console.log("XCS | LIH | Responses:", responses);
+
+  const validResponses = responses
+    .filter((r) => r.quote !== null)
+    .map((r, i) => ({
+      ...r,
+      ...fullLiquidationQuotes[i],
+      agg: r.aggregator,
+      quote: r.quote,
+    })) as {
+    agg: Aggregator;
+    quote: Quote;
+    req: QuoteRequestExactInput;
+    cfee: bigint;
+    originalHolding: Holding;
+    cur: Currency;
+    aggregator: Aggregator;
+  }[];
+
+  const total = validResponses.reduce((acc, r) => {
+    return acc.add(
+      new Decimal(r.quote!.outputAmountMinimum ?? 0n).div(
+        Decimal.pow(10, r.cur.decimals),
+      ),
+    );
+  }, new Decimal(0));
+
+  return {
+    quotes: validResponses,
+    total,
+  };
+}
+
+export async function destinationSwapWithExactIn(
+  userAddress: Bytes,
+  chainID: OmniversalChainID,
+  inputAmount: bigint,
+  outputToken: Bytes,
+  aggregators: Aggregator[],
+  commonCurrencyID: CurrencyID = CurrencyID.USDC,
+) {
+  const chaindata = ChaindataMap.get(chainID);
+  if (chaindata == null) {
+    throw new AutoSelectionError("Chain not found");
+  }
+  const COT = chaindata.Currencies.find(
+    (cur) => cur.currencyID === commonCurrencyID,
+  );
+  if (COT == null) {
+    throw new AutoSelectionError("COT not present on the destination chain");
+  }
+  const fullLiquidationResult = await aggregateAggregators(
+    [
+      {
+        type: QuoteType.ExactIn,
+        chain: chainID,
+        userAddress,
+        receiverAddress: null,
+        inputToken: COT.tokenAddress,
+        outputToken: outputToken,
+        inputAmount: inputAmount,
+        // seriousness: QuoteSeriousness.SERIOUS,
+      },
+    ],
+    aggregators,
+    AggregateAggregatorsMode.MaximizeOutput,
+  );
+  if (fullLiquidationResult.length !== 1) {
+    throw new AutoSelectionError("???");
+  }
+  const fullLiquidationQuote = fullLiquidationResult[0];
+  if (fullLiquidationQuote.quote == null) {
+    throw new AutoSelectionError("Couldn't get full liquidation quote");
+  }
+  return {
+    ...fullLiquidationQuote,
+    inputAmount: convertBigIntToDecimal(inputAmount).div(
+      Decimal.pow(10, COT.decimals),
+    ),
+    outputAmount: fullLiquidationQuote.quote.outputAmountMinimum,
+  };
 }
