@@ -12,6 +12,7 @@ export enum CurrencyID {
   POL = 4,
   AVAX = 5,
   BNB = 6,
+  VLDM = 13,
   HYPE = 0x10,
   KAIA = 0x11,
   SOPH = 0x12,
