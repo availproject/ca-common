@@ -610,6 +610,32 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 0,
+    ChainID32:
+      "0x0000000000000000000000000000000000000000000000000000000000000237",
+    Currencies: [
+      {
+        CurrencyID: 3,
+        TokenContractAddress:
+          "0x000000000000000000000000D0d12010C14FEF6964BAd3bdB43c92E290ecB436",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 1,
+        TokenDecimals: 18,
+        USDPriceOracleAddress: "0x0000000000000000000000000000000000000000",
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 13,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        USDPriceOracleAddress: "0x0000000000000000000000000000000000000000",
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class CurrencyMap {
@@ -732,5 +758,9 @@ export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.FUEL, 9889),
     "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 567),
+    "https://testnet.l2.rpc.validium.network",
   ],
 ]);
