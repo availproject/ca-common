@@ -473,12 +473,12 @@ export async function liquidateInputHoldings(
       fullLiquidationQuotes.push({
         req: {
           userAddress,
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
-          receiverAddress: null,
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
+          seriousness: QuoteSeriousness.SERIOUS,
         },
         // necessary for various purposes
         cfee,
@@ -548,14 +548,13 @@ export async function destinationSwapWithExactIn(
   const fullLiquidationResult = await aggregateAggregators(
     [
       {
-        type: QuoteType.ExactIn,
+        type: QuoteType.EXACT_IN,
         chain: chainID,
         userAddress,
-        receiverAddress: null,
         inputToken: COT.tokenAddress,
         outputToken: outputToken,
         inputAmount: inputAmount,
-        // seriousness: QuoteSeriousness.SERIOUS,
+        seriousness: QuoteSeriousness.SERIOUS,
       },
     ],
     aggregators,
