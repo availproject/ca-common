@@ -80,13 +80,9 @@ export class LiFiAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
-          const receiverAddrHex =
-            r.receiverAddress != null
-              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
-              : userAddrHex;
 
           switch (r.type) {
-            case QuoteType.ExactIn: {
+            case QuoteType.EXACT_IN: {
               respPromise = this.axios({
                 method: "GET",
                 url: "/quote",
@@ -96,14 +92,13 @@ export class LiFiAggregator implements Aggregator {
                   fromToken: inputTokenAddr,
                   toToken: outputTokenAddr,
                   fromAddress: userAddrHex,
-                  toAddress: receiverAddrHex,
                   fromAmount: r.inputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
                 },
               });
               break;
             }
-            case QuoteType.ExactOut: {
+            case QuoteType.EXACT_OUT: {
               respPromise = this.axios({
                 method: "GET",
                 url: "/quote/toAmount",
@@ -113,7 +108,6 @@ export class LiFiAggregator implements Aggregator {
                   fromToken: inputTokenAddr,
                   toToken: outputTokenAddr,
                   fromAddress: userAddrHex,
-                  toAddress: receiverAddrHex,
                   toAmount: r.outputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
                 },

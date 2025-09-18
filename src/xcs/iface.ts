@@ -2,8 +2,13 @@ import { Bytes } from "../types";
 import { OmniversalChainID } from "../data";
 
 export enum QuoteType {
-  ExactIn,
-  ExactOut,
+  EXACT_IN,
+  EXACT_OUT,
+}
+
+export enum QuoteSeriousness {
+  PRICE_SURVEY,
+  SERIOUS,
 }
 
 export interface Quote {
@@ -16,19 +21,19 @@ export interface Quote {
 
 type CommonQuoteParameters = {
   userAddress: Bytes;
-  receiverAddress: Bytes | null;
   chain: OmniversalChainID;
   inputToken: Bytes;
   outputToken: Bytes;
+  seriousness: QuoteSeriousness;
 }
 
 export type QuoteRequestExactInput = CommonQuoteParameters & {
-  type: QuoteType.ExactIn;
+  type: QuoteType.EXACT_IN;
   inputAmount: bigint;
 };
 
 export type QuoteRequestExactOutput = CommonQuoteParameters & {
-  type: QuoteType.ExactOut;
+  type: QuoteType.EXACT_OUT;
   outputAmount: bigint;
 };
 

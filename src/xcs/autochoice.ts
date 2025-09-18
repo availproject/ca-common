@@ -7,6 +7,7 @@ import {
   Quote,
   QuoteRequestExactInput,
   QuoteRequestExactOutput,
+  QuoteSeriousness,
   QuoteType,
 } from "./iface";
 import {
@@ -16,7 +17,7 @@ import {
   Currency,
   CurrencyID,
   maxByBigInt,
-  minByByBigInt,
+  minByBigInt,
   OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
@@ -90,7 +91,7 @@ export async function aggregateAggregators(
     }
     case AggregateAggregatorsMode.MinimizeInput: {
       for (let i = 0; i < requests.length; i++) {
-        const best = minByByBigInt(
+        const best = minByBigInt(
           responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
           (r) => r.quote?.inputAmount ?? 0n,
         );
@@ -173,12 +174,12 @@ export async function autoSelectSources(
       fullLiquidationQuotes.push({
         req: {
           userAddress,
-          receiverAddress: null,
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
+          seriousness: QuoteSeriousness.PRICE_SURVEY,
         },
         // necessary for various purposes
         cfee,
@@ -248,6 +249,7 @@ export async function autoSelectSources(
           [
             {
               ...q.req,
+              seriousness: QuoteSeriousness.SERIOUS,
               inputAmount: convertDecimalToBigInt(expectedInput),
             },
           ],
@@ -313,7 +315,6 @@ export async function autoSelectSources(
 
 export async function determineDestinationSwaps(
   userAddress: Bytes,
-  receiverAddress: Bytes | null,
   chainID: OmniversalChainID,
   requirement: Asset,
   aggregators: Aggregator[],
@@ -337,13 +338,13 @@ export async function determineDestinationSwaps(
   }
   // what happens if we happen to sell the requirement for the COT, what would the amount be?
   const fullLiquidationQR: QuoteRequestExactInput = {
-    type: QuoteType.ExactIn,
+    type: QuoteType.EXACT_IN,
     chain: chainID,
     userAddress,
-    receiverAddress: null,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amount,
+    seriousness: QuoteSeriousness.PRICE_SURVEY,
   };
   const fullLiquidationResult = await aggregateAggregators(
     [fullLiquidationQR],
@@ -369,13 +370,13 @@ export async function determineDestinationSwaps(
     const buyQuoteResult = await aggregateAggregators(
       [
         {
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           userAddress,
-          receiverAddress,
           chain: chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
+          seriousness: QuoteSeriousness.SERIOUS,
         },
       ],
       aggregators,
@@ -472,12 +473,12 @@ export async function liquidateInputHoldings(
       fullLiquidationQuotes.push({
         req: {
           userAddress,
-          type: QuoteType.ExactIn,
+          type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
-          receiverAddress: null,
           inputToken: holding.tokenAddress,
           inputAmount: holding.amount,
           outputToken: correspondingCurrency.tokenAddress,
+          seriousness: QuoteSeriousness.SERIOUS,
         },
         // necessary for various purposes
         cfee,
@@ -547,14 +548,13 @@ export async function destinationSwapWithExactIn(
   const fullLiquidationResult = await aggregateAggregators(
     [
       {
-        type: QuoteType.ExactIn,
+        type: QuoteType.EXACT_IN,
         chain: chainID,
         userAddress,
-        receiverAddress: null,
         inputToken: COT.tokenAddress,
         outputToken: outputToken,
         inputAmount: inputAmount,
-        // seriousness: QuoteSeriousness.SERIOUS,
+        seriousness: QuoteSeriousness.SERIOUS,
       },
     ],
     aggregators,

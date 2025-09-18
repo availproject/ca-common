@@ -43,6 +43,6 @@ export function maxByBigInt<T>(items: readonly T[], getValue: (element: T) => bi
   return items.reduce((m, e) => getValue(e) > getValue(m) ? e : m)
 }
 
-export function minByByBigInt<T>(items: readonly T[], getValue: (element: T) => bigint): T {
+export function minByBigInt<T>(items: readonly T[], getValue: (element: T) => bigint): T {
   return items.reduce((m, e) => getValue(e) < getValue(m) ? e : m)
 }
