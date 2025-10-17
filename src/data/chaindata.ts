@@ -633,6 +633,29 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 3,
+    ChainID32:
+      "0x000000000000000000000000000000000000000000000000000000002b6653dc",
+    Currencies: [
+      {
+        CurrencyID: 2,
+        TokenContractAddress:
+          "0x000000000000000000000000a614f803B6FD780986A42c78Ec9c7f77e6DeD13C",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 13,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 6,
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class CurrencyMap {

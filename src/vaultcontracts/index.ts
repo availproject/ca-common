@@ -18,5 +18,5 @@ export type EVMRFF = {
     universe: number;
     address_: `0x${string}`;
   }[];
-}
-export * from './vaultcontracts'
+};
+export * from "./vaultcontracts";
