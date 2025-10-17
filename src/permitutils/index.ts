@@ -11,7 +11,8 @@ import {
   WalletClient,
 } from "viem";
 
-import { Currency, ERC20ABI } from "../data";
+import { Currency } from "../data";
+import { ERC20ABI } from "../evmabi";
 
 export enum PermitVariant {
   Unsupported,

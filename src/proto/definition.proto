@@ -65,7 +65,7 @@ enum Universe {
 message RFFSourcePair {
   Universe universe = 1;
   bytes chainID = 2;
-  bytes tokenAddress = 3;
+  bytes contractAddress = 3;
   bytes value = 4;
   RFFSourceState status = 5;
 }
@@ -78,9 +78,10 @@ message SignatureDatum {
 }
 
 message RFFDestinationPair {
-  bytes tokenAddress = 1;
+  bytes contractAddress = 1;
   bytes value = 2; // amount
 }
+
 
 message RequestForFunds {
   uint64 id = 1;
@@ -201,7 +202,7 @@ message Settlement {
   Universe universe = 2;
   bytes chainId = 3;
   repeated bytes amounts = 4;
-  repeated bytes tokenAddress = 5;
+  repeated bytes contractAddresses = 5;
   repeated bytes filler = 6;
   bool success = 7;
 }

@@ -25,7 +25,7 @@ import {
   QueryGetSettlementResponse,
   QueryGetSolverDataRequest,
   QueryGetSolverDataResponse,
-  QueryRequestForFundsByAddressRequest
+  QueryRequestForFundsByAddressRequest,
 } from "./definition";
 
 export const protobufPackage = "xarchain.chainabstraction";

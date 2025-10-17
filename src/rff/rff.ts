@@ -20,14 +20,14 @@ export class OmniversalRFF {
         sources: this.protobufRFF.sources.map(s => ({
           universe: s.universe,
           chainID: bytesToBigInt(s.chainID),
-          tokenAddress: ezPadTo32Hex(s.tokenAddress),
+          contractAddress: ezPadTo32Hex(s.contractAddress),
           value: bytesToBigInt(s.value),
         })),
         destinationUniverse: this.protobufRFF.destinationUniverse,
         destinationChainID: bytesToBigInt(this.protobufRFF.destinationChainID),
         recipientAddress: ezPadTo32Hex(this.protobufRFF.recipientAddress),
         destinations: this.protobufRFF.destinations.map(d => ({
-          tokenAddress: ezPadTo32Hex(d.tokenAddress),
+          contractAddress: ezPadTo32Hex(d.contractAddress),
           value: bytesToBigInt(d.value),
         })),
         nonce: bytesToBigInt(this.protobufRFF.nonce),
@@ -48,7 +48,7 @@ export class OmniversalRFF {
           universe: protobufUniverseToFuelUniverse(s.universe),
           chain_id: new BN(s.chainID),
           asset_id: {
-            bits: ezPadTo32Hex(s.tokenAddress),
+            bits: ezPadTo32Hex(s.contractAddress),
           },
           value: new BN(s.value),
         })),
@@ -56,7 +56,7 @@ export class OmniversalRFF {
         destination_universe: protobufUniverseToFuelUniverse(this.protobufRFF.destinationUniverse),
         destinations: this.protobufRFF.destinations.map(d => ({
           asset_id: {
-            bits: ezPadTo32Hex(d.tokenAddress)
+            bits: ezPadTo32Hex(d.contractAddress)
           },
           value: new BN(d.value)
         })),

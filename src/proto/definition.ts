@@ -152,7 +152,7 @@ export interface PageResponse {
 export interface RFFSourcePair {
   universe: Universe;
   chainID: Uint8Array;
-  tokenAddress: Uint8Array;
+  contractAddress: Uint8Array;
   value: Uint8Array;
   status: RFFSourceState;
 }
@@ -166,7 +166,7 @@ export interface SignatureDatum {
 }
 
 export interface RFFDestinationPair {
-  tokenAddress: Uint8Array;
+  contractAddress: Uint8Array;
   /** amount */
   value: Uint8Array;
 }
@@ -288,7 +288,7 @@ export interface Settlement {
   universe: Universe;
   chainId: Uint8Array;
   amounts: Uint8Array[];
-  tokenAddress: Uint8Array[];
+  contractAddresses: Uint8Array[];
   filler: Uint8Array[];
   success: boolean;
 }
@@ -646,7 +646,7 @@ function createBaseRFFSourcePair(): RFFSourcePair {
   return {
     universe: 0,
     chainID: new Uint8Array(0),
-    tokenAddress: new Uint8Array(0),
+    contractAddress: new Uint8Array(0),
     value: new Uint8Array(0),
     status: 0,
   };
@@ -663,8 +663,8 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
     if (message.chainID.length !== 0) {
       writer.uint32(18).bytes(message.chainID);
     }
-    if (message.tokenAddress.length !== 0) {
-      writer.uint32(26).bytes(message.tokenAddress);
+    if (message.contractAddress.length !== 0) {
+      writer.uint32(26).bytes(message.contractAddress);
     }
     if (message.value.length !== 0) {
       writer.uint32(34).bytes(message.value);
@@ -704,7 +704,7 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
             break;
           }
 
-          message.tokenAddress = reader.bytes();
+          message.contractAddress = reader.bytes();
           continue;
         }
         case 4: {
@@ -738,8 +738,8 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
       chainID: isSet(object.chainID)
         ? bytesFromBase64(object.chainID)
         : new Uint8Array(0),
-      tokenAddress: isSet(object.tokenAddress)
-        ? bytesFromBase64(object.tokenAddress)
+      contractAddress: isSet(object.contractAddress)
+        ? bytesFromBase64(object.contractAddress)
         : new Uint8Array(0),
       value: isSet(object.value)
         ? bytesFromBase64(object.value)
@@ -756,8 +756,8 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
     if (message.chainID.length !== 0) {
       obj.chainID = base64FromBytes(message.chainID);
     }
-    if (message.tokenAddress.length !== 0) {
-      obj.tokenAddress = base64FromBytes(message.tokenAddress);
+    if (message.contractAddress.length !== 0) {
+      obj.contractAddress = base64FromBytes(message.contractAddress);
     }
     if (message.value.length !== 0) {
       obj.value = base64FromBytes(message.value);
@@ -779,7 +779,7 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
     const message = createBaseRFFSourcePair();
     message.universe = object.universe ?? 0;
     message.chainID = object.chainID ?? new Uint8Array(0);
-    message.tokenAddress = object.tokenAddress ?? new Uint8Array(0);
+    message.contractAddress = object.contractAddress ?? new Uint8Array(0);
     message.value = object.value ?? new Uint8Array(0);
     message.status = object.status ?? 0;
     return message;
@@ -914,7 +914,7 @@ export const SignatureDatum: MessageFns<SignatureDatum> = {
 };
 
 function createBaseRFFDestinationPair(): RFFDestinationPair {
-  return { tokenAddress: new Uint8Array(0), value: new Uint8Array(0) };
+  return { contractAddress: new Uint8Array(0), value: new Uint8Array(0) };
 }
 
 export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
@@ -922,8 +922,8 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
     message: RFFDestinationPair,
     writer: BinaryWriter = new BinaryWriter(),
   ): BinaryWriter {
-    if (message.tokenAddress.length !== 0) {
-      writer.uint32(10).bytes(message.tokenAddress);
+    if (message.contractAddress.length !== 0) {
+      writer.uint32(10).bytes(message.contractAddress);
     }
     if (message.value.length !== 0) {
       writer.uint32(18).bytes(message.value);
@@ -947,7 +947,7 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
             break;
           }
 
-          message.tokenAddress = reader.bytes();
+          message.contractAddress = reader.bytes();
           continue;
         }
         case 2: {
@@ -969,8 +969,8 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
 
   fromJSON(object: any): RFFDestinationPair {
     return {
-      tokenAddress: isSet(object.tokenAddress)
-        ? bytesFromBase64(object.tokenAddress)
+      contractAddress: isSet(object.contractAddress)
+        ? bytesFromBase64(object.contractAddress)
         : new Uint8Array(0),
       value: isSet(object.value)
         ? bytesFromBase64(object.value)
@@ -980,8 +980,8 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
 
   toJSON(message: RFFDestinationPair): unknown {
     const obj: any = {};
-    if (message.tokenAddress.length !== 0) {
-      obj.tokenAddress = base64FromBytes(message.tokenAddress);
+    if (message.contractAddress.length !== 0) {
+      obj.contractAddress = base64FromBytes(message.contractAddress);
     }
     if (message.value.length !== 0) {
       obj.value = base64FromBytes(message.value);
@@ -998,7 +998,7 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
     object: I,
   ): RFFDestinationPair {
     const message = createBaseRFFDestinationPair();
-    message.tokenAddress = object.tokenAddress ?? new Uint8Array(0);
+    message.contractAddress = object.contractAddress ?? new Uint8Array(0);
     message.value = object.value ?? new Uint8Array(0);
     return message;
   },
@@ -3115,7 +3115,7 @@ function createBaseSettlement(): Settlement {
     universe: 0,
     chainId: new Uint8Array(0),
     amounts: [],
-    tokenAddress: [],
+    contractAddresses: [],
     filler: [],
     success: false,
   };
@@ -3138,7 +3138,7 @@ export const Settlement: MessageFns<Settlement> = {
     for (const v of message.amounts) {
       writer.uint32(34).bytes(v!);
     }
-    for (const v of message.tokenAddress) {
+    for (const v of message.contractAddresses) {
       writer.uint32(42).bytes(v!);
     }
     for (const v of message.filler) {
@@ -3195,7 +3195,7 @@ export const Settlement: MessageFns<Settlement> = {
             break;
           }
 
-          message.tokenAddress.push(reader.bytes());
+          message.contractAddresses.push(reader.bytes());
           continue;
         }
         case 6: {
@@ -3233,8 +3233,8 @@ export const Settlement: MessageFns<Settlement> = {
       amounts: globalThis.Array.isArray(object?.amounts)
         ? object.amounts.map((e: any) => bytesFromBase64(e))
         : [],
-      tokenAddress: globalThis.Array.isArray(object?.tokenAddress)
-        ? object.tokenAddress.map((e: any) => bytesFromBase64(e))
+      contractAddresses: globalThis.Array.isArray(object?.contractAddresses)
+        ? object.contractAddresses.map((e: any) => bytesFromBase64(e))
         : [],
       filler: globalThis.Array.isArray(object?.filler)
         ? object.filler.map((e: any) => bytesFromBase64(e))
@@ -3259,8 +3259,10 @@ export const Settlement: MessageFns<Settlement> = {
     if (message.amounts?.length) {
       obj.amounts = message.amounts.map((e) => base64FromBytes(e));
     }
-    if (message.tokenAddress?.length) {
-      obj.tokenAddress = message.tokenAddress.map((e) => base64FromBytes(e));
+    if (message.contractAddresses?.length) {
+      obj.contractAddresses = message.contractAddresses.map((e) =>
+        base64FromBytes(e),
+      );
     }
     if (message.filler?.length) {
       obj.filler = message.filler.map((e) => base64FromBytes(e));
@@ -3282,7 +3284,7 @@ export const Settlement: MessageFns<Settlement> = {
     message.universe = object.universe ?? 0;
     message.chainId = object.chainId ?? new Uint8Array(0);
     message.amounts = object.amounts?.map((e) => e) || [];
-    message.tokenAddress = object.tokenAddress?.map((e) => e) || [];
+    message.contractAddresses = object.contractAddresses?.map((e) => e) || [];
     message.filler = object.filler?.map((e) => e) || [];
     message.success = object.success ?? false;
     return message;
