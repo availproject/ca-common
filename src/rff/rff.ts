@@ -25,6 +25,7 @@ export class OmniversalRFF {
         })),
         destinationUniverse: this.protobufRFF.destinationUniverse,
         destinationChainID: bytesToBigInt(this.protobufRFF.destinationChainID),
+        recipientAddress: ezPadTo32Hex(this.protobufRFF.recipientAddress),
         destinations: this.protobufRFF.destinations.map(d => ({
           tokenAddress: ezPadTo32Hex(d.tokenAddress),
           value: bytesToBigInt(d.value),

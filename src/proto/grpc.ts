@@ -25,7 +25,7 @@ import {
   QueryGetSettlementResponse,
   QueryGetSolverDataRequest,
   QueryGetSolverDataResponse,
-  QueryRequestForFundsByAddressRequest,
+  QueryRequestForFundsByAddressRequest
 } from "./definition";
 
 export const protobufPackage = "xarchain.chainabstraction";
@@ -89,14 +89,22 @@ export class QueryClientImpl implements Query {
     request: DeepPartial<QueryGetRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetRequestForFundsResponse> {
-    return this.rpc.unary(QueryRequestForFundsDesc, QueryGetRequestForFundsRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QueryRequestForFundsDesc,
+      QueryGetRequestForFundsRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   RequestForFundsAll(
     request: DeepPartial<QueryAllRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryAllRequestForFundsResponse> {
-    return this.rpc.unary(QueryRequestForFundsAllDesc, QueryAllRequestForFundsRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QueryRequestForFundsAllDesc,
+      QueryAllRequestForFundsRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   RequestForFundsByAddress(
@@ -114,42 +122,66 @@ export class QueryClientImpl implements Query {
     request: DeepPartial<QueryGetSolverDataRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetSolverDataResponse> {
-    return this.rpc.unary(QuerySolverDataDesc, QueryGetSolverDataRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QuerySolverDataDesc,
+      QueryGetSolverDataRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   SolverDataAll(
     request: DeepPartial<QueryAllSolverDataRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryAllSolverDataResponse> {
-    return this.rpc.unary(QuerySolverDataAllDesc, QueryAllSolverDataRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QuerySolverDataAllDesc,
+      QueryAllSolverDataRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   Settlement(
     request: DeepPartial<QueryGetSettlementRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetSettlementResponse> {
-    return this.rpc.unary(QuerySettlementDesc, QueryGetSettlementRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QuerySettlementDesc,
+      QueryGetSettlementRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   SettlementAll(
     request: DeepPartial<QueryAllSettlementRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryAllSettlementResponse> {
-    return this.rpc.unary(QuerySettlementAllDesc, QueryAllSettlementRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QuerySettlementAllDesc,
+      QueryAllSettlementRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   ProtocolFees(
     request: DeepPartial<QueryGetProtocolFeesRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetProtocolFeesResponse> {
-    return this.rpc.unary(QueryProtocolFeesDesc, QueryGetProtocolFeesRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QueryProtocolFeesDesc,
+      QueryGetProtocolFeesRequest.fromPartial(request),
+      metadata,
+    );
   }
 
   PriceOracleData(
     request: DeepPartial<QueryGetPriceOracleDataRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetPriceOracleDataResponse> {
-    return this.rpc.unary(QueryPriceOracleDataDesc, QueryGetPriceOracleDataRequest.fromPartial(request), metadata);
+    return this.rpc.unary(
+      QueryPriceOracleDataDesc,
+      QueryGetPriceOracleDataRequest.fromPartial(request),
+      metadata,
+    );
   }
 }
 
@@ -362,7 +394,8 @@ export const QueryPriceOracleDataDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-interface UnaryMethodDefinitionishR extends grpc.UnaryMethodDefinition<any, any> {
+interface UnaryMethodDefinitionishR
+  extends grpc.UnaryMethodDefinition<any, any> {
   requestStream: any;
   responseStream: any;
 }
@@ -407,21 +440,31 @@ export class GrpcWebImpl {
     metadata: grpc.Metadata | undefined,
   ): Promise<any> {
     const request = { ..._request, ...methodDesc.requestType };
-    const maybeCombinedMetadata = metadata && this.options.metadata
-      ? new BrowserHeaders({ ...this.options?.metadata.headersMap, ...metadata?.headersMap })
-      : metadata ?? this.options.metadata;
+    const maybeCombinedMetadata =
+      metadata && this.options.metadata
+        ? new BrowserHeaders({
+            ...this.options?.metadata.headersMap,
+            ...metadata?.headersMap,
+          })
+        : (metadata ?? this.options.metadata);
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
         request,
         host: this.host,
         metadata: maybeCombinedMetadata ?? {},
-        ...(this.options.transport !== undefined ? { transport: this.options.transport } : {}),
+        ...(this.options.transport !== undefined
+          ? { transport: this.options.transport }
+          : {}),
         debug: this.options.debug ?? false,
         onEnd: function (response) {
           if (response.status === grpc.Code.OK) {
             resolve(response.message!.toObject());
           } else {
-            const err = new GrpcWebError(response.statusMessage, response.status, response.trailers);
+            const err = new GrpcWebError(
+              response.statusMessage,
+              response.status,
+              response.trailers,
+            );
             reject(err);
           }
         },
@@ -430,17 +473,35 @@ export class GrpcWebImpl {
   }
 }
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string; value: unknown } ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends Long
+    ? string | number | Long
+    : T extends globalThis.Array<infer U>
+      ? globalThis.Array<DeepPartial<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<DeepPartial<U>>
+        : T extends { $case: string; value: unknown }
+          ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
+          : T extends {}
+            ? { [K in keyof T]?: DeepPartial<T[K]> }
+            : Partial<T>;
 
 export class GrpcWebError extends globalThis.Error {
-  constructor(message: string, public code: grpc.Code, public metadata: grpc.Metadata) {
+  constructor(
+    message: string,
+    public code: grpc.Code,
+    public metadata: grpc.Metadata,
+  ) {
     super(message);
   }
 }

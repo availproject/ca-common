@@ -141,12 +141,6 @@ export const EVMVaultABI = [
         name: "from",
         type: "address",
       },
-      {
-        indexed: false,
-        internalType: "bool",
-        name: "gasRefunded",
-        type: "bool",
-      },
     ],
     name: "Deposit",
     type: "event",
@@ -173,39 +167,7 @@ export const EVMVaultABI = [
         type: "address",
       },
     ],
-    name: "Fill",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "enum Vault.Function",
-        name: "_function",
-        type: "uint8",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "overhead",
-        type: "uint256",
-      },
-    ],
-    name: "GasOverheadUpdate",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "gasPrice",
-        type: "uint256",
-      },
-    ],
-    name: "GasPriceUpdate",
+    name: "Fulfilment",
     type: "event",
   },
   {
@@ -219,25 +181,6 @@ export const EVMVaultABI = [
       },
     ],
     name: "Initialized",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: true,
-        internalType: "address",
-        name: "from",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-    ],
-    name: "ReceiveETH",
     type: "event",
   },
   {
@@ -320,27 +263,27 @@ export const EVMVaultABI = [
     inputs: [
       {
         indexed: true,
-        internalType: "address",
-        name: "solver",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "token",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: true,
         internalType: "uint256",
         name: "nonce",
         type: "uint256",
+      },
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "solver",
+        type: "address[]",
+      },
+      {
+        indexed: false,
+        internalType: "address[]",
+        name: "token",
+        type: "address[]",
+      },
+      {
+        indexed: false,
+        internalType: "uint256[]",
+        name: "amount",
+        type: "uint256[]",
       },
     ],
     name: "Settle",
@@ -428,7 +371,7 @@ export const EVMVaultABI = [
               },
               {
                 internalType: "bytes32",
-                name: "tokenAddress",
+                name: "contractAddress",
                 type: "bytes32",
               },
               {
@@ -452,10 +395,15 @@ export const EVMVaultABI = [
             type: "uint256",
           },
           {
+            internalType: "bytes32",
+            name: "recipientAddress",
+            type: "bytes32",
+          },
+          {
             components: [
               {
                 internalType: "bytes32",
-                name: "tokenAddress",
+                name: "contractAddress",
                 type: "bytes32",
               },
               {
@@ -538,213 +486,6 @@ export const EVMVaultABI = [
   {
     inputs: [
       {
-        components: [
-          {
-            components: [
-              {
-                internalType: "enum Vault.Universe",
-                name: "universe",
-                type: "uint8",
-              },
-              {
-                internalType: "uint256",
-                name: "chainID",
-                type: "uint256",
-              },
-              {
-                internalType: "bytes32",
-                name: "tokenAddress",
-                type: "bytes32",
-              },
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Vault.SourcePair[]",
-            name: "sources",
-            type: "tuple[]",
-          },
-          {
-            internalType: "enum Vault.Universe",
-            name: "destinationUniverse",
-            type: "uint8",
-          },
-          {
-            internalType: "uint256",
-            name: "destinationChainID",
-            type: "uint256",
-          },
-          {
-            components: [
-              {
-                internalType: "bytes32",
-                name: "tokenAddress",
-                type: "bytes32",
-              },
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Vault.DestinationPair[]",
-            name: "destinations",
-            type: "tuple[]",
-          },
-          {
-            internalType: "uint256",
-            name: "nonce",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "expiry",
-            type: "uint256",
-          },
-          {
-            components: [
-              {
-                internalType: "enum Vault.Universe",
-                name: "universe",
-                type: "uint8",
-              },
-              {
-                internalType: "bytes32",
-                name: "address_",
-                type: "bytes32",
-              },
-            ],
-            internalType: "struct Vault.Party[]",
-            name: "parties",
-            type: "tuple[]",
-          },
-        ],
-        internalType: "struct Vault.Request",
-        name: "request",
-        type: "tuple",
-      },
-      {
-        internalType: "bytes",
-        name: "signature",
-        type: "bytes",
-      },
-      {
-        internalType: "uint256",
-        name: "chainIndex",
-        type: "uint256",
-      },
-    ],
-    name: "depositWithRefund",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        components: [
-          {
-            components: [
-              {
-                internalType: "enum Vault.Universe",
-                name: "universe",
-                type: "uint8",
-              },
-              {
-                internalType: "uint256",
-                name: "chainID",
-                type: "uint256",
-              },
-              {
-                internalType: "bytes32",
-                name: "tokenAddress",
-                type: "bytes32",
-              },
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Vault.SourcePair[]",
-            name: "sources",
-            type: "tuple[]",
-          },
-          {
-            internalType: "enum Vault.Universe",
-            name: "destinationUniverse",
-            type: "uint8",
-          },
-          {
-            internalType: "uint256",
-            name: "destinationChainID",
-            type: "uint256",
-          },
-          {
-            components: [
-              {
-                internalType: "bytes32",
-                name: "tokenAddress",
-                type: "bytes32",
-              },
-              {
-                internalType: "uint256",
-                name: "value",
-                type: "uint256",
-              },
-            ],
-            internalType: "struct Vault.DestinationPair[]",
-            name: "destinations",
-            type: "tuple[]",
-          },
-          {
-            internalType: "uint256",
-            name: "nonce",
-            type: "uint256",
-          },
-          {
-            internalType: "uint256",
-            name: "expiry",
-            type: "uint256",
-          },
-          {
-            components: [
-              {
-                internalType: "enum Vault.Universe",
-                name: "universe",
-                type: "uint8",
-              },
-              {
-                internalType: "bytes32",
-                name: "address_",
-                type: "bytes32",
-              },
-            ],
-            internalType: "struct Vault.Party[]",
-            name: "parties",
-            type: "tuple[]",
-          },
-        ],
-        internalType: "struct Vault.Request",
-        name: "request",
-        type: "tuple",
-      },
-      {
-        internalType: "bytes",
-        name: "signature",
-        type: "bytes",
-      },
-    ],
-    name: "fill",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         internalType: "uint256",
         name: "",
         type: "uint256",
@@ -759,6 +500,112 @@ export const EVMVaultABI = [
       },
     ],
     stateMutability: "view",
+    type: "function",
+  },
+  {
+    inputs: [
+      {
+        components: [
+          {
+            components: [
+              {
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
+              },
+              {
+                internalType: "uint256",
+                name: "chainID",
+                type: "uint256",
+              },
+              {
+                internalType: "bytes32",
+                name: "contractAddress",
+                type: "bytes32",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct Vault.SourcePair[]",
+            name: "sources",
+            type: "tuple[]",
+          },
+          {
+            internalType: "enum Vault.Universe",
+            name: "destinationUniverse",
+            type: "uint8",
+          },
+          {
+            internalType: "uint256",
+            name: "destinationChainID",
+            type: "uint256",
+          },
+          {
+            internalType: "bytes32",
+            name: "recipientAddress",
+            type: "bytes32",
+          },
+          {
+            components: [
+              {
+                internalType: "bytes32",
+                name: "contractAddress",
+                type: "bytes32",
+              },
+              {
+                internalType: "uint256",
+                name: "value",
+                type: "uint256",
+              },
+            ],
+            internalType: "struct Vault.DestinationPair[]",
+            name: "destinations",
+            type: "tuple[]",
+          },
+          {
+            internalType: "uint256",
+            name: "nonce",
+            type: "uint256",
+          },
+          {
+            internalType: "uint256",
+            name: "expiry",
+            type: "uint256",
+          },
+          {
+            components: [
+              {
+                internalType: "enum Vault.Universe",
+                name: "universe",
+                type: "uint8",
+              },
+              {
+                internalType: "bytes32",
+                name: "address_",
+                type: "bytes32",
+              },
+            ],
+            internalType: "struct Vault.Party[]",
+            name: "parties",
+            type: "tuple[]",
+          },
+        ],
+        internalType: "struct Vault.Request",
+        name: "request",
+        type: "tuple",
+      },
+      {
+        internalType: "bytes",
+        name: "signature",
+        type: "bytes",
+      },
+    ],
+    name: "fulfil",
+    outputs: [],
+    stateMutability: "payable",
     type: "function",
   },
   {
@@ -837,38 +684,6 @@ export const EVMVaultABI = [
   },
   {
     inputs: [],
-    name: "maxGasPrice",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "enum Vault.Function",
-        name: "",
-        type: "uint8",
-      },
-    ],
-    name: "overhead",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [],
     name: "proxiableUUID",
     outputs: [
       {
@@ -938,37 +753,6 @@ export const EVMVaultABI = [
   {
     inputs: [
       {
-        internalType: "uint256",
-        name: "_maxGasPrice",
-        type: "uint256",
-      },
-    ],
-    name: "setMaxGasPrice",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "enum Vault.Function",
-        name: "_function",
-        type: "uint8",
-      },
-      {
-        internalType: "uint256",
-        name: "_overhead",
-        type: "uint256",
-      },
-    ],
-    name: "setOverHead",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
         components: [
           {
             internalType: "enum Vault.Universe",
@@ -987,7 +771,7 @@ export const EVMVaultABI = [
           },
           {
             internalType: "address[]",
-            name: "tokens",
+            name: "contractAddresses",
             type: "address[]",
           },
           {
@@ -1073,19 +857,6 @@ export const EVMVaultABI = [
     type: "function",
   },
   {
-    inputs: [],
-    name: "vaultBalance",
-    outputs: [
-      {
-        internalType: "uint256",
-        name: "",
-        type: "uint256",
-      },
-    ],
-    stateMutability: "view",
-    type: "function",
-  },
-  {
     inputs: [
       {
         components: [
@@ -1103,7 +874,7 @@ export const EVMVaultABI = [
               },
               {
                 internalType: "bytes32",
-                name: "tokenAddress",
+                name: "contractAddress",
                 type: "bytes32",
               },
               {
@@ -1127,10 +898,15 @@ export const EVMVaultABI = [
             type: "uint256",
           },
           {
+            internalType: "bytes32",
+            name: "recipientAddress",
+            type: "bytes32",
+          },
+          {
             components: [
               {
                 internalType: "bytes32",
-                name: "tokenAddress",
+                name: "contractAddress",
                 type: "bytes32",
               },
               {
@@ -1238,10 +1014,6 @@ export const EVMVaultABI = [
     outputs: [],
     stateMutability: "nonpayable",
     type: "function",
-  },
-  {
-    stateMutability: "payable",
-    type: "receive",
   },
 ] as const;
 export type EVMVaultABIType = typeof EVMVaultABI;

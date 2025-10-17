@@ -55,12 +55,6 @@ enum RFFSourceState {
   DEPOSITED = 1;
 }
 
-enum CollectionFeeRequirement {
-  UNDETERMINED = 0;
-  YES = 1;
-  NO = 2;
-}
-
 enum Universe {
   ETHEREUM = 0;
   FUEL = 1;
@@ -74,7 +68,6 @@ message RFFSourcePair {
   bytes tokenAddress = 3;
   bytes value = 4;
   RFFSourceState status = 5;
-  CollectionFeeRequirement collectionFeeRequired = 6;
 }
 
 message SignatureDatum {
@@ -92,11 +85,12 @@ message RFFDestinationPair {
 message RequestForFunds {
   uint64 id = 1;
   repeated RFFSourcePair sources = 2;
+  Universe destinationUniverse = 9;
   bytes destinationChainID = 3;
+  bytes recipientAddress = 11;
   repeated RFFDestinationPair destinations = 4;
   bytes nonce = 5;
   uint64 expiry = 6;
-  Universe destinationUniverse = 9;
   repeated SignatureDatum signatureData = 10;
 
   // Cosmos user (???)/Cosmos internal fields
@@ -113,14 +107,15 @@ message RequestForFunds {
 }
 
 message MsgCreateRequestForFunds {
-  repeated RFFSourcePair      sources = 1;
-  Universe           destinationUniverse = 2;
-  bytes              destinationChainID = 3;
-  repeated RFFDestinationPair destinations = 4;
-  bytes              nonce = 5;
-  uint64             expiry = 6;
-  string             user = 7;
-  repeated SignatureDatum     signatureData = 8;
+  repeated RFFSourcePair      sources             = 1;
+           Universe           destinationUniverse = 2;
+           bytes              destinationChainID  = 3;
+           bytes              recipientAddress    = 9;
+  repeated RFFDestinationPair destinations        = 4;
+           bytes              nonce               = 5;
+           uint64             expiry              = 6;
+           string             user                = 7;
+  repeated SignatureDatum     signatureData       = 8;
 }
 
 message MsgCreateRequestForFundsResponse {

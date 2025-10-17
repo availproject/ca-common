@@ -1,8 +1,7 @@
-import { Hex, hexToBytes, toHex } from "viem";
+import { Hex, hexToBytes } from "viem";
 
 import {
   ChainIDKeyedMap,
-  encodeChainID36,
   OmniversalChainID,
   zeroExtendBufToGivenSize,
 } from "../data";
@@ -54,47 +53,27 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
     [
       [
         new OmniversalChainID(Universe.ETHEREUM, 137),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 10),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 42161),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 8453),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
-      ],
-      [
-        new OmniversalChainID(Universe.ETHEREUM, 43114),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 534352),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
-      ],
-      [
-        new OmniversalChainID(Universe.ETHEREUM, 8217),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
-      ],
-      [
-        new OmniversalChainID(Universe.ETHEREUM, 50104),
-        "0x0A8eb0237524D1A8Fa8cbecF49e54FE627Ed781f",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 56),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
-      ],
-      [
-        new OmniversalChainID(Universe.ETHEREUM, 999),
-        "0x0000002Ed0657b924b4AA83aD76CaB42DF90869D",
-      ],
-      [
-        new OmniversalChainID(Universe.FUEL, 9889),
-        "0x6cd9b8d7e13762f4cb98cbd733640138aeb65395c4b38d84a7d46f6f6c6b42e4",
+        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
       ],
     ],
   ],

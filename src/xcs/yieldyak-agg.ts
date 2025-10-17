@@ -4,7 +4,7 @@ import { clone as _clone, groupBy, last as _last, maxBy } from "es-toolkit";
 import { Aggregator, Quote, QuoteRequestExactInput, QuoteRequestExactOutput, QuoteType } from "./iface";
 import { encodeChainID36, OmniversalChainID } from "../data";
 import { Universe } from "../proto/definition";
-import { YakAggregatorEVMABI } from "../data/yakaggregator.evm.abi";
+import { YakAggregatorABI } from "../evmabi/yakaggregator.abi";
 
 const YakAggregatorAddresses = new Map<Hex, Hex>((<[Buffer, Hex][]>[
   [encodeChainID36(Universe.ETHEREUM, 42161), '0xb32C79a25291265eF240Eb32E9faBbc6DcEE3cE3'],
@@ -90,7 +90,7 @@ export class YieldYakAggregator implements Aggregator {
           clonedArgs[3] = steps
           const idx = mc3calls.push({
             address: config.aggregatorAddress,
-            abi: YakAggregatorEVMABI,
+            abi: YakAggregatorABI,
             functionName: 'findBestPathWithGas',
             args: clonedArgs
           })

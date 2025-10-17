@@ -43,45 +43,6 @@ export function rFFSourceStateToJSON(object: RFFSourceState): string {
   }
 }
 
-export enum CollectionFeeRequirement {
-  UNDETERMINED = 0,
-  YES = 1,
-  NO = 2,
-  UNRECOGNIZED = -1,
-}
-
-export function collectionFeeRequirementFromJSON(object: any): CollectionFeeRequirement {
-  switch (object) {
-    case 0:
-    case "UNDETERMINED":
-      return CollectionFeeRequirement.UNDETERMINED;
-    case 1:
-    case "YES":
-      return CollectionFeeRequirement.YES;
-    case 2:
-    case "NO":
-      return CollectionFeeRequirement.NO;
-    case -1:
-    case "UNRECOGNIZED":
-    default:
-      return CollectionFeeRequirement.UNRECOGNIZED;
-  }
-}
-
-export function collectionFeeRequirementToJSON(object: CollectionFeeRequirement): string {
-  switch (object) {
-    case CollectionFeeRequirement.UNDETERMINED:
-      return "UNDETERMINED";
-    case CollectionFeeRequirement.YES:
-      return "YES";
-    case CollectionFeeRequirement.NO:
-      return "NO";
-    case CollectionFeeRequirement.UNRECOGNIZED:
-    default:
-      return "UNRECOGNIZED";
-  }
-}
-
 export enum Universe {
   ETHEREUM = 0,
   FUEL = 1,
@@ -194,7 +155,6 @@ export interface RFFSourcePair {
   tokenAddress: Uint8Array;
   value: Uint8Array;
   status: RFFSourceState;
-  collectionFeeRequired: CollectionFeeRequirement;
 }
 
 export interface SignatureDatum {
@@ -214,11 +174,12 @@ export interface RFFDestinationPair {
 export interface RequestForFunds {
   id: Long;
   sources: RFFSourcePair[];
+  destinationUniverse: Universe;
   destinationChainID: Uint8Array;
+  recipientAddress: Uint8Array;
   destinations: RFFDestinationPair[];
   nonce: Uint8Array;
   expiry: Long;
-  destinationUniverse: Universe;
   signatureData: SignatureDatum[];
   /** Cosmos user (???)/Cosmos internal fields */
   user: string;
@@ -237,6 +198,7 @@ export interface MsgCreateRequestForFunds {
   sources: RFFSourcePair[];
   destinationUniverse: Universe;
   destinationChainID: Uint8Array;
+  recipientAddress: Uint8Array;
   destinations: RFFDestinationPair[];
   nonce: Uint8Array;
   expiry: Long;
@@ -311,8 +273,7 @@ export interface MsgCreateSolverData {
   addresses: SolverAddress[];
 }
 
-export interface MsgCreateSolverDataResponse {
-}
+export interface MsgCreateSolverDataResponse {}
 
 export interface MsgUpdateSolverData {
   cosmosAddress: string;
@@ -320,8 +281,7 @@ export interface MsgUpdateSolverData {
   addresses: SolverAddress[];
 }
 
-export interface MsgUpdateSolverDataResponse {
-}
+export interface MsgUpdateSolverDataResponse {}
 
 export interface Settlement {
   id: Uint8Array;
@@ -375,8 +335,7 @@ export interface ProtocolFees {
   feeRecipients: AdminFeeRecipient[];
 }
 
-export interface QueryGetProtocolFeesRequest {
-}
+export interface QueryGetProtocolFeesRequest {}
 
 export interface QueryGetProtocolFeesResponse {
   ProtocolFees?: ProtocolFees | undefined;
@@ -390,8 +349,7 @@ export interface MsgCreateProtocolFees {
   feeRecipients: AdminFeeRecipient[];
 }
 
-export interface MsgCreateProtocolFeesResponse {
-}
+export interface MsgCreateProtocolFeesResponse {}
 
 export interface MsgUpdateProtocolFees {
   creator: string;
@@ -401,8 +359,7 @@ export interface MsgUpdateProtocolFees {
   feeRecipients: AdminFeeRecipient[];
 }
 
-export interface MsgUpdateProtocolFeesResponse {
-}
+export interface MsgUpdateProtocolFeesResponse {}
 
 export interface PriceOracleDatum {
   universe: Universe;
@@ -416,8 +373,7 @@ export interface PriceOracleData {
   priceData: PriceOracleDatum[];
 }
 
-export interface QueryGetPriceOracleDataRequest {
-}
+export interface QueryGetPriceOracleDataRequest {}
 
 export interface QueryGetPriceOracleDataResponse {
   PriceOracleData?: PriceOracleData | undefined;
@@ -428,8 +384,7 @@ export interface MsgRefundReq {
   rffID: Long;
 }
 
-export interface MsgRefundReqResponse {
-}
+export interface MsgRefundReqResponse {}
 
 export interface DepositVEPacket {
   id: Long;
@@ -453,11 +408,20 @@ export interface MsgDoubleCheckTx {
 }
 
 function createBasePageRequest(): PageRequest {
-  return { key: new Uint8Array(0), offset: Long.UZERO, limit: Long.UZERO, countTotal: false, reverse: false };
+  return {
+    key: new Uint8Array(0),
+    offset: Long.UZERO,
+    limit: Long.UZERO,
+    countTotal: false,
+    reverse: false,
+  };
 }
 
 export const PageRequest: MessageFns<PageRequest> = {
-  encode(message: PageRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: PageRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.key.length !== 0) {
       writer.uint32(10).bytes(message.key);
     }
@@ -477,7 +441,8 @@ export const PageRequest: MessageFns<PageRequest> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): PageRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePageRequest();
     while (reader.pos < end) {
@@ -537,8 +502,12 @@ export const PageRequest: MessageFns<PageRequest> = {
       key: isSet(object.key) ? bytesFromBase64(object.key) : new Uint8Array(0),
       offset: isSet(object.offset) ? Long.fromValue(object.offset) : Long.UZERO,
       limit: isSet(object.limit) ? Long.fromValue(object.limit) : Long.UZERO,
-      countTotal: isSet(object.countTotal) ? globalThis.Boolean(object.countTotal) : false,
-      reverse: isSet(object.reverse) ? globalThis.Boolean(object.reverse) : false,
+      countTotal: isSet(object.countTotal)
+        ? globalThis.Boolean(object.countTotal)
+        : false,
+      reverse: isSet(object.reverse)
+        ? globalThis.Boolean(object.reverse)
+        : false,
     };
   },
 
@@ -565,13 +534,19 @@ export const PageRequest: MessageFns<PageRequest> = {
   create<I extends Exact<DeepPartial<PageRequest>, I>>(base?: I): PageRequest {
     return PageRequest.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PageRequest>, I>>(object: I): PageRequest {
+  fromPartial<I extends Exact<DeepPartial<PageRequest>, I>>(
+    object: I,
+  ): PageRequest {
     const message = createBasePageRequest();
     message.key = object.key ?? new Uint8Array(0);
-    message.offset = (object.offset !== undefined && object.offset !== null)
-      ? Long.fromValue(object.offset)
-      : Long.UZERO;
-    message.limit = (object.limit !== undefined && object.limit !== null) ? Long.fromValue(object.limit) : Long.UZERO;
+    message.offset =
+      object.offset !== undefined && object.offset !== null
+        ? Long.fromValue(object.offset)
+        : Long.UZERO;
+    message.limit =
+      object.limit !== undefined && object.limit !== null
+        ? Long.fromValue(object.limit)
+        : Long.UZERO;
     message.countTotal = object.countTotal ?? false;
     message.reverse = object.reverse ?? false;
     return message;
@@ -583,7 +558,10 @@ function createBasePageResponse(): PageResponse {
 }
 
 export const PageResponse: MessageFns<PageResponse> = {
-  encode(message: PageResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: PageResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.nextKey.length !== 0) {
       writer.uint32(10).bytes(message.nextKey);
     }
@@ -594,7 +572,8 @@ export const PageResponse: MessageFns<PageResponse> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): PageResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePageResponse();
     while (reader.pos < end) {
@@ -627,7 +606,9 @@ export const PageResponse: MessageFns<PageResponse> = {
 
   fromJSON(object: any): PageResponse {
     return {
-      nextKey: isSet(object.nextKey) ? bytesFromBase64(object.nextKey) : new Uint8Array(0),
+      nextKey: isSet(object.nextKey)
+        ? bytesFromBase64(object.nextKey)
+        : new Uint8Array(0),
       total: isSet(object.total) ? Long.fromValue(object.total) : Long.UZERO,
     };
   },
@@ -643,13 +624,20 @@ export const PageResponse: MessageFns<PageResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PageResponse>, I>>(base?: I): PageResponse {
+  create<I extends Exact<DeepPartial<PageResponse>, I>>(
+    base?: I,
+  ): PageResponse {
     return PageResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PageResponse>, I>>(object: I): PageResponse {
+  fromPartial<I extends Exact<DeepPartial<PageResponse>, I>>(
+    object: I,
+  ): PageResponse {
     const message = createBasePageResponse();
     message.nextKey = object.nextKey ?? new Uint8Array(0);
-    message.total = (object.total !== undefined && object.total !== null) ? Long.fromValue(object.total) : Long.UZERO;
+    message.total =
+      object.total !== undefined && object.total !== null
+        ? Long.fromValue(object.total)
+        : Long.UZERO;
     return message;
   },
 };
@@ -661,12 +649,14 @@ function createBaseRFFSourcePair(): RFFSourcePair {
     tokenAddress: new Uint8Array(0),
     value: new Uint8Array(0),
     status: 0,
-    collectionFeeRequired: 0,
   };
 }
 
 export const RFFSourcePair: MessageFns<RFFSourcePair> = {
-  encode(message: RFFSourcePair, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: RFFSourcePair,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -682,14 +672,12 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
     if (message.status !== 0) {
       writer.uint32(40).int32(message.status);
     }
-    if (message.collectionFeeRequired !== 0) {
-      writer.uint32(48).int32(message.collectionFeeRequired);
-    }
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): RFFSourcePair {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRFFSourcePair();
     while (reader.pos < end) {
@@ -735,14 +723,6 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
           message.status = reader.int32() as any;
           continue;
         }
-        case 6: {
-          if (tag !== 48) {
-            break;
-          }
-
-          message.collectionFeeRequired = reader.int32() as any;
-          continue;
-        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -755,13 +735,16 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
   fromJSON(object: any): RFFSourcePair {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      chainID: isSet(object.chainID) ? bytesFromBase64(object.chainID) : new Uint8Array(0),
-      tokenAddress: isSet(object.tokenAddress) ? bytesFromBase64(object.tokenAddress) : new Uint8Array(0),
-      value: isSet(object.value) ? bytesFromBase64(object.value) : new Uint8Array(0),
+      chainID: isSet(object.chainID)
+        ? bytesFromBase64(object.chainID)
+        : new Uint8Array(0),
+      tokenAddress: isSet(object.tokenAddress)
+        ? bytesFromBase64(object.tokenAddress)
+        : new Uint8Array(0),
+      value: isSet(object.value)
+        ? bytesFromBase64(object.value)
+        : new Uint8Array(0),
       status: isSet(object.status) ? rFFSourceStateFromJSON(object.status) : 0,
-      collectionFeeRequired: isSet(object.collectionFeeRequired)
-        ? collectionFeeRequirementFromJSON(object.collectionFeeRequired)
-        : 0,
     };
   },
 
@@ -782,33 +765,41 @@ export const RFFSourcePair: MessageFns<RFFSourcePair> = {
     if (message.status !== 0) {
       obj.status = rFFSourceStateToJSON(message.status);
     }
-    if (message.collectionFeeRequired !== 0) {
-      obj.collectionFeeRequired = collectionFeeRequirementToJSON(message.collectionFeeRequired);
-    }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RFFSourcePair>, I>>(base?: I): RFFSourcePair {
+  create<I extends Exact<DeepPartial<RFFSourcePair>, I>>(
+    base?: I,
+  ): RFFSourcePair {
     return RFFSourcePair.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RFFSourcePair>, I>>(object: I): RFFSourcePair {
+  fromPartial<I extends Exact<DeepPartial<RFFSourcePair>, I>>(
+    object: I,
+  ): RFFSourcePair {
     const message = createBaseRFFSourcePair();
     message.universe = object.universe ?? 0;
     message.chainID = object.chainID ?? new Uint8Array(0);
     message.tokenAddress = object.tokenAddress ?? new Uint8Array(0);
     message.value = object.value ?? new Uint8Array(0);
     message.status = object.status ?? 0;
-    message.collectionFeeRequired = object.collectionFeeRequired ?? 0;
     return message;
   },
 };
 
 function createBaseSignatureDatum(): SignatureDatum {
-  return { universe: 0, address: new Uint8Array(0), signature: new Uint8Array(0), hash: new Uint8Array(0) };
+  return {
+    universe: 0,
+    address: new Uint8Array(0),
+    signature: new Uint8Array(0),
+    hash: new Uint8Array(0),
+  };
 }
 
 export const SignatureDatum: MessageFns<SignatureDatum> = {
-  encode(message: SignatureDatum, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: SignatureDatum,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -825,7 +816,8 @@ export const SignatureDatum: MessageFns<SignatureDatum> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): SignatureDatum {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSignatureDatum();
     while (reader.pos < end) {
@@ -875,9 +867,15 @@ export const SignatureDatum: MessageFns<SignatureDatum> = {
   fromJSON(object: any): SignatureDatum {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      address: isSet(object.address) ? bytesFromBase64(object.address) : new Uint8Array(0),
-      signature: isSet(object.signature) ? bytesFromBase64(object.signature) : new Uint8Array(0),
-      hash: isSet(object.hash) ? bytesFromBase64(object.hash) : new Uint8Array(0),
+      address: isSet(object.address)
+        ? bytesFromBase64(object.address)
+        : new Uint8Array(0),
+      signature: isSet(object.signature)
+        ? bytesFromBase64(object.signature)
+        : new Uint8Array(0),
+      hash: isSet(object.hash)
+        ? bytesFromBase64(object.hash)
+        : new Uint8Array(0),
     };
   },
 
@@ -898,10 +896,14 @@ export const SignatureDatum: MessageFns<SignatureDatum> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<SignatureDatum>, I>>(base?: I): SignatureDatum {
+  create<I extends Exact<DeepPartial<SignatureDatum>, I>>(
+    base?: I,
+  ): SignatureDatum {
     return SignatureDatum.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<SignatureDatum>, I>>(object: I): SignatureDatum {
+  fromPartial<I extends Exact<DeepPartial<SignatureDatum>, I>>(
+    object: I,
+  ): SignatureDatum {
     const message = createBaseSignatureDatum();
     message.universe = object.universe ?? 0;
     message.address = object.address ?? new Uint8Array(0);
@@ -916,7 +918,10 @@ function createBaseRFFDestinationPair(): RFFDestinationPair {
 }
 
 export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
-  encode(message: RFFDestinationPair, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: RFFDestinationPair,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.tokenAddress.length !== 0) {
       writer.uint32(10).bytes(message.tokenAddress);
     }
@@ -926,8 +931,12 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): RFFDestinationPair {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): RFFDestinationPair {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRFFDestinationPair();
     while (reader.pos < end) {
@@ -960,8 +969,12 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
 
   fromJSON(object: any): RFFDestinationPair {
     return {
-      tokenAddress: isSet(object.tokenAddress) ? bytesFromBase64(object.tokenAddress) : new Uint8Array(0),
-      value: isSet(object.value) ? bytesFromBase64(object.value) : new Uint8Array(0),
+      tokenAddress: isSet(object.tokenAddress)
+        ? bytesFromBase64(object.tokenAddress)
+        : new Uint8Array(0),
+      value: isSet(object.value)
+        ? bytesFromBase64(object.value)
+        : new Uint8Array(0),
     };
   },
 
@@ -976,10 +989,14 @@ export const RFFDestinationPair: MessageFns<RFFDestinationPair> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RFFDestinationPair>, I>>(base?: I): RFFDestinationPair {
+  create<I extends Exact<DeepPartial<RFFDestinationPair>, I>>(
+    base?: I,
+  ): RFFDestinationPair {
     return RFFDestinationPair.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RFFDestinationPair>, I>>(object: I): RFFDestinationPair {
+  fromPartial<I extends Exact<DeepPartial<RFFDestinationPair>, I>>(
+    object: I,
+  ): RFFDestinationPair {
     const message = createBaseRFFDestinationPair();
     message.tokenAddress = object.tokenAddress ?? new Uint8Array(0);
     message.value = object.value ?? new Uint8Array(0);
@@ -991,11 +1008,12 @@ function createBaseRequestForFunds(): RequestForFunds {
   return {
     id: Long.UZERO,
     sources: [],
+    destinationUniverse: 0,
     destinationChainID: new Uint8Array(0),
+    recipientAddress: new Uint8Array(0),
     destinations: [],
     nonce: new Uint8Array(0),
     expiry: Long.UZERO,
-    destinationUniverse: 0,
     signatureData: [],
     user: "",
     fulfilledBy: new Uint8Array(0),
@@ -1009,15 +1027,24 @@ function createBaseRequestForFunds(): RequestForFunds {
 }
 
 export const RequestForFunds: MessageFns<RequestForFunds> = {
-  encode(message: RequestForFunds, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: RequestForFunds,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (!message.id.equals(Long.UZERO)) {
       writer.uint32(8).uint64(message.id.toString());
     }
     for (const v of message.sources) {
       RFFSourcePair.encode(v!, writer.uint32(18).fork()).join();
     }
+    if (message.destinationUniverse !== 0) {
+      writer.uint32(72).int32(message.destinationUniverse);
+    }
     if (message.destinationChainID.length !== 0) {
       writer.uint32(26).bytes(message.destinationChainID);
+    }
+    if (message.recipientAddress.length !== 0) {
+      writer.uint32(90).bytes(message.recipientAddress);
     }
     for (const v of message.destinations) {
       RFFDestinationPair.encode(v!, writer.uint32(34).fork()).join();
@@ -1027,9 +1054,6 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
     }
     if (!message.expiry.equals(Long.UZERO)) {
       writer.uint32(48).uint64(message.expiry.toString());
-    }
-    if (message.destinationUniverse !== 0) {
-      writer.uint32(72).int32(message.destinationUniverse);
     }
     for (const v of message.signatureData) {
       SignatureDatum.encode(v!, writer.uint32(82).fork()).join();
@@ -1062,7 +1086,8 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): RequestForFunds {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRequestForFunds();
     while (reader.pos < end) {
@@ -1084,6 +1109,14 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
           message.sources.push(RFFSourcePair.decode(reader, reader.uint32()));
           continue;
         }
+        case 9: {
+          if (tag !== 72) {
+            break;
+          }
+
+          message.destinationUniverse = reader.int32() as any;
+          continue;
+        }
         case 3: {
           if (tag !== 26) {
             break;
@@ -1092,12 +1125,22 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
           message.destinationChainID = reader.bytes();
           continue;
         }
+        case 11: {
+          if (tag !== 90) {
+            break;
+          }
+
+          message.recipientAddress = reader.bytes();
+          continue;
+        }
         case 4: {
           if (tag !== 34) {
             break;
           }
 
-          message.destinations.push(RFFDestinationPair.decode(reader, reader.uint32()));
+          message.destinations.push(
+            RFFDestinationPair.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 5: {
@@ -1116,20 +1159,14 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
           message.expiry = Long.fromString(reader.uint64().toString(), true);
           continue;
         }
-        case 9: {
-          if (tag !== 72) {
-            break;
-          }
-
-          message.destinationUniverse = reader.int32() as any;
-          continue;
-        }
         case 10: {
           if (tag !== 82) {
             break;
           }
 
-          message.signatureData.push(SignatureDatum.decode(reader, reader.uint32()));
+          message.signatureData.push(
+            SignatureDatum.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 101: {
@@ -1153,7 +1190,10 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
             break;
           }
 
-          message.fulfilledAt = Long.fromString(reader.uint64().toString(), true);
+          message.fulfilledAt = Long.fromString(
+            reader.uint64().toString(),
+            true,
+          );
           continue;
         }
         case 104: {
@@ -1211,26 +1251,47 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
       sources: globalThis.Array.isArray(object?.sources)
         ? object.sources.map((e: any) => RFFSourcePair.fromJSON(e))
         : [],
+      destinationUniverse: isSet(object.destinationUniverse)
+        ? universeFromJSON(object.destinationUniverse)
+        : 0,
       destinationChainID: isSet(object.destinationChainID)
         ? bytesFromBase64(object.destinationChainID)
+        : new Uint8Array(0),
+      recipientAddress: isSet(object.recipientAddress)
+        ? bytesFromBase64(object.recipientAddress)
         : new Uint8Array(0),
       destinations: globalThis.Array.isArray(object?.destinations)
         ? object.destinations.map((e: any) => RFFDestinationPair.fromJSON(e))
         : [],
-      nonce: isSet(object.nonce) ? bytesFromBase64(object.nonce) : new Uint8Array(0),
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
       expiry: isSet(object.expiry) ? Long.fromValue(object.expiry) : Long.UZERO,
-      destinationUniverse: isSet(object.destinationUniverse) ? universeFromJSON(object.destinationUniverse) : 0,
       signatureData: globalThis.Array.isArray(object?.signatureData)
         ? object.signatureData.map((e: any) => SignatureDatum.fromJSON(e))
         : [],
       user: isSet(object.user) ? globalThis.String(object.user) : "",
-      fulfilledBy: isSet(object.fulfilledBy) ? bytesFromBase64(object.fulfilledBy) : new Uint8Array(0),
-      fulfilledAt: isSet(object.fulfilledAt) ? Long.fromValue(object.fulfilledAt) : Long.UZERO,
-      deposited: isSet(object.deposited) ? globalThis.Boolean(object.deposited) : false,
-      fulfilled: isSet(object.fulfilled) ? globalThis.Boolean(object.fulfilled) : false,
-      settled: isSet(object.settled) ? globalThis.Boolean(object.settled) : false,
-      refunded: isSet(object.refunded) ? globalThis.Boolean(object.refunded) : false,
-      creationBlock: isSet(object.creationBlock) ? Long.fromValue(object.creationBlock) : Long.ZERO,
+      fulfilledBy: isSet(object.fulfilledBy)
+        ? bytesFromBase64(object.fulfilledBy)
+        : new Uint8Array(0),
+      fulfilledAt: isSet(object.fulfilledAt)
+        ? Long.fromValue(object.fulfilledAt)
+        : Long.UZERO,
+      deposited: isSet(object.deposited)
+        ? globalThis.Boolean(object.deposited)
+        : false,
+      fulfilled: isSet(object.fulfilled)
+        ? globalThis.Boolean(object.fulfilled)
+        : false,
+      settled: isSet(object.settled)
+        ? globalThis.Boolean(object.settled)
+        : false,
+      refunded: isSet(object.refunded)
+        ? globalThis.Boolean(object.refunded)
+        : false,
+      creationBlock: isSet(object.creationBlock)
+        ? Long.fromValue(object.creationBlock)
+        : Long.ZERO,
     };
   },
 
@@ -1242,11 +1303,19 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
     if (message.sources?.length) {
       obj.sources = message.sources.map((e) => RFFSourcePair.toJSON(e));
     }
+    if (message.destinationUniverse !== 0) {
+      obj.destinationUniverse = universeToJSON(message.destinationUniverse);
+    }
     if (message.destinationChainID.length !== 0) {
       obj.destinationChainID = base64FromBytes(message.destinationChainID);
     }
+    if (message.recipientAddress.length !== 0) {
+      obj.recipientAddress = base64FromBytes(message.recipientAddress);
+    }
     if (message.destinations?.length) {
-      obj.destinations = message.destinations.map((e) => RFFDestinationPair.toJSON(e));
+      obj.destinations = message.destinations.map((e) =>
+        RFFDestinationPair.toJSON(e),
+      );
     }
     if (message.nonce.length !== 0) {
       obj.nonce = base64FromBytes(message.nonce);
@@ -1254,11 +1323,10 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
     if (!message.expiry.equals(Long.UZERO)) {
       obj.expiry = (message.expiry || Long.UZERO).toString();
     }
-    if (message.destinationUniverse !== 0) {
-      obj.destinationUniverse = universeToJSON(message.destinationUniverse);
-    }
     if (message.signatureData?.length) {
-      obj.signatureData = message.signatureData.map((e) => SignatureDatum.toJSON(e));
+      obj.signatureData = message.signatureData.map((e) =>
+        SignatureDatum.toJSON(e),
+      );
     }
     if (message.user !== "") {
       obj.user = message.user;
@@ -1287,33 +1355,47 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<RequestForFunds>, I>>(base?: I): RequestForFunds {
+  create<I extends Exact<DeepPartial<RequestForFunds>, I>>(
+    base?: I,
+  ): RequestForFunds {
     return RequestForFunds.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<RequestForFunds>, I>>(object: I): RequestForFunds {
+  fromPartial<I extends Exact<DeepPartial<RequestForFunds>, I>>(
+    object: I,
+  ): RequestForFunds {
     const message = createBaseRequestForFunds();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
-    message.sources = object.sources?.map((e) => RFFSourcePair.fromPartial(e)) || [];
-    message.destinationChainID = object.destinationChainID ?? new Uint8Array(0);
-    message.destinations = object.destinations?.map((e) => RFFDestinationPair.fromPartial(e)) || [];
-    message.nonce = object.nonce ?? new Uint8Array(0);
-    message.expiry = (object.expiry !== undefined && object.expiry !== null)
-      ? Long.fromValue(object.expiry)
-      : Long.UZERO;
+    message.id =
+      object.id !== undefined && object.id !== null
+        ? Long.fromValue(object.id)
+        : Long.UZERO;
+    message.sources =
+      object.sources?.map((e) => RFFSourcePair.fromPartial(e)) || [];
     message.destinationUniverse = object.destinationUniverse ?? 0;
-    message.signatureData = object.signatureData?.map((e) => SignatureDatum.fromPartial(e)) || [];
+    message.destinationChainID = object.destinationChainID ?? new Uint8Array(0);
+    message.recipientAddress = object.recipientAddress ?? new Uint8Array(0);
+    message.destinations =
+      object.destinations?.map((e) => RFFDestinationPair.fromPartial(e)) || [];
+    message.nonce = object.nonce ?? new Uint8Array(0);
+    message.expiry =
+      object.expiry !== undefined && object.expiry !== null
+        ? Long.fromValue(object.expiry)
+        : Long.UZERO;
+    message.signatureData =
+      object.signatureData?.map((e) => SignatureDatum.fromPartial(e)) || [];
     message.user = object.user ?? "";
     message.fulfilledBy = object.fulfilledBy ?? new Uint8Array(0);
-    message.fulfilledAt = (object.fulfilledAt !== undefined && object.fulfilledAt !== null)
-      ? Long.fromValue(object.fulfilledAt)
-      : Long.UZERO;
+    message.fulfilledAt =
+      object.fulfilledAt !== undefined && object.fulfilledAt !== null
+        ? Long.fromValue(object.fulfilledAt)
+        : Long.UZERO;
     message.deposited = object.deposited ?? false;
     message.fulfilled = object.fulfilled ?? false;
     message.settled = object.settled ?? false;
     message.refunded = object.refunded ?? false;
-    message.creationBlock = (object.creationBlock !== undefined && object.creationBlock !== null)
-      ? Long.fromValue(object.creationBlock)
-      : Long.ZERO;
+    message.creationBlock =
+      object.creationBlock !== undefined && object.creationBlock !== null
+        ? Long.fromValue(object.creationBlock)
+        : Long.ZERO;
     return message;
   },
 };
@@ -1323,6 +1405,7 @@ function createBaseMsgCreateRequestForFunds(): MsgCreateRequestForFunds {
     sources: [],
     destinationUniverse: 0,
     destinationChainID: new Uint8Array(0),
+    recipientAddress: new Uint8Array(0),
     destinations: [],
     nonce: new Uint8Array(0),
     expiry: Long.UZERO,
@@ -1332,7 +1415,10 @@ function createBaseMsgCreateRequestForFunds(): MsgCreateRequestForFunds {
 }
 
 export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
-  encode(message: MsgCreateRequestForFunds, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgCreateRequestForFunds,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     for (const v of message.sources) {
       RFFSourcePair.encode(v!, writer.uint32(10).fork()).join();
     }
@@ -1341,6 +1427,9 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
     }
     if (message.destinationChainID.length !== 0) {
       writer.uint32(26).bytes(message.destinationChainID);
+    }
+    if (message.recipientAddress.length !== 0) {
+      writer.uint32(74).bytes(message.recipientAddress);
     }
     for (const v of message.destinations) {
       RFFDestinationPair.encode(v!, writer.uint32(34).fork()).join();
@@ -1360,8 +1449,12 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateRequestForFunds {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgCreateRequestForFunds {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgCreateRequestForFunds();
     while (reader.pos < end) {
@@ -1391,12 +1484,22 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
           message.destinationChainID = reader.bytes();
           continue;
         }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.recipientAddress = reader.bytes();
+          continue;
+        }
         case 4: {
           if (tag !== 34) {
             break;
           }
 
-          message.destinations.push(RFFDestinationPair.decode(reader, reader.uint32()));
+          message.destinations.push(
+            RFFDestinationPair.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 5: {
@@ -1428,7 +1531,9 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
             break;
           }
 
-          message.signatureData.push(SignatureDatum.decode(reader, reader.uint32()));
+          message.signatureData.push(
+            SignatureDatum.decode(reader, reader.uint32()),
+          );
           continue;
         }
       }
@@ -1445,14 +1550,21 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
       sources: globalThis.Array.isArray(object?.sources)
         ? object.sources.map((e: any) => RFFSourcePair.fromJSON(e))
         : [],
-      destinationUniverse: isSet(object.destinationUniverse) ? universeFromJSON(object.destinationUniverse) : 0,
+      destinationUniverse: isSet(object.destinationUniverse)
+        ? universeFromJSON(object.destinationUniverse)
+        : 0,
       destinationChainID: isSet(object.destinationChainID)
         ? bytesFromBase64(object.destinationChainID)
+        : new Uint8Array(0),
+      recipientAddress: isSet(object.recipientAddress)
+        ? bytesFromBase64(object.recipientAddress)
         : new Uint8Array(0),
       destinations: globalThis.Array.isArray(object?.destinations)
         ? object.destinations.map((e: any) => RFFDestinationPair.fromJSON(e))
         : [],
-      nonce: isSet(object.nonce) ? bytesFromBase64(object.nonce) : new Uint8Array(0),
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
       expiry: isSet(object.expiry) ? Long.fromValue(object.expiry) : Long.UZERO,
       user: isSet(object.user) ? globalThis.String(object.user) : "",
       signatureData: globalThis.Array.isArray(object?.signatureData)
@@ -1472,8 +1584,13 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
     if (message.destinationChainID.length !== 0) {
       obj.destinationChainID = base64FromBytes(message.destinationChainID);
     }
+    if (message.recipientAddress.length !== 0) {
+      obj.recipientAddress = base64FromBytes(message.recipientAddress);
+    }
     if (message.destinations?.length) {
-      obj.destinations = message.destinations.map((e) => RFFDestinationPair.toJSON(e));
+      obj.destinations = message.destinations.map((e) =>
+        RFFDestinationPair.toJSON(e),
+      );
     }
     if (message.nonce.length !== 0) {
       obj.nonce = base64FromBytes(message.nonce);
@@ -1485,26 +1602,37 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
       obj.user = message.user;
     }
     if (message.signatureData?.length) {
-      obj.signatureData = message.signatureData.map((e) => SignatureDatum.toJSON(e));
+      obj.signatureData = message.signatureData.map((e) =>
+        SignatureDatum.toJSON(e),
+      );
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(base?: I): MsgCreateRequestForFunds {
+  create<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(
+    base?: I,
+  ): MsgCreateRequestForFunds {
     return MsgCreateRequestForFunds.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(object: I): MsgCreateRequestForFunds {
+  fromPartial<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(
+    object: I,
+  ): MsgCreateRequestForFunds {
     const message = createBaseMsgCreateRequestForFunds();
-    message.sources = object.sources?.map((e) => RFFSourcePair.fromPartial(e)) || [];
+    message.sources =
+      object.sources?.map((e) => RFFSourcePair.fromPartial(e)) || [];
     message.destinationUniverse = object.destinationUniverse ?? 0;
     message.destinationChainID = object.destinationChainID ?? new Uint8Array(0);
-    message.destinations = object.destinations?.map((e) => RFFDestinationPair.fromPartial(e)) || [];
+    message.recipientAddress = object.recipientAddress ?? new Uint8Array(0);
+    message.destinations =
+      object.destinations?.map((e) => RFFDestinationPair.fromPartial(e)) || [];
     message.nonce = object.nonce ?? new Uint8Array(0);
-    message.expiry = (object.expiry !== undefined && object.expiry !== null)
-      ? Long.fromValue(object.expiry)
-      : Long.UZERO;
+    message.expiry =
+      object.expiry !== undefined && object.expiry !== null
+        ? Long.fromValue(object.expiry)
+        : Long.UZERO;
     message.user = object.user ?? "";
-    message.signatureData = object.signatureData?.map((e) => SignatureDatum.fromPartial(e)) || [];
+    message.signatureData =
+      object.signatureData?.map((e) => SignatureDatum.fromPartial(e)) || [];
     return message;
   },
 };
@@ -1513,331 +1641,411 @@ function createBaseMsgCreateRequestForFundsResponse(): MsgCreateRequestForFundsR
   return { id: Long.UZERO };
 }
 
-export const MsgCreateRequestForFundsResponse: MessageFns<MsgCreateRequestForFundsResponse> = {
-  encode(message: MsgCreateRequestForFundsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (!message.id.equals(Long.UZERO)) {
-      writer.uint32(8).uint64(message.id.toString());
-    }
-    return writer;
-  },
+export const MsgCreateRequestForFundsResponse: MessageFns<MsgCreateRequestForFundsResponse> =
+  {
+    encode(
+      message: MsgCreateRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateRequestForFundsResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgCreateRequestForFundsResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgCreateRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgCreateRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
           }
-
-          message.id = Long.fromString(reader.uint64().toString(), true);
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): MsgCreateRequestForFundsResponse {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: MsgCreateRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): MsgCreateRequestForFundsResponse {
-    return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
-  },
-
-  toJSON(message: MsgCreateRequestForFundsResponse): unknown {
-    const obj: any = {};
-    if (!message.id.equals(Long.UZERO)) {
-      obj.id = (message.id || Long.UZERO).toString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>>(
-    base?: I,
-  ): MsgCreateRequestForFundsResponse {
-    return MsgCreateRequestForFundsResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>>(
-    object: I,
-  ): MsgCreateRequestForFundsResponse {
-    const message = createBaseMsgCreateRequestForFundsResponse();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>>(
+      base?: I,
+    ): MsgCreateRequestForFundsResponse {
+      return MsgCreateRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>,
+    >(object: I): MsgCreateRequestForFundsResponse {
+      const message = createBaseMsgCreateRequestForFundsResponse();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
 
 function createBaseQueryGetRequestForFundsRequest(): QueryGetRequestForFundsRequest {
   return { id: Long.UZERO };
 }
 
-export const QueryGetRequestForFundsRequest: MessageFns<QueryGetRequestForFundsRequest> = {
-  encode(message: QueryGetRequestForFundsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (!message.id.equals(Long.UZERO)) {
-      writer.uint32(8).uint64(message.id.toString());
-    }
-    return writer;
-  },
+export const QueryGetRequestForFundsRequest: MessageFns<QueryGetRequestForFundsRequest> =
+  {
+    encode(
+      message: QueryGetRequestForFundsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetRequestForFundsRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetRequestForFundsRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetRequestForFundsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetRequestForFundsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
           }
-
-          message.id = Long.fromString(reader.uint64().toString(), true);
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetRequestForFundsRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetRequestForFundsRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetRequestForFundsRequest {
-    return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
-  },
-
-  toJSON(message: QueryGetRequestForFundsRequest): unknown {
-    const obj: any = {};
-    if (!message.id.equals(Long.UZERO)) {
-      obj.id = (message.id || Long.UZERO).toString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>>(base?: I): QueryGetRequestForFundsRequest {
-    return QueryGetRequestForFundsRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>>(
-    object: I,
-  ): QueryGetRequestForFundsRequest {
-    const message = createBaseQueryGetRequestForFundsRequest();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>>(
+      base?: I,
+    ): QueryGetRequestForFundsRequest {
+      return QueryGetRequestForFundsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>,
+    >(object: I): QueryGetRequestForFundsRequest {
+      const message = createBaseQueryGetRequestForFundsRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
 
 function createBaseQueryGetRequestForFundsResponse(): QueryGetRequestForFundsResponse {
   return { requestForFunds: undefined };
 }
 
-export const QueryGetRequestForFundsResponse: MessageFns<QueryGetRequestForFundsResponse> = {
-  encode(message: QueryGetRequestForFundsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.requestForFunds !== undefined) {
-      RequestForFunds.encode(message.requestForFunds, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryGetRequestForFundsResponse: MessageFns<QueryGetRequestForFundsResponse> =
+  {
+    encode(
+      message: QueryGetRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.requestForFunds !== undefined) {
+        RequestForFunds.encode(
+          message.requestForFunds,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetRequestForFundsResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetRequestForFundsResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.requestForFunds = RequestForFunds.decode(
+              reader,
+              reader.uint32(),
+            );
+            continue;
           }
-
-          message.requestForFunds = RequestForFunds.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetRequestForFundsResponse {
+      return {
+        requestForFunds: isSet(object.requestForFunds)
+          ? RequestForFunds.fromJSON(object.requestForFunds)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (message.requestForFunds !== undefined) {
+        obj.requestForFunds = RequestForFunds.toJSON(message.requestForFunds);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetRequestForFundsResponse {
-    return {
-      requestForFunds: isSet(object.requestForFunds) ? RequestForFunds.fromJSON(object.requestForFunds) : undefined,
-    };
-  },
-
-  toJSON(message: QueryGetRequestForFundsResponse): unknown {
-    const obj: any = {};
-    if (message.requestForFunds !== undefined) {
-      obj.requestForFunds = RequestForFunds.toJSON(message.requestForFunds);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>>(base?: I): QueryGetRequestForFundsResponse {
-    return QueryGetRequestForFundsResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>>(
-    object: I,
-  ): QueryGetRequestForFundsResponse {
-    const message = createBaseQueryGetRequestForFundsResponse();
-    message.requestForFunds = (object.requestForFunds !== undefined && object.requestForFunds !== null)
-      ? RequestForFunds.fromPartial(object.requestForFunds)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>>(
+      base?: I,
+    ): QueryGetRequestForFundsResponse {
+      return QueryGetRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>,
+    >(object: I): QueryGetRequestForFundsResponse {
+      const message = createBaseQueryGetRequestForFundsResponse();
+      message.requestForFunds =
+        object.requestForFunds !== undefined && object.requestForFunds !== null
+          ? RequestForFunds.fromPartial(object.requestForFunds)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllRequestForFundsRequest(): QueryAllRequestForFundsRequest {
   return { pagination: undefined };
 }
 
-export const QueryAllRequestForFundsRequest: MessageFns<QueryAllRequestForFundsRequest> = {
-  encode(message: QueryAllRequestForFundsRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryAllRequestForFundsRequest: MessageFns<QueryAllRequestForFundsRequest> =
+  {
+    encode(
+      message: QueryAllRequestForFundsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllRequestForFundsRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllRequestForFundsRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllRequestForFundsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllRequestForFundsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.pagination = PageRequest.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllRequestForFundsRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllRequestForFundsRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryAllRequestForFundsRequest {
-    return { pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined };
-  },
-
-  toJSON(message: QueryAllRequestForFundsRequest): unknown {
-    const obj: any = {};
-    if (message.pagination !== undefined) {
-      obj.pagination = PageRequest.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>>(base?: I): QueryAllRequestForFundsRequest {
-    return QueryAllRequestForFundsRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>>(
-    object: I,
-  ): QueryAllRequestForFundsRequest {
-    const message = createBaseQueryAllRequestForFundsRequest();
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageRequest.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>>(
+      base?: I,
+    ): QueryAllRequestForFundsRequest {
+      return QueryAllRequestForFundsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>,
+    >(object: I): QueryAllRequestForFundsRequest {
+      const message = createBaseQueryAllRequestForFundsRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllRequestForFundsResponse(): QueryAllRequestForFundsResponse {
   return { requestForFunds: [], pagination: undefined };
 }
 
-export const QueryAllRequestForFundsResponse: MessageFns<QueryAllRequestForFundsResponse> = {
-  encode(message: QueryAllRequestForFundsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.requestForFunds) {
-      RequestForFunds.encode(v!, writer.uint32(10).fork()).join();
-    }
-    if (message.pagination !== undefined) {
-      PageResponse.encode(message.pagination, writer.uint32(18).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllRequestForFundsResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllRequestForFundsResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.requestForFunds.push(RequestForFunds.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.pagination = PageResponse.decode(reader, reader.uint32());
-          continue;
-        }
+export const QueryAllRequestForFundsResponse: MessageFns<QueryAllRequestForFundsResponse> =
+  {
+    encode(
+      message: QueryAllRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.requestForFunds) {
+        RequestForFunds.encode(v!, writer.uint32(10).fork()).join();
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return writer;
+    },
 
-  fromJSON(object: any): QueryAllRequestForFundsResponse {
-    return {
-      requestForFunds: globalThis.Array.isArray(object?.requestForFunds)
-        ? object.requestForFunds.map((e: any) => RequestForFunds.fromJSON(e))
-        : [],
-      pagination: isSet(object.pagination) ? PageResponse.fromJSON(object.pagination) : undefined,
-    };
-  },
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
 
-  toJSON(message: QueryAllRequestForFundsResponse): unknown {
-    const obj: any = {};
-    if (message.requestForFunds?.length) {
-      obj.requestForFunds = message.requestForFunds.map((e) => RequestForFunds.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = PageResponse.toJSON(message.pagination);
-    }
-    return obj;
-  },
+            message.requestForFunds.push(
+              RequestForFunds.decode(reader, reader.uint32()),
+            );
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
 
-  create<I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>>(base?: I): QueryAllRequestForFundsResponse {
-    return QueryAllRequestForFundsResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>>(
-    object: I,
-  ): QueryAllRequestForFundsResponse {
-    const message = createBaseQueryAllRequestForFundsResponse();
-    message.requestForFunds = object.requestForFunds?.map((e) => RequestForFunds.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageResponse.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllRequestForFundsResponse {
+      return {
+        requestForFunds: globalThis.Array.isArray(object?.requestForFunds)
+          ? object.requestForFunds.map((e: any) => RequestForFunds.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (message.requestForFunds?.length) {
+        obj.requestForFunds = message.requestForFunds.map((e) =>
+          RequestForFunds.toJSON(e),
+        );
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>>(
+      base?: I,
+    ): QueryAllRequestForFundsResponse {
+      return QueryAllRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>,
+    >(object: I): QueryAllRequestForFundsResponse {
+      const message = createBaseQueryAllRequestForFundsResponse();
+      message.requestForFunds =
+        object.requestForFunds?.map((e) => RequestForFunds.fromPartial(e)) ||
+        [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseRouteFee(): RouteFee {
   return {
@@ -1852,7 +2060,10 @@ function createBaseRouteFee(): RouteFee {
 }
 
 export const RouteFee: MessageFns<RouteFee> = {
-  encode(message: RouteFee, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: RouteFee,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.sourceUniverse !== 0) {
       writer.uint32(8).int32(message.sourceUniverse);
     }
@@ -1878,7 +2089,8 @@ export const RouteFee: MessageFns<RouteFee> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): RouteFee {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseRouteFee();
     while (reader.pos < end) {
@@ -1951,9 +2163,15 @@ export const RouteFee: MessageFns<RouteFee> = {
 
   fromJSON(object: any): RouteFee {
     return {
-      sourceUniverse: isSet(object.sourceUniverse) ? universeFromJSON(object.sourceUniverse) : 0,
-      destinationUniverse: isSet(object.destinationUniverse) ? universeFromJSON(object.destinationUniverse) : 0,
-      sourceChainID: isSet(object.sourceChainID) ? bytesFromBase64(object.sourceChainID) : new Uint8Array(0),
+      sourceUniverse: isSet(object.sourceUniverse)
+        ? universeFromJSON(object.sourceUniverse)
+        : 0,
+      destinationUniverse: isSet(object.destinationUniverse)
+        ? universeFromJSON(object.destinationUniverse)
+        : 0,
+      sourceChainID: isSet(object.sourceChainID)
+        ? bytesFromBase64(object.sourceChainID)
+        : new Uint8Array(0),
       destinationChainID: isSet(object.destinationChainID)
         ? bytesFromBase64(object.destinationChainID)
         : new Uint8Array(0),
@@ -1985,7 +2203,9 @@ export const RouteFee: MessageFns<RouteFee> = {
       obj.sourceTokenAddress = base64FromBytes(message.sourceTokenAddress);
     }
     if (message.destinationTokenAddress.length !== 0) {
-      obj.destinationTokenAddress = base64FromBytes(message.destinationTokenAddress);
+      obj.destinationTokenAddress = base64FromBytes(
+        message.destinationTokenAddress,
+      );
     }
     if (message.feeBP !== 0) {
       obj.feeBP = Math.round(message.feeBP);
@@ -2003,18 +2223,26 @@ export const RouteFee: MessageFns<RouteFee> = {
     message.sourceChainID = object.sourceChainID ?? new Uint8Array(0);
     message.destinationChainID = object.destinationChainID ?? new Uint8Array(0);
     message.sourceTokenAddress = object.sourceTokenAddress ?? new Uint8Array(0);
-    message.destinationTokenAddress = object.destinationTokenAddress ?? new Uint8Array(0);
+    message.destinationTokenAddress =
+      object.destinationTokenAddress ?? new Uint8Array(0);
     message.feeBP = object.feeBP ?? 0;
     return message;
   },
 };
 
 function createBaseSolverAddress(): SolverAddress {
-  return { universe: 0, address: new Uint8Array(0), signature: new Uint8Array(0) };
+  return {
+    universe: 0,
+    address: new Uint8Array(0),
+    signature: new Uint8Array(0),
+  };
 }
 
 export const SolverAddress: MessageFns<SolverAddress> = {
-  encode(message: SolverAddress, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: SolverAddress,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -2028,7 +2256,8 @@ export const SolverAddress: MessageFns<SolverAddress> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): SolverAddress {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSolverAddress();
     while (reader.pos < end) {
@@ -2070,8 +2299,12 @@ export const SolverAddress: MessageFns<SolverAddress> = {
   fromJSON(object: any): SolverAddress {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      address: isSet(object.address) ? bytesFromBase64(object.address) : new Uint8Array(0),
-      signature: isSet(object.signature) ? bytesFromBase64(object.signature) : new Uint8Array(0),
+      address: isSet(object.address)
+        ? bytesFromBase64(object.address)
+        : new Uint8Array(0),
+      signature: isSet(object.signature)
+        ? bytesFromBase64(object.signature)
+        : new Uint8Array(0),
     };
   },
 
@@ -2089,10 +2322,14 @@ export const SolverAddress: MessageFns<SolverAddress> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<SolverAddress>, I>>(base?: I): SolverAddress {
+  create<I extends Exact<DeepPartial<SolverAddress>, I>>(
+    base?: I,
+  ): SolverAddress {
     return SolverAddress.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<SolverAddress>, I>>(object: I): SolverAddress {
+  fromPartial<I extends Exact<DeepPartial<SolverAddress>, I>>(
+    object: I,
+  ): SolverAddress {
     const message = createBaseSolverAddress();
     message.universe = object.universe ?? 0;
     message.address = object.address ?? new Uint8Array(0);
@@ -2106,7 +2343,10 @@ function createBaseSolverData(): SolverData {
 }
 
 export const SolverData: MessageFns<SolverData> = {
-  encode(message: SolverData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: SolverData,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.cosmosAddress !== "") {
       writer.uint32(10).string(message.cosmosAddress);
     }
@@ -2120,7 +2360,8 @@ export const SolverData: MessageFns<SolverData> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): SolverData {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSolverData();
     while (reader.pos < end) {
@@ -2161,7 +2402,9 @@ export const SolverData: MessageFns<SolverData> = {
 
   fromJSON(object: any): SolverData {
     return {
-      cosmosAddress: isSet(object.cosmosAddress) ? globalThis.String(object.cosmosAddress) : "",
+      cosmosAddress: isSet(object.cosmosAddress)
+        ? globalThis.String(object.cosmosAddress)
+        : "",
       advertisedFees: globalThis.Array.isArray(object?.advertisedFees)
         ? object.advertisedFees.map((e: any) => RouteFee.fromJSON(e))
         : [],
@@ -2177,7 +2420,9 @@ export const SolverData: MessageFns<SolverData> = {
       obj.cosmosAddress = message.cosmosAddress;
     }
     if (message.advertisedFees?.length) {
-      obj.advertisedFees = message.advertisedFees.map((e) => RouteFee.toJSON(e));
+      obj.advertisedFees = message.advertisedFees.map((e) =>
+        RouteFee.toJSON(e),
+      );
     }
     if (message.addresses?.length) {
       obj.addresses = message.addresses.map((e) => SolverAddress.toJSON(e));
@@ -2188,11 +2433,15 @@ export const SolverData: MessageFns<SolverData> = {
   create<I extends Exact<DeepPartial<SolverData>, I>>(base?: I): SolverData {
     return SolverData.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<SolverData>, I>>(object: I): SolverData {
+  fromPartial<I extends Exact<DeepPartial<SolverData>, I>>(
+    object: I,
+  ): SolverData {
     const message = createBaseSolverData();
     message.cosmosAddress = object.cosmosAddress ?? "";
-    message.advertisedFees = object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
-    message.addresses = object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
+    message.advertisedFees =
+      object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
+    message.addresses =
+      object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
     return message;
   },
 };
@@ -2201,266 +2450,338 @@ function createBaseQueryGetSolverDataRequest(): QueryGetSolverDataRequest {
   return { cosmosAddress: "" };
 }
 
-export const QueryGetSolverDataRequest: MessageFns<QueryGetSolverDataRequest> = {
-  encode(message: QueryGetSolverDataRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.cosmosAddress !== "") {
-      writer.uint32(10).string(message.cosmosAddress);
-    }
-    return writer;
-  },
+export const QueryGetSolverDataRequest: MessageFns<QueryGetSolverDataRequest> =
+  {
+    encode(
+      message: QueryGetSolverDataRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.cosmosAddress !== "") {
+        writer.uint32(10).string(message.cosmosAddress);
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetSolverDataRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetSolverDataRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSolverDataRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSolverDataRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.cosmosAddress = reader.string();
+            continue;
           }
-
-          message.cosmosAddress = reader.string();
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSolverDataRequest {
+      return {
+        cosmosAddress: isSet(object.cosmosAddress)
+          ? globalThis.String(object.cosmosAddress)
+          : "",
+      };
+    },
+
+    toJSON(message: QueryGetSolverDataRequest): unknown {
+      const obj: any = {};
+      if (message.cosmosAddress !== "") {
+        obj.cosmosAddress = message.cosmosAddress;
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetSolverDataRequest {
-    return { cosmosAddress: isSet(object.cosmosAddress) ? globalThis.String(object.cosmosAddress) : "" };
-  },
-
-  toJSON(message: QueryGetSolverDataRequest): unknown {
-    const obj: any = {};
-    if (message.cosmosAddress !== "") {
-      obj.cosmosAddress = message.cosmosAddress;
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(base?: I): QueryGetSolverDataRequest {
-    return QueryGetSolverDataRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(object: I): QueryGetSolverDataRequest {
-    const message = createBaseQueryGetSolverDataRequest();
-    message.cosmosAddress = object.cosmosAddress ?? "";
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(
+      base?: I,
+    ): QueryGetSolverDataRequest {
+      return QueryGetSolverDataRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(
+      object: I,
+    ): QueryGetSolverDataRequest {
+      const message = createBaseQueryGetSolverDataRequest();
+      message.cosmosAddress = object.cosmosAddress ?? "";
+      return message;
+    },
+  };
 
 function createBaseQueryGetSolverDataResponse(): QueryGetSolverDataResponse {
   return { solverData: undefined };
 }
 
-export const QueryGetSolverDataResponse: MessageFns<QueryGetSolverDataResponse> = {
-  encode(message: QueryGetSolverDataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.solverData !== undefined) {
-      SolverData.encode(message.solverData, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryGetSolverDataResponse: MessageFns<QueryGetSolverDataResponse> =
+  {
+    encode(
+      message: QueryGetSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.solverData !== undefined) {
+        SolverData.encode(message.solverData, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetSolverDataResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetSolverDataResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.solverData = SolverData.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.solverData = SolverData.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSolverDataResponse {
+      return {
+        solverData: isSet(object.solverData)
+          ? SolverData.fromJSON(object.solverData)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetSolverDataResponse): unknown {
+      const obj: any = {};
+      if (message.solverData !== undefined) {
+        obj.solverData = SolverData.toJSON(message.solverData);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetSolverDataResponse {
-    return { solverData: isSet(object.solverData) ? SolverData.fromJSON(object.solverData) : undefined };
-  },
-
-  toJSON(message: QueryGetSolverDataResponse): unknown {
-    const obj: any = {};
-    if (message.solverData !== undefined) {
-      obj.solverData = SolverData.toJSON(message.solverData);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(base?: I): QueryGetSolverDataResponse {
-    return QueryGetSolverDataResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(object: I): QueryGetSolverDataResponse {
-    const message = createBaseQueryGetSolverDataResponse();
-    message.solverData = (object.solverData !== undefined && object.solverData !== null)
-      ? SolverData.fromPartial(object.solverData)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(
+      base?: I,
+    ): QueryGetSolverDataResponse {
+      return QueryGetSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(
+      object: I,
+    ): QueryGetSolverDataResponse {
+      const message = createBaseQueryGetSolverDataResponse();
+      message.solverData =
+        object.solverData !== undefined && object.solverData !== null
+          ? SolverData.fromPartial(object.solverData)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllSolverDataRequest(): QueryAllSolverDataRequest {
   return { pagination: undefined };
 }
 
-export const QueryAllSolverDataRequest: MessageFns<QueryAllSolverDataRequest> = {
-  encode(message: QueryAllSolverDataRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryAllSolverDataRequest: MessageFns<QueryAllSolverDataRequest> =
+  {
+    encode(
+      message: QueryAllSolverDataRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllSolverDataRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllSolverDataRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSolverDataRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSolverDataRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.pagination = PageRequest.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSolverDataRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSolverDataRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryAllSolverDataRequest {
-    return { pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined };
-  },
-
-  toJSON(message: QueryAllSolverDataRequest): unknown {
-    const obj: any = {};
-    if (message.pagination !== undefined) {
-      obj.pagination = PageRequest.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(base?: I): QueryAllSolverDataRequest {
-    return QueryAllSolverDataRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(object: I): QueryAllSolverDataRequest {
-    const message = createBaseQueryAllSolverDataRequest();
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageRequest.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(
+      base?: I,
+    ): QueryAllSolverDataRequest {
+      return QueryAllSolverDataRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(
+      object: I,
+    ): QueryAllSolverDataRequest {
+      const message = createBaseQueryAllSolverDataRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllSolverDataResponse(): QueryAllSolverDataResponse {
   return { solverData: [], pagination: undefined };
 }
 
-export const QueryAllSolverDataResponse: MessageFns<QueryAllSolverDataResponse> = {
-  encode(message: QueryAllSolverDataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.solverData) {
-      SolverData.encode(v!, writer.uint32(10).fork()).join();
-    }
-    if (message.pagination !== undefined) {
-      PageResponse.encode(message.pagination, writer.uint32(18).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllSolverDataResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllSolverDataResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.solverData.push(SolverData.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.pagination = PageResponse.decode(reader, reader.uint32());
-          continue;
-        }
+export const QueryAllSolverDataResponse: MessageFns<QueryAllSolverDataResponse> =
+  {
+    encode(
+      message: QueryAllSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.solverData) {
+        SolverData.encode(v!, writer.uint32(10).fork()).join();
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return writer;
+    },
 
-  fromJSON(object: any): QueryAllSolverDataResponse {
-    return {
-      solverData: globalThis.Array.isArray(object?.solverData)
-        ? object.solverData.map((e: any) => SolverData.fromJSON(e))
-        : [],
-      pagination: isSet(object.pagination) ? PageResponse.fromJSON(object.pagination) : undefined,
-    };
-  },
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
 
-  toJSON(message: QueryAllSolverDataResponse): unknown {
-    const obj: any = {};
-    if (message.solverData?.length) {
-      obj.solverData = message.solverData.map((e) => SolverData.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = PageResponse.toJSON(message.pagination);
-    }
-    return obj;
-  },
+            message.solverData.push(SolverData.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
 
-  create<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(base?: I): QueryAllSolverDataResponse {
-    return QueryAllSolverDataResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(object: I): QueryAllSolverDataResponse {
-    const message = createBaseQueryAllSolverDataResponse();
-    message.solverData = object.solverData?.map((e) => SolverData.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageResponse.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSolverDataResponse {
+      return {
+        solverData: globalThis.Array.isArray(object?.solverData)
+          ? object.solverData.map((e: any) => SolverData.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSolverDataResponse): unknown {
+      const obj: any = {};
+      if (message.solverData?.length) {
+        obj.solverData = message.solverData.map((e) => SolverData.toJSON(e));
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(
+      base?: I,
+    ): QueryAllSolverDataResponse {
+      return QueryAllSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(
+      object: I,
+    ): QueryAllSolverDataResponse {
+      const message = createBaseQueryAllSolverDataResponse();
+      message.solverData =
+        object.solverData?.map((e) => SolverData.fromPartial(e)) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseMsgCreateSolverData(): MsgCreateSolverData {
   return { cosmosAddress: "", advertisedFees: [], addresses: [] };
 }
 
 export const MsgCreateSolverData: MessageFns<MsgCreateSolverData> = {
-  encode(message: MsgCreateSolverData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgCreateSolverData,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.cosmosAddress !== "") {
       writer.uint32(10).string(message.cosmosAddress);
     }
@@ -2473,8 +2794,12 @@ export const MsgCreateSolverData: MessageFns<MsgCreateSolverData> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateSolverData {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgCreateSolverData {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgCreateSolverData();
     while (reader.pos < end) {
@@ -2515,7 +2840,9 @@ export const MsgCreateSolverData: MessageFns<MsgCreateSolverData> = {
 
   fromJSON(object: any): MsgCreateSolverData {
     return {
-      cosmosAddress: isSet(object.cosmosAddress) ? globalThis.String(object.cosmosAddress) : "",
+      cosmosAddress: isSet(object.cosmosAddress)
+        ? globalThis.String(object.cosmosAddress)
+        : "",
       advertisedFees: globalThis.Array.isArray(object?.advertisedFees)
         ? object.advertisedFees.map((e: any) => RouteFee.fromJSON(e))
         : [],
@@ -2531,7 +2858,9 @@ export const MsgCreateSolverData: MessageFns<MsgCreateSolverData> = {
       obj.cosmosAddress = message.cosmosAddress;
     }
     if (message.advertisedFees?.length) {
-      obj.advertisedFees = message.advertisedFees.map((e) => RouteFee.toJSON(e));
+      obj.advertisedFees = message.advertisedFees.map((e) =>
+        RouteFee.toJSON(e),
+      );
     }
     if (message.addresses?.length) {
       obj.addresses = message.addresses.map((e) => SolverAddress.toJSON(e));
@@ -2539,14 +2868,20 @@ export const MsgCreateSolverData: MessageFns<MsgCreateSolverData> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgCreateSolverData>, I>>(base?: I): MsgCreateSolverData {
+  create<I extends Exact<DeepPartial<MsgCreateSolverData>, I>>(
+    base?: I,
+  ): MsgCreateSolverData {
     return MsgCreateSolverData.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateSolverData>, I>>(object: I): MsgCreateSolverData {
+  fromPartial<I extends Exact<DeepPartial<MsgCreateSolverData>, I>>(
+    object: I,
+  ): MsgCreateSolverData {
     const message = createBaseMsgCreateSolverData();
     message.cosmosAddress = object.cosmosAddress ?? "";
-    message.advertisedFees = object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
-    message.addresses = object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
+    message.advertisedFees =
+      object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
+    message.addresses =
+      object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
     return message;
   },
 };
@@ -2555,51 +2890,66 @@ function createBaseMsgCreateSolverDataResponse(): MsgCreateSolverDataResponse {
   return {};
 }
 
-export const MsgCreateSolverDataResponse: MessageFns<MsgCreateSolverDataResponse> = {
-  encode(_: MsgCreateSolverDataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const MsgCreateSolverDataResponse: MessageFns<MsgCreateSolverDataResponse> =
+  {
+    encode(
+      _: MsgCreateSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateSolverDataResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgCreateSolverDataResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgCreateSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgCreateSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): MsgCreateSolverDataResponse {
-    return {};
-  },
+    fromJSON(_: any): MsgCreateSolverDataResponse {
+      return {};
+    },
 
-  toJSON(_: MsgCreateSolverDataResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: MsgCreateSolverDataResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<MsgCreateSolverDataResponse>, I>>(base?: I): MsgCreateSolverDataResponse {
-    return MsgCreateSolverDataResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateSolverDataResponse>, I>>(_: I): MsgCreateSolverDataResponse {
-    const message = createBaseMsgCreateSolverDataResponse();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<MsgCreateSolverDataResponse>, I>>(
+      base?: I,
+    ): MsgCreateSolverDataResponse {
+      return MsgCreateSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgCreateSolverDataResponse>, I>>(
+      _: I,
+    ): MsgCreateSolverDataResponse {
+      const message = createBaseMsgCreateSolverDataResponse();
+      return message;
+    },
+  };
 
 function createBaseMsgUpdateSolverData(): MsgUpdateSolverData {
   return { cosmosAddress: "", advertisedFees: [], addresses: [] };
 }
 
 export const MsgUpdateSolverData: MessageFns<MsgUpdateSolverData> = {
-  encode(message: MsgUpdateSolverData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgUpdateSolverData,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.cosmosAddress !== "") {
       writer.uint32(10).string(message.cosmosAddress);
     }
@@ -2612,8 +2962,12 @@ export const MsgUpdateSolverData: MessageFns<MsgUpdateSolverData> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateSolverData {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgUpdateSolverData {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgUpdateSolverData();
     while (reader.pos < end) {
@@ -2654,7 +3008,9 @@ export const MsgUpdateSolverData: MessageFns<MsgUpdateSolverData> = {
 
   fromJSON(object: any): MsgUpdateSolverData {
     return {
-      cosmosAddress: isSet(object.cosmosAddress) ? globalThis.String(object.cosmosAddress) : "",
+      cosmosAddress: isSet(object.cosmosAddress)
+        ? globalThis.String(object.cosmosAddress)
+        : "",
       advertisedFees: globalThis.Array.isArray(object?.advertisedFees)
         ? object.advertisedFees.map((e: any) => RouteFee.fromJSON(e))
         : [],
@@ -2670,7 +3026,9 @@ export const MsgUpdateSolverData: MessageFns<MsgUpdateSolverData> = {
       obj.cosmosAddress = message.cosmosAddress;
     }
     if (message.advertisedFees?.length) {
-      obj.advertisedFees = message.advertisedFees.map((e) => RouteFee.toJSON(e));
+      obj.advertisedFees = message.advertisedFees.map((e) =>
+        RouteFee.toJSON(e),
+      );
     }
     if (message.addresses?.length) {
       obj.addresses = message.addresses.map((e) => SolverAddress.toJSON(e));
@@ -2678,14 +3036,20 @@ export const MsgUpdateSolverData: MessageFns<MsgUpdateSolverData> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgUpdateSolverData>, I>>(base?: I): MsgUpdateSolverData {
+  create<I extends Exact<DeepPartial<MsgUpdateSolverData>, I>>(
+    base?: I,
+  ): MsgUpdateSolverData {
     return MsgUpdateSolverData.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgUpdateSolverData>, I>>(object: I): MsgUpdateSolverData {
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateSolverData>, I>>(
+    object: I,
+  ): MsgUpdateSolverData {
     const message = createBaseMsgUpdateSolverData();
     message.cosmosAddress = object.cosmosAddress ?? "";
-    message.advertisedFees = object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
-    message.addresses = object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
+    message.advertisedFees =
+      object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
+    message.addresses =
+      object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
     return message;
   },
 };
@@ -2694,44 +3058,56 @@ function createBaseMsgUpdateSolverDataResponse(): MsgUpdateSolverDataResponse {
   return {};
 }
 
-export const MsgUpdateSolverDataResponse: MessageFns<MsgUpdateSolverDataResponse> = {
-  encode(_: MsgUpdateSolverDataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const MsgUpdateSolverDataResponse: MessageFns<MsgUpdateSolverDataResponse> =
+  {
+    encode(
+      _: MsgUpdateSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateSolverDataResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgUpdateSolverDataResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgUpdateSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgUpdateSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): MsgUpdateSolverDataResponse {
-    return {};
-  },
+    fromJSON(_: any): MsgUpdateSolverDataResponse {
+      return {};
+    },
 
-  toJSON(_: MsgUpdateSolverDataResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: MsgUpdateSolverDataResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<MsgUpdateSolverDataResponse>, I>>(base?: I): MsgUpdateSolverDataResponse {
-    return MsgUpdateSolverDataResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MsgUpdateSolverDataResponse>, I>>(_: I): MsgUpdateSolverDataResponse {
-    const message = createBaseMsgUpdateSolverDataResponse();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<MsgUpdateSolverDataResponse>, I>>(
+      base?: I,
+    ): MsgUpdateSolverDataResponse {
+      return MsgUpdateSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgUpdateSolverDataResponse>, I>>(
+      _: I,
+    ): MsgUpdateSolverDataResponse {
+      const message = createBaseMsgUpdateSolverDataResponse();
+      return message;
+    },
+  };
 
 function createBaseSettlement(): Settlement {
   return {
@@ -2746,7 +3122,10 @@ function createBaseSettlement(): Settlement {
 }
 
 export const Settlement: MessageFns<Settlement> = {
-  encode(message: Settlement, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: Settlement,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.id.length !== 0) {
       writer.uint32(10).bytes(message.id);
     }
@@ -2772,7 +3151,8 @@ export const Settlement: MessageFns<Settlement> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): Settlement {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseSettlement();
     while (reader.pos < end) {
@@ -2847,13 +3227,21 @@ export const Settlement: MessageFns<Settlement> = {
     return {
       id: isSet(object.id) ? bytesFromBase64(object.id) : new Uint8Array(0),
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      chainId: isSet(object.chainId) ? bytesFromBase64(object.chainId) : new Uint8Array(0),
-      amounts: globalThis.Array.isArray(object?.amounts) ? object.amounts.map((e: any) => bytesFromBase64(e)) : [],
+      chainId: isSet(object.chainId)
+        ? bytesFromBase64(object.chainId)
+        : new Uint8Array(0),
+      amounts: globalThis.Array.isArray(object?.amounts)
+        ? object.amounts.map((e: any) => bytesFromBase64(e))
+        : [],
       tokenAddress: globalThis.Array.isArray(object?.tokenAddress)
         ? object.tokenAddress.map((e: any) => bytesFromBase64(e))
         : [],
-      filler: globalThis.Array.isArray(object?.filler) ? object.filler.map((e: any) => bytesFromBase64(e)) : [],
-      success: isSet(object.success) ? globalThis.Boolean(object.success) : false,
+      filler: globalThis.Array.isArray(object?.filler)
+        ? object.filler.map((e: any) => bytesFromBase64(e))
+        : [],
+      success: isSet(object.success)
+        ? globalThis.Boolean(object.success)
+        : false,
     };
   },
 
@@ -2886,7 +3274,9 @@ export const Settlement: MessageFns<Settlement> = {
   create<I extends Exact<DeepPartial<Settlement>, I>>(base?: I): Settlement {
     return Settlement.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<Settlement>, I>>(object: I): Settlement {
+  fromPartial<I extends Exact<DeepPartial<Settlement>, I>>(
+    object: I,
+  ): Settlement {
     const message = createBaseSettlement();
     message.id = object.id ?? new Uint8Array(0);
     message.universe = object.universe ?? 0;
@@ -2903,348 +3293,437 @@ function createBaseQueryGetSettlementRequest(): QueryGetSettlementRequest {
   return { id: Long.UZERO };
 }
 
-export const QueryGetSettlementRequest: MessageFns<QueryGetSettlementRequest> = {
-  encode(message: QueryGetSettlementRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (!message.id.equals(Long.UZERO)) {
-      writer.uint32(8).uint64(message.id.toString());
-    }
-    return writer;
-  },
+export const QueryGetSettlementRequest: MessageFns<QueryGetSettlementRequest> =
+  {
+    encode(
+      message: QueryGetSettlementRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetSettlementRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetSettlementRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 8) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSettlementRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSettlementRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
           }
-
-          message.id = Long.fromString(reader.uint64().toString(), true);
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSettlementRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetSettlementRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetSettlementRequest {
-    return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
-  },
-
-  toJSON(message: QueryGetSettlementRequest): unknown {
-    const obj: any = {};
-    if (!message.id.equals(Long.UZERO)) {
-      obj.id = (message.id || Long.UZERO).toString();
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(base?: I): QueryGetSettlementRequest {
-    return QueryGetSettlementRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(object: I): QueryGetSettlementRequest {
-    const message = createBaseQueryGetSettlementRequest();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(
+      base?: I,
+    ): QueryGetSettlementRequest {
+      return QueryGetSettlementRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(
+      object: I,
+    ): QueryGetSettlementRequest {
+      const message = createBaseQueryGetSettlementRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
 
 function createBaseQueryGetSettlementResponse(): QueryGetSettlementResponse {
   return { Settlement: undefined };
 }
 
-export const QueryGetSettlementResponse: MessageFns<QueryGetSettlementResponse> = {
-  encode(message: QueryGetSettlementResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.Settlement !== undefined) {
-      Settlement.encode(message.Settlement, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryGetSettlementResponse: MessageFns<QueryGetSettlementResponse> =
+  {
+    encode(
+      message: QueryGetSettlementResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.Settlement !== undefined) {
+        Settlement.encode(message.Settlement, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetSettlementResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetSettlementResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSettlementResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSettlementResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.Settlement = Settlement.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.Settlement = Settlement.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSettlementResponse {
+      return {
+        Settlement: isSet(object.Settlement)
+          ? Settlement.fromJSON(object.Settlement)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetSettlementResponse): unknown {
+      const obj: any = {};
+      if (message.Settlement !== undefined) {
+        obj.Settlement = Settlement.toJSON(message.Settlement);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetSettlementResponse {
-    return { Settlement: isSet(object.Settlement) ? Settlement.fromJSON(object.Settlement) : undefined };
-  },
-
-  toJSON(message: QueryGetSettlementResponse): unknown {
-    const obj: any = {};
-    if (message.Settlement !== undefined) {
-      obj.Settlement = Settlement.toJSON(message.Settlement);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(base?: I): QueryGetSettlementResponse {
-    return QueryGetSettlementResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(object: I): QueryGetSettlementResponse {
-    const message = createBaseQueryGetSettlementResponse();
-    message.Settlement = (object.Settlement !== undefined && object.Settlement !== null)
-      ? Settlement.fromPartial(object.Settlement)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(
+      base?: I,
+    ): QueryGetSettlementResponse {
+      return QueryGetSettlementResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(
+      object: I,
+    ): QueryGetSettlementResponse {
+      const message = createBaseQueryGetSettlementResponse();
+      message.Settlement =
+        object.Settlement !== undefined && object.Settlement !== null
+          ? Settlement.fromPartial(object.Settlement)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllSettlementRequest(): QueryAllSettlementRequest {
   return { pagination: undefined };
 }
 
-export const QueryAllSettlementRequest: MessageFns<QueryAllSettlementRequest> = {
-  encode(message: QueryAllSettlementRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryAllSettlementRequest: MessageFns<QueryAllSettlementRequest> =
+  {
+    encode(
+      message: QueryAllSettlementRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllSettlementRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllSettlementRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSettlementRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSettlementRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.pagination = PageRequest.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSettlementRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSettlementRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryAllSettlementRequest {
-    return { pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined };
-  },
-
-  toJSON(message: QueryAllSettlementRequest): unknown {
-    const obj: any = {};
-    if (message.pagination !== undefined) {
-      obj.pagination = PageRequest.toJSON(message.pagination);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(base?: I): QueryAllSettlementRequest {
-    return QueryAllSettlementRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(object: I): QueryAllSettlementRequest {
-    const message = createBaseQueryAllSettlementRequest();
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageRequest.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(
+      base?: I,
+    ): QueryAllSettlementRequest {
+      return QueryAllSettlementRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(
+      object: I,
+    ): QueryAllSettlementRequest {
+      const message = createBaseQueryAllSettlementRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryAllSettlementResponse(): QueryAllSettlementResponse {
   return { Settlement: [], pagination: undefined };
 }
 
-export const QueryAllSettlementResponse: MessageFns<QueryAllSettlementResponse> = {
-  encode(message: QueryAllSettlementResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    for (const v of message.Settlement) {
-      Settlement.encode(v!, writer.uint32(10).fork()).join();
-    }
-    if (message.pagination !== undefined) {
-      PageResponse.encode(message.pagination, writer.uint32(18).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryAllSettlementResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryAllSettlementResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.Settlement.push(Settlement.decode(reader, reader.uint32()));
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.pagination = PageResponse.decode(reader, reader.uint32());
-          continue;
-        }
+export const QueryAllSettlementResponse: MessageFns<QueryAllSettlementResponse> =
+  {
+    encode(
+      message: QueryAllSettlementResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.Settlement) {
+        Settlement.encode(v!, writer.uint32(10).fork()).join();
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return writer;
+    },
 
-  fromJSON(object: any): QueryAllSettlementResponse {
-    return {
-      Settlement: globalThis.Array.isArray(object?.Settlement)
-        ? object.Settlement.map((e: any) => Settlement.fromJSON(e))
-        : [],
-      pagination: isSet(object.pagination) ? PageResponse.fromJSON(object.pagination) : undefined,
-    };
-  },
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSettlementResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSettlementResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
 
-  toJSON(message: QueryAllSettlementResponse): unknown {
-    const obj: any = {};
-    if (message.Settlement?.length) {
-      obj.Settlement = message.Settlement.map((e) => Settlement.toJSON(e));
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = PageResponse.toJSON(message.pagination);
-    }
-    return obj;
-  },
+            message.Settlement.push(Settlement.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
 
-  create<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(base?: I): QueryAllSettlementResponse {
-    return QueryAllSettlementResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(object: I): QueryAllSettlementResponse {
-    const message = createBaseQueryAllSettlementResponse();
-    message.Settlement = object.Settlement?.map((e) => Settlement.fromPartial(e)) || [];
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageResponse.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSettlementResponse {
+      return {
+        Settlement: globalThis.Array.isArray(object?.Settlement)
+          ? object.Settlement.map((e: any) => Settlement.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSettlementResponse): unknown {
+      const obj: any = {};
+      if (message.Settlement?.length) {
+        obj.Settlement = message.Settlement.map((e) => Settlement.toJSON(e));
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(
+      base?: I,
+    ): QueryAllSettlementResponse {
+      return QueryAllSettlementResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(
+      object: I,
+    ): QueryAllSettlementResponse {
+      const message = createBaseQueryAllSettlementResponse();
+      message.Settlement =
+        object.Settlement?.map((e) => Settlement.fromPartial(e)) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseQueryRequestForFundsByAddressRequest(): QueryRequestForFundsByAddressRequest {
   return { account: "", pagination: undefined };
 }
 
-export const QueryRequestForFundsByAddressRequest: MessageFns<QueryRequestForFundsByAddressRequest> = {
-  encode(message: QueryRequestForFundsByAddressRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.account !== "") {
-      writer.uint32(10).string(message.account);
-    }
-    if (message.pagination !== undefined) {
-      PageRequest.encode(message.pagination, writer.uint32(18).fork()).join();
-    }
-    return writer;
-  },
-
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryRequestForFundsByAddressRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryRequestForFundsByAddressRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
-          }
-
-          message.account = reader.string();
-          continue;
-        }
-        case 2: {
-          if (tag !== 18) {
-            break;
-          }
-
-          message.pagination = PageRequest.decode(reader, reader.uint32());
-          continue;
-        }
+export const QueryRequestForFundsByAddressRequest: MessageFns<QueryRequestForFundsByAddressRequest> =
+  {
+    encode(
+      message: QueryRequestForFundsByAddressRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.account !== "") {
+        writer.uint32(10).string(message.account);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(18).fork()).join();
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return writer;
+    },
 
-  fromJSON(object: any): QueryRequestForFundsByAddressRequest {
-    return {
-      account: isSet(object.account) ? globalThis.String(object.account) : "",
-      pagination: isSet(object.pagination) ? PageRequest.fromJSON(object.pagination) : undefined,
-    };
-  },
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryRequestForFundsByAddressRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryRequestForFundsByAddressRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
 
-  toJSON(message: QueryRequestForFundsByAddressRequest): unknown {
-    const obj: any = {};
-    if (message.account !== "") {
-      obj.account = message.account;
-    }
-    if (message.pagination !== undefined) {
-      obj.pagination = PageRequest.toJSON(message.pagination);
-    }
-    return obj;
-  },
+            message.account = reader.string();
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
 
-  create<I extends Exact<DeepPartial<QueryRequestForFundsByAddressRequest>, I>>(
-    base?: I,
-  ): QueryRequestForFundsByAddressRequest {
-    return QueryRequestForFundsByAddressRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryRequestForFundsByAddressRequest>, I>>(
-    object: I,
-  ): QueryRequestForFundsByAddressRequest {
-    const message = createBaseQueryRequestForFundsByAddressRequest();
-    message.account = object.account ?? "";
-    message.pagination = (object.pagination !== undefined && object.pagination !== null)
-      ? PageRequest.fromPartial(object.pagination)
-      : undefined;
-    return message;
-  },
-};
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryRequestForFundsByAddressRequest {
+      return {
+        account: isSet(object.account) ? globalThis.String(object.account) : "",
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryRequestForFundsByAddressRequest): unknown {
+      const obj: any = {};
+      if (message.account !== "") {
+        obj.account = message.account;
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<
+      I extends Exact<DeepPartial<QueryRequestForFundsByAddressRequest>, I>,
+    >(base?: I): QueryRequestForFundsByAddressRequest {
+      return QueryRequestForFundsByAddressRequest.fromPartial(
+        base ?? ({} as any),
+      );
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryRequestForFundsByAddressRequest>, I>,
+    >(object: I): QueryRequestForFundsByAddressRequest {
+      const message = createBaseQueryRequestForFundsByAddressRequest();
+      message.account = object.account ?? "";
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseFixedFeeTuple(): FixedFeeTuple {
-  return { universe: 0, chainID: new Uint8Array(0), tokenAddress: new Uint8Array(0), fee: new Uint8Array(0) };
+  return {
+    universe: 0,
+    chainID: new Uint8Array(0),
+    tokenAddress: new Uint8Array(0),
+    fee: new Uint8Array(0),
+  };
 }
 
 export const FixedFeeTuple: MessageFns<FixedFeeTuple> = {
-  encode(message: FixedFeeTuple, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: FixedFeeTuple,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -3261,7 +3740,8 @@ export const FixedFeeTuple: MessageFns<FixedFeeTuple> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): FixedFeeTuple {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFixedFeeTuple();
     while (reader.pos < end) {
@@ -3311,8 +3791,12 @@ export const FixedFeeTuple: MessageFns<FixedFeeTuple> = {
   fromJSON(object: any): FixedFeeTuple {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      chainID: isSet(object.chainID) ? bytesFromBase64(object.chainID) : new Uint8Array(0),
-      tokenAddress: isSet(object.tokenAddress) ? bytesFromBase64(object.tokenAddress) : new Uint8Array(0),
+      chainID: isSet(object.chainID)
+        ? bytesFromBase64(object.chainID)
+        : new Uint8Array(0),
+      tokenAddress: isSet(object.tokenAddress)
+        ? bytesFromBase64(object.tokenAddress)
+        : new Uint8Array(0),
       fee: isSet(object.fee) ? bytesFromBase64(object.fee) : new Uint8Array(0),
     };
   },
@@ -3334,10 +3818,14 @@ export const FixedFeeTuple: MessageFns<FixedFeeTuple> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FixedFeeTuple>, I>>(base?: I): FixedFeeTuple {
+  create<I extends Exact<DeepPartial<FixedFeeTuple>, I>>(
+    base?: I,
+  ): FixedFeeTuple {
     return FixedFeeTuple.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FixedFeeTuple>, I>>(object: I): FixedFeeTuple {
+  fromPartial<I extends Exact<DeepPartial<FixedFeeTuple>, I>>(
+    object: I,
+  ): FixedFeeTuple {
     const message = createBaseFixedFeeTuple();
     message.universe = object.universe ?? 0;
     message.chainID = object.chainID ?? new Uint8Array(0);
@@ -3352,7 +3840,10 @@ function createBaseAdminFeeRecipient(): AdminFeeRecipient {
 }
 
 export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
-  encode(message: AdminFeeRecipient, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: AdminFeeRecipient,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -3363,7 +3854,8 @@ export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): AdminFeeRecipient {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseAdminFeeRecipient();
     while (reader.pos < end) {
@@ -3397,7 +3889,9 @@ export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
   fromJSON(object: any): AdminFeeRecipient {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      address: isSet(object.address) ? bytesFromBase64(object.address) : new Uint8Array(0),
+      address: isSet(object.address)
+        ? bytesFromBase64(object.address)
+        : new Uint8Array(0),
     };
   },
 
@@ -3412,10 +3906,14 @@ export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<AdminFeeRecipient>, I>>(base?: I): AdminFeeRecipient {
+  create<I extends Exact<DeepPartial<AdminFeeRecipient>, I>>(
+    base?: I,
+  ): AdminFeeRecipient {
     return AdminFeeRecipient.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<AdminFeeRecipient>, I>>(object: I): AdminFeeRecipient {
+  fromPartial<I extends Exact<DeepPartial<AdminFeeRecipient>, I>>(
+    object: I,
+  ): AdminFeeRecipient {
     const message = createBaseAdminFeeRecipient();
     message.universe = object.universe ?? 0;
     message.address = object.address ?? new Uint8Array(0);
@@ -3424,11 +3922,20 @@ export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
 };
 
 function createBaseProtocolFees(): ProtocolFees {
-  return { feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], admin: "", feeRecipients: [] };
+  return {
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    admin: "",
+    feeRecipients: [],
+  };
 }
 
 export const ProtocolFees: MessageFns<ProtocolFees> = {
-  encode(message: ProtocolFees, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: ProtocolFees,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (!message.feeBP.equals(Long.UZERO)) {
       writer.uint32(8).uint64(message.feeBP.toString());
     }
@@ -3448,7 +3955,8 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): ProtocolFees {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseProtocolFees();
     while (reader.pos < end) {
@@ -3467,7 +3975,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
             break;
           }
 
-          message.collectionFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.collectionFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 3: {
@@ -3475,7 +3985,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
             break;
           }
 
-          message.fulfilmentFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.fulfilmentFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 4: {
@@ -3491,7 +4003,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
             break;
           }
 
-          message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
+          message.feeRecipients.push(
+            AdminFeeRecipient.decode(reader, reader.uint32()),
+          );
           continue;
         }
       }
@@ -3525,30 +4039,46 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
       obj.feeBP = (message.feeBP || Long.UZERO).toString();
     }
     if (message.collectionFees?.length) {
-      obj.collectionFees = message.collectionFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.collectionFees = message.collectionFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.fulfilmentFees?.length) {
-      obj.fulfilmentFees = message.fulfilmentFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.fulfilmentFees = message.fulfilmentFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.admin !== "") {
       obj.admin = message.admin;
     }
     if (message.feeRecipients?.length) {
-      obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
+      obj.feeRecipients = message.feeRecipients.map((e) =>
+        AdminFeeRecipient.toJSON(e),
+      );
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<ProtocolFees>, I>>(base?: I): ProtocolFees {
+  create<I extends Exact<DeepPartial<ProtocolFees>, I>>(
+    base?: I,
+  ): ProtocolFees {
     return ProtocolFees.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<ProtocolFees>, I>>(object: I): ProtocolFees {
+  fromPartial<I extends Exact<DeepPartial<ProtocolFees>, I>>(
+    object: I,
+  ): ProtocolFees {
     const message = createBaseProtocolFees();
-    message.feeBP = (object.feeBP !== undefined && object.feeBP !== null) ? Long.fromValue(object.feeBP) : Long.UZERO;
-    message.collectionFees = object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
-    message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.feeBP =
+      object.feeBP !== undefined && object.feeBP !== null
+        ? Long.fromValue(object.feeBP)
+        : Long.UZERO;
+    message.collectionFees =
+      object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.fulfilmentFees =
+      object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.admin = object.admin ?? "";
-    message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.feeRecipients =
+      object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3557,111 +4087,152 @@ function createBaseQueryGetProtocolFeesRequest(): QueryGetProtocolFeesRequest {
   return {};
 }
 
-export const QueryGetProtocolFeesRequest: MessageFns<QueryGetProtocolFeesRequest> = {
-  encode(_: QueryGetProtocolFeesRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const QueryGetProtocolFeesRequest: MessageFns<QueryGetProtocolFeesRequest> =
+  {
+    encode(
+      _: QueryGetProtocolFeesRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetProtocolFeesRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetProtocolFeesRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetProtocolFeesRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetProtocolFeesRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): QueryGetProtocolFeesRequest {
-    return {};
-  },
+    fromJSON(_: any): QueryGetProtocolFeesRequest {
+      return {};
+    },
 
-  toJSON(_: QueryGetProtocolFeesRequest): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: QueryGetProtocolFeesRequest): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(base?: I): QueryGetProtocolFeesRequest {
-    return QueryGetProtocolFeesRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(_: I): QueryGetProtocolFeesRequest {
-    const message = createBaseQueryGetProtocolFeesRequest();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(
+      base?: I,
+    ): QueryGetProtocolFeesRequest {
+      return QueryGetProtocolFeesRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(
+      _: I,
+    ): QueryGetProtocolFeesRequest {
+      const message = createBaseQueryGetProtocolFeesRequest();
+      return message;
+    },
+  };
 
 function createBaseQueryGetProtocolFeesResponse(): QueryGetProtocolFeesResponse {
   return { ProtocolFees: undefined };
 }
 
-export const QueryGetProtocolFeesResponse: MessageFns<QueryGetProtocolFeesResponse> = {
-  encode(message: QueryGetProtocolFeesResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.ProtocolFees !== undefined) {
-      ProtocolFees.encode(message.ProtocolFees, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryGetProtocolFeesResponse: MessageFns<QueryGetProtocolFeesResponse> =
+  {
+    encode(
+      message: QueryGetProtocolFeesResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.ProtocolFees !== undefined) {
+        ProtocolFees.encode(
+          message.ProtocolFees,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetProtocolFeesResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetProtocolFeesResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetProtocolFeesResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetProtocolFeesResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.ProtocolFees = ProtocolFees.decode(reader, reader.uint32());
+            continue;
           }
-
-          message.ProtocolFees = ProtocolFees.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetProtocolFeesResponse {
+      return {
+        ProtocolFees: isSet(object.ProtocolFees)
+          ? ProtocolFees.fromJSON(object.ProtocolFees)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetProtocolFeesResponse): unknown {
+      const obj: any = {};
+      if (message.ProtocolFees !== undefined) {
+        obj.ProtocolFees = ProtocolFees.toJSON(message.ProtocolFees);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetProtocolFeesResponse {
-    return { ProtocolFees: isSet(object.ProtocolFees) ? ProtocolFees.fromJSON(object.ProtocolFees) : undefined };
-  },
-
-  toJSON(message: QueryGetProtocolFeesResponse): unknown {
-    const obj: any = {};
-    if (message.ProtocolFees !== undefined) {
-      obj.ProtocolFees = ProtocolFees.toJSON(message.ProtocolFees);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(base?: I): QueryGetProtocolFeesResponse {
-    return QueryGetProtocolFeesResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(object: I): QueryGetProtocolFeesResponse {
-    const message = createBaseQueryGetProtocolFeesResponse();
-    message.ProtocolFees = (object.ProtocolFees !== undefined && object.ProtocolFees !== null)
-      ? ProtocolFees.fromPartial(object.ProtocolFees)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(
+      base?: I,
+    ): QueryGetProtocolFeesResponse {
+      return QueryGetProtocolFeesResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(
+      object: I,
+    ): QueryGetProtocolFeesResponse {
+      const message = createBaseQueryGetProtocolFeesResponse();
+      message.ProtocolFees =
+        object.ProtocolFees !== undefined && object.ProtocolFees !== null
+          ? ProtocolFees.fromPartial(object.ProtocolFees)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseMsgCreateProtocolFees(): MsgCreateProtocolFees {
-  return { creator: "", feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], feeRecipients: [] };
+  return {
+    creator: "",
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    feeRecipients: [],
+  };
 }
 
 export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
-  encode(message: MsgCreateProtocolFees, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgCreateProtocolFees,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -3680,8 +4251,12 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateProtocolFees {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgCreateProtocolFees {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgCreateProtocolFees();
     while (reader.pos < end) {
@@ -3708,7 +4283,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
             break;
           }
 
-          message.collectionFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.collectionFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 4: {
@@ -3716,7 +4293,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
             break;
           }
 
-          message.fulfilmentFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.fulfilmentFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 5: {
@@ -3724,7 +4303,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
             break;
           }
 
-          message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
+          message.feeRecipients.push(
+            AdminFeeRecipient.decode(reader, reader.uint32()),
+          );
           continue;
         }
       }
@@ -3761,27 +4342,43 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
       obj.feeBP = (message.feeBP || Long.UZERO).toString();
     }
     if (message.collectionFees?.length) {
-      obj.collectionFees = message.collectionFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.collectionFees = message.collectionFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.fulfilmentFees?.length) {
-      obj.fulfilmentFees = message.fulfilmentFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.fulfilmentFees = message.fulfilmentFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.feeRecipients?.length) {
-      obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
+      obj.feeRecipients = message.feeRecipients.map((e) =>
+        AdminFeeRecipient.toJSON(e),
+      );
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgCreateProtocolFees>, I>>(base?: I): MsgCreateProtocolFees {
+  create<I extends Exact<DeepPartial<MsgCreateProtocolFees>, I>>(
+    base?: I,
+  ): MsgCreateProtocolFees {
     return MsgCreateProtocolFees.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateProtocolFees>, I>>(object: I): MsgCreateProtocolFees {
+  fromPartial<I extends Exact<DeepPartial<MsgCreateProtocolFees>, I>>(
+    object: I,
+  ): MsgCreateProtocolFees {
     const message = createBaseMsgCreateProtocolFees();
     message.creator = object.creator ?? "";
-    message.feeBP = (object.feeBP !== undefined && object.feeBP !== null) ? Long.fromValue(object.feeBP) : Long.UZERO;
-    message.collectionFees = object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
-    message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
-    message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.feeBP =
+      object.feeBP !== undefined && object.feeBP !== null
+        ? Long.fromValue(object.feeBP)
+        : Long.UZERO;
+    message.collectionFees =
+      object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.fulfilmentFees =
+      object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.feeRecipients =
+      object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3790,51 +4387,72 @@ function createBaseMsgCreateProtocolFeesResponse(): MsgCreateProtocolFeesRespons
   return {};
 }
 
-export const MsgCreateProtocolFeesResponse: MessageFns<MsgCreateProtocolFeesResponse> = {
-  encode(_: MsgCreateProtocolFeesResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const MsgCreateProtocolFeesResponse: MessageFns<MsgCreateProtocolFeesResponse> =
+  {
+    encode(
+      _: MsgCreateProtocolFeesResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateProtocolFeesResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgCreateProtocolFeesResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgCreateProtocolFeesResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgCreateProtocolFeesResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): MsgCreateProtocolFeesResponse {
-    return {};
-  },
+    fromJSON(_: any): MsgCreateProtocolFeesResponse {
+      return {};
+    },
 
-  toJSON(_: MsgCreateProtocolFeesResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: MsgCreateProtocolFeesResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<MsgCreateProtocolFeesResponse>, I>>(base?: I): MsgCreateProtocolFeesResponse {
-    return MsgCreateProtocolFeesResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MsgCreateProtocolFeesResponse>, I>>(_: I): MsgCreateProtocolFeesResponse {
-    const message = createBaseMsgCreateProtocolFeesResponse();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<MsgCreateProtocolFeesResponse>, I>>(
+      base?: I,
+    ): MsgCreateProtocolFeesResponse {
+      return MsgCreateProtocolFeesResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgCreateProtocolFeesResponse>, I>>(
+      _: I,
+    ): MsgCreateProtocolFeesResponse {
+      const message = createBaseMsgCreateProtocolFeesResponse();
+      return message;
+    },
+  };
 
 function createBaseMsgUpdateProtocolFees(): MsgUpdateProtocolFees {
-  return { creator: "", feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], feeRecipients: [] };
+  return {
+    creator: "",
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    feeRecipients: [],
+  };
 }
 
 export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
-  encode(message: MsgUpdateProtocolFees, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgUpdateProtocolFees,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -3853,8 +4471,12 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateProtocolFees {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgUpdateProtocolFees {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgUpdateProtocolFees();
     while (reader.pos < end) {
@@ -3881,7 +4503,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
             break;
           }
 
-          message.collectionFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.collectionFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 4: {
@@ -3889,7 +4513,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
             break;
           }
 
-          message.fulfilmentFees.push(FixedFeeTuple.decode(reader, reader.uint32()));
+          message.fulfilmentFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
           continue;
         }
         case 5: {
@@ -3897,7 +4523,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
             break;
           }
 
-          message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
+          message.feeRecipients.push(
+            AdminFeeRecipient.decode(reader, reader.uint32()),
+          );
           continue;
         }
       }
@@ -3934,27 +4562,43 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
       obj.feeBP = (message.feeBP || Long.UZERO).toString();
     }
     if (message.collectionFees?.length) {
-      obj.collectionFees = message.collectionFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.collectionFees = message.collectionFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.fulfilmentFees?.length) {
-      obj.fulfilmentFees = message.fulfilmentFees.map((e) => FixedFeeTuple.toJSON(e));
+      obj.fulfilmentFees = message.fulfilmentFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
     }
     if (message.feeRecipients?.length) {
-      obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
+      obj.feeRecipients = message.feeRecipients.map((e) =>
+        AdminFeeRecipient.toJSON(e),
+      );
     }
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgUpdateProtocolFees>, I>>(base?: I): MsgUpdateProtocolFees {
+  create<I extends Exact<DeepPartial<MsgUpdateProtocolFees>, I>>(
+    base?: I,
+  ): MsgUpdateProtocolFees {
     return MsgUpdateProtocolFees.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgUpdateProtocolFees>, I>>(object: I): MsgUpdateProtocolFees {
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateProtocolFees>, I>>(
+    object: I,
+  ): MsgUpdateProtocolFees {
     const message = createBaseMsgUpdateProtocolFees();
     message.creator = object.creator ?? "";
-    message.feeBP = (object.feeBP !== undefined && object.feeBP !== null) ? Long.fromValue(object.feeBP) : Long.UZERO;
-    message.collectionFees = object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
-    message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
-    message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.feeBP =
+      object.feeBP !== undefined && object.feeBP !== null
+        ? Long.fromValue(object.feeBP)
+        : Long.UZERO;
+    message.collectionFees =
+      object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.fulfilmentFees =
+      object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.feeRecipients =
+      object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3963,44 +4607,56 @@ function createBaseMsgUpdateProtocolFeesResponse(): MsgUpdateProtocolFeesRespons
   return {};
 }
 
-export const MsgUpdateProtocolFeesResponse: MessageFns<MsgUpdateProtocolFeesResponse> = {
-  encode(_: MsgUpdateProtocolFeesResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const MsgUpdateProtocolFeesResponse: MessageFns<MsgUpdateProtocolFeesResponse> =
+  {
+    encode(
+      _: MsgUpdateProtocolFeesResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateProtocolFeesResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgUpdateProtocolFeesResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgUpdateProtocolFeesResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgUpdateProtocolFeesResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): MsgUpdateProtocolFeesResponse {
-    return {};
-  },
+    fromJSON(_: any): MsgUpdateProtocolFeesResponse {
+      return {};
+    },
 
-  toJSON(_: MsgUpdateProtocolFeesResponse): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: MsgUpdateProtocolFeesResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<MsgUpdateProtocolFeesResponse>, I>>(base?: I): MsgUpdateProtocolFeesResponse {
-    return MsgUpdateProtocolFeesResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<MsgUpdateProtocolFeesResponse>, I>>(_: I): MsgUpdateProtocolFeesResponse {
-    const message = createBaseMsgUpdateProtocolFeesResponse();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<MsgUpdateProtocolFeesResponse>, I>>(
+      base?: I,
+    ): MsgUpdateProtocolFeesResponse {
+      return MsgUpdateProtocolFeesResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgUpdateProtocolFeesResponse>, I>>(
+      _: I,
+    ): MsgUpdateProtocolFeesResponse {
+      const message = createBaseMsgUpdateProtocolFeesResponse();
+      return message;
+    },
+  };
 
 function createBasePriceOracleDatum(): PriceOracleDatum {
   return {
@@ -4013,7 +4669,10 @@ function createBasePriceOracleDatum(): PriceOracleDatum {
 }
 
 export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
-  encode(message: PriceOracleDatum, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: PriceOracleDatum,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
@@ -4033,7 +4692,8 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): PriceOracleDatum {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePriceOracleDatum();
     while (reader.pos < end) {
@@ -4091,9 +4751,15 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
   fromJSON(object: any): PriceOracleDatum {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
-      chainID: isSet(object.chainID) ? bytesFromBase64(object.chainID) : new Uint8Array(0),
-      tokenAddress: isSet(object.tokenAddress) ? bytesFromBase64(object.tokenAddress) : new Uint8Array(0),
-      price: isSet(object.price) ? bytesFromBase64(object.price) : new Uint8Array(0),
+      chainID: isSet(object.chainID)
+        ? bytesFromBase64(object.chainID)
+        : new Uint8Array(0),
+      tokenAddress: isSet(object.tokenAddress)
+        ? bytesFromBase64(object.tokenAddress)
+        : new Uint8Array(0),
+      price: isSet(object.price)
+        ? bytesFromBase64(object.price)
+        : new Uint8Array(0),
       decimals: isSet(object.decimals) ? globalThis.Number(object.decimals) : 0,
     };
   },
@@ -4118,10 +4784,14 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PriceOracleDatum>, I>>(base?: I): PriceOracleDatum {
+  create<I extends Exact<DeepPartial<PriceOracleDatum>, I>>(
+    base?: I,
+  ): PriceOracleDatum {
     return PriceOracleDatum.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PriceOracleDatum>, I>>(object: I): PriceOracleDatum {
+  fromPartial<I extends Exact<DeepPartial<PriceOracleDatum>, I>>(
+    object: I,
+  ): PriceOracleDatum {
     const message = createBasePriceOracleDatum();
     message.universe = object.universe ?? 0;
     message.chainID = object.chainID ?? new Uint8Array(0);
@@ -4137,7 +4807,10 @@ function createBasePriceOracleData(): PriceOracleData {
 }
 
 export const PriceOracleData: MessageFns<PriceOracleData> = {
-  encode(message: PriceOracleData, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: PriceOracleData,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     for (const v of message.priceData) {
       PriceOracleDatum.encode(v!, writer.uint32(10).fork()).join();
     }
@@ -4145,7 +4818,8 @@ export const PriceOracleData: MessageFns<PriceOracleData> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): PriceOracleData {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBasePriceOracleData();
     while (reader.pos < end) {
@@ -4156,7 +4830,9 @@ export const PriceOracleData: MessageFns<PriceOracleData> = {
             break;
           }
 
-          message.priceData.push(PriceOracleDatum.decode(reader, reader.uint32()));
+          message.priceData.push(
+            PriceOracleDatum.decode(reader, reader.uint32()),
+          );
           continue;
         }
       }
@@ -4184,12 +4860,17 @@ export const PriceOracleData: MessageFns<PriceOracleData> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<PriceOracleData>, I>>(base?: I): PriceOracleData {
+  create<I extends Exact<DeepPartial<PriceOracleData>, I>>(
+    base?: I,
+  ): PriceOracleData {
     return PriceOracleData.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<PriceOracleData>, I>>(object: I): PriceOracleData {
+  fromPartial<I extends Exact<DeepPartial<PriceOracleData>, I>>(
+    object: I,
+  ): PriceOracleData {
     const message = createBasePriceOracleData();
-    message.priceData = object.priceData?.map((e) => PriceOracleDatum.fromPartial(e)) || [];
+    message.priceData =
+      object.priceData?.map((e) => PriceOracleDatum.fromPartial(e)) || [];
     return message;
   },
 };
@@ -4198,115 +4879,149 @@ function createBaseQueryGetPriceOracleDataRequest(): QueryGetPriceOracleDataRequ
   return {};
 }
 
-export const QueryGetPriceOracleDataRequest: MessageFns<QueryGetPriceOracleDataRequest> = {
-  encode(_: QueryGetPriceOracleDataRequest, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    return writer;
-  },
+export const QueryGetPriceOracleDataRequest: MessageFns<QueryGetPriceOracleDataRequest> =
+  {
+    encode(
+      _: QueryGetPriceOracleDataRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetPriceOracleDataRequest {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetPriceOracleDataRequest();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPriceOracleDataRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPriceOracleDataRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
-      }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return message;
+    },
 
-  fromJSON(_: any): QueryGetPriceOracleDataRequest {
-    return {};
-  },
+    fromJSON(_: any): QueryGetPriceOracleDataRequest {
+      return {};
+    },
 
-  toJSON(_: QueryGetPriceOracleDataRequest): unknown {
-    const obj: any = {};
-    return obj;
-  },
+    toJSON(_: QueryGetPriceOracleDataRequest): unknown {
+      const obj: any = {};
+      return obj;
+    },
 
-  create<I extends Exact<DeepPartial<QueryGetPriceOracleDataRequest>, I>>(base?: I): QueryGetPriceOracleDataRequest {
-    return QueryGetPriceOracleDataRequest.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetPriceOracleDataRequest>, I>>(_: I): QueryGetPriceOracleDataRequest {
-    const message = createBaseQueryGetPriceOracleDataRequest();
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetPriceOracleDataRequest>, I>>(
+      base?: I,
+    ): QueryGetPriceOracleDataRequest {
+      return QueryGetPriceOracleDataRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetPriceOracleDataRequest>, I>,
+    >(_: I): QueryGetPriceOracleDataRequest {
+      const message = createBaseQueryGetPriceOracleDataRequest();
+      return message;
+    },
+  };
 
 function createBaseQueryGetPriceOracleDataResponse(): QueryGetPriceOracleDataResponse {
   return { PriceOracleData: undefined };
 }
 
-export const QueryGetPriceOracleDataResponse: MessageFns<QueryGetPriceOracleDataResponse> = {
-  encode(message: QueryGetPriceOracleDataResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
-    if (message.PriceOracleData !== undefined) {
-      PriceOracleData.encode(message.PriceOracleData, writer.uint32(10).fork()).join();
-    }
-    return writer;
-  },
+export const QueryGetPriceOracleDataResponse: MessageFns<QueryGetPriceOracleDataResponse> =
+  {
+    encode(
+      message: QueryGetPriceOracleDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.PriceOracleData !== undefined) {
+        PriceOracleData.encode(
+          message.PriceOracleData,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): QueryGetPriceOracleDataResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
-    const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseQueryGetPriceOracleDataResponse();
-    while (reader.pos < end) {
-      const tag = reader.uint32();
-      switch (tag >>> 3) {
-        case 1: {
-          if (tag !== 10) {
-            break;
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPriceOracleDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPriceOracleDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.PriceOracleData = PriceOracleData.decode(
+              reader,
+              reader.uint32(),
+            );
+            continue;
           }
-
-          message.PriceOracleData = PriceOracleData.decode(reader, reader.uint32());
-          continue;
         }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
       }
-      if ((tag & 7) === 4 || tag === 0) {
-        break;
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetPriceOracleDataResponse {
+      return {
+        PriceOracleData: isSet(object.PriceOracleData)
+          ? PriceOracleData.fromJSON(object.PriceOracleData)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetPriceOracleDataResponse): unknown {
+      const obj: any = {};
+      if (message.PriceOracleData !== undefined) {
+        obj.PriceOracleData = PriceOracleData.toJSON(message.PriceOracleData);
       }
-      reader.skip(tag & 7);
-    }
-    return message;
-  },
+      return obj;
+    },
 
-  fromJSON(object: any): QueryGetPriceOracleDataResponse {
-    return {
-      PriceOracleData: isSet(object.PriceOracleData) ? PriceOracleData.fromJSON(object.PriceOracleData) : undefined,
-    };
-  },
-
-  toJSON(message: QueryGetPriceOracleDataResponse): unknown {
-    const obj: any = {};
-    if (message.PriceOracleData !== undefined) {
-      obj.PriceOracleData = PriceOracleData.toJSON(message.PriceOracleData);
-    }
-    return obj;
-  },
-
-  create<I extends Exact<DeepPartial<QueryGetPriceOracleDataResponse>, I>>(base?: I): QueryGetPriceOracleDataResponse {
-    return QueryGetPriceOracleDataResponse.fromPartial(base ?? ({} as any));
-  },
-  fromPartial<I extends Exact<DeepPartial<QueryGetPriceOracleDataResponse>, I>>(
-    object: I,
-  ): QueryGetPriceOracleDataResponse {
-    const message = createBaseQueryGetPriceOracleDataResponse();
-    message.PriceOracleData = (object.PriceOracleData !== undefined && object.PriceOracleData !== null)
-      ? PriceOracleData.fromPartial(object.PriceOracleData)
-      : undefined;
-    return message;
-  },
-};
+    create<I extends Exact<DeepPartial<QueryGetPriceOracleDataResponse>, I>>(
+      base?: I,
+    ): QueryGetPriceOracleDataResponse {
+      return QueryGetPriceOracleDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetPriceOracleDataResponse>, I>,
+    >(object: I): QueryGetPriceOracleDataResponse {
+      const message = createBaseQueryGetPriceOracleDataResponse();
+      message.PriceOracleData =
+        object.PriceOracleData !== undefined && object.PriceOracleData !== null
+          ? PriceOracleData.fromPartial(object.PriceOracleData)
+          : undefined;
+      return message;
+    },
+  };
 
 function createBaseMsgRefundReq(): MsgRefundReq {
   return { creator: "", rffID: Long.UZERO };
 }
 
 export const MsgRefundReq: MessageFns<MsgRefundReq> = {
-  encode(message: MsgRefundReq, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgRefundReq,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -4317,7 +5032,8 @@ export const MsgRefundReq: MessageFns<MsgRefundReq> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): MsgRefundReq {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgRefundReq();
     while (reader.pos < end) {
@@ -4366,13 +5082,20 @@ export const MsgRefundReq: MessageFns<MsgRefundReq> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgRefundReq>, I>>(base?: I): MsgRefundReq {
+  create<I extends Exact<DeepPartial<MsgRefundReq>, I>>(
+    base?: I,
+  ): MsgRefundReq {
     return MsgRefundReq.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgRefundReq>, I>>(object: I): MsgRefundReq {
+  fromPartial<I extends Exact<DeepPartial<MsgRefundReq>, I>>(
+    object: I,
+  ): MsgRefundReq {
     const message = createBaseMsgRefundReq();
     message.creator = object.creator ?? "";
-    message.rffID = (object.rffID !== undefined && object.rffID !== null) ? Long.fromValue(object.rffID) : Long.UZERO;
+    message.rffID =
+      object.rffID !== undefined && object.rffID !== null
+        ? Long.fromValue(object.rffID)
+        : Long.UZERO;
     return message;
   },
 };
@@ -4382,12 +5105,19 @@ function createBaseMsgRefundReqResponse(): MsgRefundReqResponse {
 }
 
 export const MsgRefundReqResponse: MessageFns<MsgRefundReqResponse> = {
-  encode(_: MsgRefundReqResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    _: MsgRefundReqResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     return writer;
   },
 
-  decode(input: BinaryReader | Uint8Array, length?: number): MsgRefundReqResponse {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgRefundReqResponse {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgRefundReqResponse();
     while (reader.pos < end) {
@@ -4411,10 +5141,14 @@ export const MsgRefundReqResponse: MessageFns<MsgRefundReqResponse> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgRefundReqResponse>, I>>(base?: I): MsgRefundReqResponse {
+  create<I extends Exact<DeepPartial<MsgRefundReqResponse>, I>>(
+    base?: I,
+  ): MsgRefundReqResponse {
     return MsgRefundReqResponse.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgRefundReqResponse>, I>>(_: I): MsgRefundReqResponse {
+  fromPartial<I extends Exact<DeepPartial<MsgRefundReqResponse>, I>>(
+    _: I,
+  ): MsgRefundReqResponse {
     const message = createBaseMsgRefundReqResponse();
     return message;
   },
@@ -4425,7 +5159,10 @@ function createBaseDepositVEPacket(): DepositVEPacket {
 }
 
 export const DepositVEPacket: MessageFns<DepositVEPacket> = {
-  encode(message: DepositVEPacket, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: DepositVEPacket,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (!message.id.equals(Long.UZERO)) {
       writer.uint32(8).uint64(message.id.toString());
     }
@@ -4436,7 +5173,8 @@ export const DepositVEPacket: MessageFns<DepositVEPacket> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): DepositVEPacket {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseDepositVEPacket();
     while (reader.pos < end) {
@@ -4470,7 +5208,9 @@ export const DepositVEPacket: MessageFns<DepositVEPacket> = {
   fromJSON(object: any): DepositVEPacket {
     return {
       id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO,
-      gasRefunded: isSet(object.gasRefunded) ? globalThis.Boolean(object.gasRefunded) : false,
+      gasRefunded: isSet(object.gasRefunded)
+        ? globalThis.Boolean(object.gasRefunded)
+        : false,
     };
   },
 
@@ -4485,23 +5225,37 @@ export const DepositVEPacket: MessageFns<DepositVEPacket> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<DepositVEPacket>, I>>(base?: I): DepositVEPacket {
+  create<I extends Exact<DeepPartial<DepositVEPacket>, I>>(
+    base?: I,
+  ): DepositVEPacket {
     return DepositVEPacket.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<DepositVEPacket>, I>>(object: I): DepositVEPacket {
+  fromPartial<I extends Exact<DeepPartial<DepositVEPacket>, I>>(
+    object: I,
+  ): DepositVEPacket {
     const message = createBaseDepositVEPacket();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
+    message.id =
+      object.id !== undefined && object.id !== null
+        ? Long.fromValue(object.id)
+        : Long.UZERO;
     message.gasRefunded = object.gasRefunded ?? false;
     return message;
   },
 };
 
 function createBaseFillVEPacket(): FillVEPacket {
-  return { id: Long.UZERO, fillerAddress: new Uint8Array(0), transactionHash: new Uint8Array(0) };
+  return {
+    id: Long.UZERO,
+    fillerAddress: new Uint8Array(0),
+    transactionHash: new Uint8Array(0),
+  };
 }
 
 export const FillVEPacket: MessageFns<FillVEPacket> = {
-  encode(message: FillVEPacket, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: FillVEPacket,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (!message.id.equals(Long.UZERO)) {
       writer.uint32(8).uint64(message.id.toString());
     }
@@ -4515,7 +5269,8 @@ export const FillVEPacket: MessageFns<FillVEPacket> = {
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): FillVEPacket {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseFillVEPacket();
     while (reader.pos < end) {
@@ -4557,8 +5312,12 @@ export const FillVEPacket: MessageFns<FillVEPacket> = {
   fromJSON(object: any): FillVEPacket {
     return {
       id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO,
-      fillerAddress: isSet(object.fillerAddress) ? bytesFromBase64(object.fillerAddress) : new Uint8Array(0),
-      transactionHash: isSet(object.transactionHash) ? bytesFromBase64(object.transactionHash) : new Uint8Array(0),
+      fillerAddress: isSet(object.fillerAddress)
+        ? bytesFromBase64(object.fillerAddress)
+        : new Uint8Array(0),
+      transactionHash: isSet(object.transactionHash)
+        ? bytesFromBase64(object.transactionHash)
+        : new Uint8Array(0),
     };
   },
 
@@ -4576,12 +5335,19 @@ export const FillVEPacket: MessageFns<FillVEPacket> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<FillVEPacket>, I>>(base?: I): FillVEPacket {
+  create<I extends Exact<DeepPartial<FillVEPacket>, I>>(
+    base?: I,
+  ): FillVEPacket {
     return FillVEPacket.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<FillVEPacket>, I>>(object: I): FillVEPacket {
+  fromPartial<I extends Exact<DeepPartial<FillVEPacket>, I>>(
+    object: I,
+  ): FillVEPacket {
     const message = createBaseFillVEPacket();
-    message.id = (object.id !== undefined && object.id !== null) ? Long.fromValue(object.id) : Long.UZERO;
+    message.id =
+      object.id !== undefined && object.id !== null
+        ? Long.fromValue(object.id)
+        : Long.UZERO;
     message.fillerAddress = object.fillerAddress ?? new Uint8Array(0);
     message.transactionHash = object.transactionHash ?? new Uint8Array(0);
     return message;
@@ -4589,11 +5355,19 @@ export const FillVEPacket: MessageFns<FillVEPacket> = {
 };
 
 function createBaseMsgDoubleCheckTx(): MsgDoubleCheckTx {
-  return { creator: "", txUniverse: 0, txChainID: new Uint8Array(0), packet: undefined };
+  return {
+    creator: "",
+    txUniverse: 0,
+    txChainID: new Uint8Array(0),
+    packet: undefined,
+  };
 }
 
 export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
-  encode(message: MsgDoubleCheckTx, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+  encode(
+    message: MsgDoubleCheckTx,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
     if (message.creator !== "") {
       writer.uint32(10).string(message.creator);
     }
@@ -4605,17 +5379,24 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
     }
     switch (message.packet?.$case) {
       case "depositPacket":
-        DepositVEPacket.encode(message.packet.value, writer.uint32(42).fork()).join();
+        DepositVEPacket.encode(
+          message.packet.value,
+          writer.uint32(42).fork(),
+        ).join();
         break;
       case "fillPacket":
-        FillVEPacket.encode(message.packet.value, writer.uint32(50).fork()).join();
+        FillVEPacket.encode(
+          message.packet.value,
+          writer.uint32(50).fork(),
+        ).join();
         break;
     }
     return writer;
   },
 
   decode(input: BinaryReader | Uint8Array, length?: number): MsgDoubleCheckTx {
-    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
     const message = createBaseMsgDoubleCheckTx();
     while (reader.pos < end) {
@@ -4650,7 +5431,10 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
             break;
           }
 
-          message.packet = { $case: "depositPacket", value: DepositVEPacket.decode(reader, reader.uint32()) };
+          message.packet = {
+            $case: "depositPacket",
+            value: DepositVEPacket.decode(reader, reader.uint32()),
+          };
           continue;
         }
         case 6: {
@@ -4658,7 +5442,10 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
             break;
           }
 
-          message.packet = { $case: "fillPacket", value: FillVEPacket.decode(reader, reader.uint32()) };
+          message.packet = {
+            $case: "fillPacket",
+            value: FillVEPacket.decode(reader, reader.uint32()),
+          };
           continue;
         }
       }
@@ -4673,13 +5460,23 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
   fromJSON(object: any): MsgDoubleCheckTx {
     return {
       creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
-      txUniverse: isSet(object.txUniverse) ? universeFromJSON(object.txUniverse) : 0,
-      txChainID: isSet(object.txChainID) ? bytesFromBase64(object.txChainID) : new Uint8Array(0),
+      txUniverse: isSet(object.txUniverse)
+        ? universeFromJSON(object.txUniverse)
+        : 0,
+      txChainID: isSet(object.txChainID)
+        ? bytesFromBase64(object.txChainID)
+        : new Uint8Array(0),
       packet: isSet(object.depositPacket)
-        ? { $case: "depositPacket", value: DepositVEPacket.fromJSON(object.depositPacket) }
+        ? {
+            $case: "depositPacket",
+            value: DepositVEPacket.fromJSON(object.depositPacket),
+          }
         : isSet(object.fillPacket)
-        ? { $case: "fillPacket", value: FillVEPacket.fromJSON(object.fillPacket) }
-        : undefined,
+          ? {
+              $case: "fillPacket",
+              value: FillVEPacket.fromJSON(object.fillPacket),
+            }
+          : undefined,
     };
   },
 
@@ -4702,24 +5499,40 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
     return obj;
   },
 
-  create<I extends Exact<DeepPartial<MsgDoubleCheckTx>, I>>(base?: I): MsgDoubleCheckTx {
+  create<I extends Exact<DeepPartial<MsgDoubleCheckTx>, I>>(
+    base?: I,
+  ): MsgDoubleCheckTx {
     return MsgDoubleCheckTx.fromPartial(base ?? ({} as any));
   },
-  fromPartial<I extends Exact<DeepPartial<MsgDoubleCheckTx>, I>>(object: I): MsgDoubleCheckTx {
+  fromPartial<I extends Exact<DeepPartial<MsgDoubleCheckTx>, I>>(
+    object: I,
+  ): MsgDoubleCheckTx {
     const message = createBaseMsgDoubleCheckTx();
     message.creator = object.creator ?? "";
     message.txUniverse = object.txUniverse ?? 0;
     message.txChainID = object.txChainID ?? new Uint8Array(0);
     switch (object.packet?.$case) {
       case "depositPacket": {
-        if (object.packet?.value !== undefined && object.packet?.value !== null) {
-          message.packet = { $case: "depositPacket", value: DepositVEPacket.fromPartial(object.packet.value) };
+        if (
+          object.packet?.value !== undefined &&
+          object.packet?.value !== null
+        ) {
+          message.packet = {
+            $case: "depositPacket",
+            value: DepositVEPacket.fromPartial(object.packet.value),
+          };
         }
         break;
       }
       case "fillPacket": {
-        if (object.packet?.value !== undefined && object.packet?.value !== null) {
-          message.packet = { $case: "fillPacket", value: FillVEPacket.fromPartial(object.packet.value) };
+        if (
+          object.packet?.value !== undefined &&
+          object.packet?.value !== null
+        ) {
+          message.packet = {
+            $case: "fillPacket",
+            value: FillVEPacket.fromPartial(object.packet.value),
+          };
         }
         break;
       }
@@ -4753,18 +5566,35 @@ function base64FromBytes(arr: Uint8Array): string {
   }
 }
 
-type Builtin = Date | Function | Uint8Array | string | number | boolean | undefined;
+type Builtin =
+  | Date
+  | Function
+  | Uint8Array
+  | string
+  | number
+  | boolean
+  | undefined;
 
-export type DeepPartial<T> = T extends Builtin ? T
-  : T extends Long ? string | number | Long : T extends globalThis.Array<infer U> ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U> ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string; value: unknown } ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
-  : T extends {} ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+export type DeepPartial<T> = T extends Builtin
+  ? T
+  : T extends Long
+    ? string | number | Long
+    : T extends globalThis.Array<infer U>
+      ? globalThis.Array<DeepPartial<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<DeepPartial<U>>
+        : T extends { $case: string; value: unknown }
+          ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
+          : T extends {}
+            ? { [K in keyof T]?: DeepPartial<T[K]> }
+            : Partial<T>;
 
 type KeysOfUnion<T> = T extends T ? keyof T : never;
-export type Exact<P, I extends P> = P extends Builtin ? P
-  : P & { [K in keyof P]: Exact<P[K], I[K]> } & { [K in Exclude<keyof I, KeysOfUnion<P>>]: never };
+export type Exact<P, I extends P> = P extends Builtin
+  ? P
+  : P & { [K in keyof P]: Exact<P[K], I[K]> } & {
+      [K in Exclude<keyof I, KeysOfUnion<P>>]: never;
+    };
 
 function isSet(value: any): boolean {
   return value !== null && value !== undefined;

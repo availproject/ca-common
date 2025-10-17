@@ -1,4 +1,4 @@
-export const YakAggregatorEVMABI = [
+export const YakAggregatorABI = [
   {
     inputs: [
       { internalType: "uint256", name: "_amountIn", type: "uint256" },
