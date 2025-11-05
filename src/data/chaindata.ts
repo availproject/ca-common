@@ -656,6 +656,29 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 0,
+    ChainID32:
+      "0x0000000000000000000000000000000000000000000000000000000000000237",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x0000000000000000000000008Cf5f629Bb26FC3F92144e72bC4A3719A7DF07F3",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 64,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class CurrencyMap {
@@ -774,6 +797,10 @@ export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.ETHEREUM, 10143),
     "https://lb.drpc.org/monad-testnet/Am5nENoJmEuovqui8_LMxzp4ChJzW7kR8JfPrqRhf0fE",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 567),
+    "https://testnet.l2.rpc.validium.network",
   ],
   [
     new OmniversalChainID(Universe.FUEL, 9889),
