@@ -42,6 +42,10 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
         new OmniversalChainID(Universe.ETHEREUM, 10143),
         "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 567),
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
+      ],
     ],
   ],
   [
@@ -73,7 +77,7 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
       ],
       [
         new OmniversalChainID(Universe.TRON, 728126428),
-        "0x46de8c7e6f1da4dd851b62c20b78971f230fca5b",
+        "0x4ddDbe8D0D399B65E5898b6d2bC97Ae0683E8CB7",
       ],
     ],
   ],

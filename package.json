@@ -1,6 +1,6 @@
 {
-  "name": "@arcana/ca-common",
-  "version": "0.0.1",
+  "name": "@avail-project/ca-common",
+  "version": "1.0.0-beta.7",
   "description": "common utilities for CA",
   "files": [
     "dist"

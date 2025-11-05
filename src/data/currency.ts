@@ -6,17 +6,18 @@ import { zeroExtendBufToGivenSize } from "./utils";
 import { PermitVariant } from "../permitutils";
 
 export enum CurrencyID {
-  USDC = 1,
-  USDT = 2,
-  ETH = 3,
-  POL = 4,
-  AVAX = 5,
-  BNB = 6,
+  USDC = 0x1,
+  USDT = 0x2,
+  ETH = 0x3,
+  POL = 0x4,
+  AVAX = 0x5,
+  BNB = 0x6,
   HYPE = 0x10,
   KAIA = 0x11,
   SOPH = 0x12,
   TRX = 0x13,
-  MON = 0x14,
+  VLDM = 0x40,
+  MON = 0x41,
 }
 
 export class Currency {
