@@ -20,31 +20,27 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
     [
       [
         new OmniversalChainID(Universe.ETHEREUM, 421614),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 11155420),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 80002),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 84532),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 11155111),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 10143),
-        "0xF0111EdE031a4377C34A4AD900f1E633E41055Dc",
-      ],
-      [
-        new OmniversalChainID(Universe.TRON, 2494104990n),
-        "0x70f03baa2CD784447A4B133E41386562163209f8",
+        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
     ],
   ],
