@@ -1,3 +1,5 @@
+import { ensureBufferPolyfill } from "../_polyfill";
+
 import {
   bytesToBigInt,
   bytesToHex,
@@ -16,6 +18,8 @@ import {
 import { Bytes } from "../types";
 import { convertToBufferIfNecessary } from "./utils";
 
+ensureBufferPolyfill();
+
 export function encodeChainID36(
   universe: Universe,
   chainID: Bytes | bigint | number,
@@ -29,7 +33,7 @@ export function encodeChainID36(
   }
 
   const buf = Buffer.alloc(36);
-  buf.writeUint32BE(universe);
+  buf.writeUInt32BE(universe);
   buf.set(chainIDB, 4 + (32 - chainIDB.length));
   return buf;
 }
@@ -76,7 +80,7 @@ export class OmniversalChainID {
 
   static fromChainID36(_input: Bytes): OmniversalChainID {
     const input = convertToBufferIfNecessary(_input);
-    const univID = input.readUint32BE(0);
+    const univID = input.readUInt32BE(0);
     const rest = input.subarray(4);
     return new OmniversalChainID(univID, rest);
   }

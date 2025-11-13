@@ -1,34 +1,44 @@
 import * as bufferModule from "buffer";
+import { Buffer as DefaultBuffer } from "buffer";
 
-type BufferCtor = typeof import("buffer").Buffer;
+type BufferCtor = typeof DefaultBuffer;
 type BufferInstance = InstanceType<BufferCtor>;
 
-function resolveBuffer(): BufferCtor | undefined {
+const globalScope = globalThis as Record<string, unknown>;
+let patched = false;
+
+function collectBufferCtors(): BufferCtor[] {
+  const candidates = new Set<BufferCtor>();
+
+  if (typeof DefaultBuffer === "function") {
+    candidates.add(DefaultBuffer);
+  }
+
   const mod = bufferModule as unknown as {
     Buffer?: BufferCtor;
     default?: BufferCtor | { Buffer?: BufferCtor };
   };
-  if (mod?.Buffer) return mod.Buffer;
-
+  if (typeof mod?.Buffer === "function") {
+    candidates.add(mod.Buffer);
+  }
   const defaultExport = mod?.default;
   if (typeof defaultExport === "function") {
-    return defaultExport as BufferCtor;
-  }
-
-  if (
+    candidates.add(defaultExport);
+  } else if (
     defaultExport &&
     typeof defaultExport === "object" &&
-    "Buffer" in defaultExport &&
-    typeof defaultExport.Buffer === "function"
+    typeof (defaultExport as { Buffer?: BufferCtor }).Buffer === "function"
   ) {
-    return defaultExport.Buffer as BufferCtor;
+    candidates.add(
+      (defaultExport as { Buffer?: BufferCtor }).Buffer as BufferCtor,
+    );
   }
 
-  if (typeof globalThis.Buffer === "function") {
-    return globalThis.Buffer as BufferCtor;
+  if (typeof globalScope.Buffer === "function") {
+    candidates.add(globalScope.Buffer as BufferCtor);
   }
 
-  return undefined;
+  return Array.from(candidates);
 }
 
 function assertOffset(buffer: BufferInstance, offset: unknown): number {
@@ -53,10 +63,12 @@ function fallbackWriteUint32BE(
 ) {
   const o = assertOffset(this, offset);
   const normalized = Number(value) >>> 0;
-  this[o] = (normalized >>> 24) & 0xff;
-  this[o + 1] = (normalized >>> 16) & 0xff;
-  this[o + 2] = (normalized >>> 8) & 0xff;
-  this[o + 3] = normalized & 0xff;
+  (this as unknown as Record<number, number>)[o] = (normalized >>> 24) & 0xff;
+  (this as unknown as Record<number, number>)[o + 1] =
+    (normalized >>> 16) & 0xff;
+  (this as unknown as Record<number, number>)[o + 2] =
+    (normalized >>> 8) & 0xff;
+  (this as unknown as Record<number, number>)[o + 3] = normalized & 0xff;
   return o + 4;
 }
 
@@ -67,29 +79,34 @@ function fallbackWriteUint32LE(
 ) {
   const o = assertOffset(this, offset);
   const normalized = Number(value) >>> 0;
-  this[o] = normalized & 0xff;
-  this[o + 1] = (normalized >>> 8) & 0xff;
-  this[o + 2] = (normalized >>> 16) & 0xff;
-  this[o + 3] = (normalized >>> 24) & 0xff;
+  (this as unknown as Record<number, number>)[o] = normalized & 0xff;
+  (this as unknown as Record<number, number>)[o + 1] =
+    (normalized >>> 8) & 0xff;
+  (this as unknown as Record<number, number>)[o + 2] =
+    (normalized >>> 16) & 0xff;
+  (this as unknown as Record<number, number>)[o + 3] =
+    (normalized >>> 24) & 0xff;
   return o + 4;
 }
 
 function fallbackReadUint32BE(this: BufferInstance, offset: unknown = 0) {
   const o = assertOffset(this, offset);
+  const store = this as unknown as Record<number, number>;
   return (
-    (this[o] * 0x1000000 +
-      ((this[o + 1] << 16) | (this[o + 2] << 8) | this[o + 3])) >>>
+    (store[o] * 0x1000000 +
+      ((store[o + 1] << 16) | (store[o + 2] << 8) | store[o + 3])) >>>
     0
   );
 }
 
 function fallbackReadUint32LE(this: BufferInstance, offset: unknown = 0) {
   const o = assertOffset(this, offset);
+  const store = this as unknown as Record<number, number>;
   return (
-    (this[o] |
-      (this[o + 1] << 8) |
-      (this[o + 2] << 16) |
-      (this[o + 3] * 0x1000000)) >>>
+    (store[o] |
+      (store[o + 1] << 8) |
+      (store[o + 2] << 16) |
+      (store[o + 3] * 0x1000000)) >>>
     0
   );
 }
@@ -127,56 +144,54 @@ function aliasOrDefine(
   });
 }
 
-const BufferImpl = resolveBuffer();
-const globalScope = globalThis as Record<string, unknown>;
+function patchPrototype(bufferCtor: BufferCtor) {
+  const proto = bufferCtor.prototype as BufferInstance | undefined;
+  if (!proto) {
+    return;
+  }
+  aliasOrDefine(proto, "writeUint32BE", "writeUInt32BE", fallbackWriteUint32BE);
+  aliasOrDefine(proto, "writeUint32LE", "writeUInt32LE", fallbackWriteUint32LE);
+  aliasOrDefine(proto, "readUint32BE", "readUInt32BE", fallbackReadUint32BE);
+  aliasOrDefine(proto, "readUint32LE", "readUInt32LE", fallbackReadUint32LE);
+}
 
-if (BufferImpl) {
-  const proto = BufferImpl.prototype as BufferInstance | undefined;
-  if (proto) {
-    aliasOrDefine(
-      proto,
-      "writeUint32BE",
-      "writeUInt32BE",
-      fallbackWriteUint32BE,
-    );
-    aliasOrDefine(
-      proto,
-      "writeUint32LE",
-      "writeUInt32LE",
-      fallbackWriteUint32LE,
-    );
-    aliasOrDefine(proto, "readUint32BE", "readUInt32BE", fallbackReadUint32BE);
-    aliasOrDefine(proto, "readUint32LE", "readUInt32LE", fallbackReadUint32LE);
+function ensureProcessEnv() {
+  if (!globalScope.process) {
+    globalScope.process = { env: { NODE_ENV: "production" } };
+    return;
   }
 
-  const needsAssignment =
-    typeof globalScope.Buffer === "undefined" ||
-    typeof (globalScope.Buffer as BufferCtor | undefined)?.prototype
-      ?.writeUint32BE !== "function";
+  const processValue = globalScope.process as { env?: Record<string, string> };
+  if (!processValue.env) {
+    processValue.env = { NODE_ENV: "production" };
+    return;
+  }
 
-  if (needsAssignment) {
-    globalScope.Buffer = BufferImpl;
+  if (typeof processValue.env.NODE_ENV === "undefined") {
+    processValue.env.NODE_ENV = "production";
   }
 }
 
-if (!globalScope.process) {
-  globalScope.process = { env: { NODE_ENV: "production" } };
-} else {
-  const env =
-    typeof globalScope.process === "object" &&
-    globalScope.process &&
-    typeof (globalScope.process as { env?: Record<string, string> }).env ===
-      "object"
-      ? (globalScope.process as { env?: Record<string, string> }).env
-      : undefined;
-
-  if (env) {
-    if (typeof env.NODE_ENV === "undefined") {
-      env.NODE_ENV = "production";
-    }
-  } else {
-    (globalScope.process as { env?: Record<string, string> }).env = {
-      NODE_ENV: "production",
-    };
+export function ensureBufferPolyfill(): void {
+  if (patched) {
+    return;
   }
+
+  const candidates = collectBufferCtors();
+  candidates.forEach(patchPrototype);
+
+  const preferred = candidates[0];
+  if (
+    preferred &&
+    (typeof globalScope.Buffer !== "function" ||
+      typeof (globalScope.Buffer as BufferCtor).prototype?.writeUint32BE !==
+        "function")
+  ) {
+    globalScope.Buffer = preferred;
+  }
+
+  ensureProcessEnv();
+  patched = true;
 }
+
+ensureBufferPolyfill();

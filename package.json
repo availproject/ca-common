@@ -6,6 +6,7 @@
     "dist"
   ],
   "sideEffects": [
+    "./src/_polyfill.ts",
     "./dist/esm/_polyfill.js",
     "./dist/cjs/_polyfill.js"
   ],
