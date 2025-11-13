@@ -1,3 +1,5 @@
+import "./_polyfill";
+
 export {
   ArcanaVault,
   ArcanaVaultFactory

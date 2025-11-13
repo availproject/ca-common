@@ -1,9 +1,14 @@
 {
-  "name": "@arcana/ca-common",
+  "name": "@avail-project/ca-common",
   "version": "0.0.1",
   "description": "common utilities for CA",
   "files": [
     "dist"
+  ],
+  "sideEffects": [
+    "./src/_polyfill.ts",
+    "./dist/esm/_polyfill.js",
+    "./dist/cjs/_polyfill.js"
   ],
   "exports": {
     ".": {
