@@ -49,27 +49,27 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
     [
       [
         new OmniversalChainID(Universe.ETHEREUM, 137),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 10),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 42161),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 8453),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 534352),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 56),
-        "0xB0BB1Ea8Eefb51BDA49631b09A350266e0F76EF3",
+        "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
       ],
       [
         new OmniversalChainID(Universe.TRON, 728126428),
@@ -82,39 +82,39 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
     [
       [
         new OmniversalChainID(Universe.ETHEREUM, 1),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 10),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 137),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 42161),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 534352),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 8453),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 43114),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 999),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 8217),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 50104),
@@ -122,11 +122,56 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 56),
-        "0xBADA557252D286e45a1AD73f32479062D4E2e86B",
+        "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
       [
         new OmniversalChainID(Universe.FUEL, 9889),
         "0xe2586f908cc885e630cec6d8d578f02e6ade66983baf23f82757be502127dfb1",
+      ],
+    ],
+  ],
+  [
+    Environment.JADE,
+    [
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 1),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 10),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 137),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 42161),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 534352),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 8453),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 43114),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 999),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 8217),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 56),
+        "0x00000000ac0ac9d69424fA5Adc291D75Ec4a0F11",
       ],
     ],
   ],
