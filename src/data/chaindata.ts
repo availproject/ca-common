@@ -619,7 +619,8 @@ const RawData = [
         CurrencyID: 1,
         TokenContractAddress:
           "0x000000000000000000000000754704Bc059F8C67012fEd69BC8A327a5aafb603",
-        PermitVariant: PermitVariant.Unsupported,
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 2,
         TokenDecimals: 6,
         IsGasToken: false,
       },
