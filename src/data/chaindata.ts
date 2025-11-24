@@ -611,6 +611,29 @@ const RawData = [
     ],
   },
   {
+    Universe: 0,
+    ChainID32:
+      "0x000000000000000000000000000000000000000000000000000000000000008f",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x000000000000000000000000754704Bc059F8C67012fEd69BC8A327a5aafb603",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 20,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
+  {
     Universe: 3,
     ChainID32:
       "0x0000000000000000000000000000000000000000000000000000000094a9059e",
