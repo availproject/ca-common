@@ -14,7 +14,6 @@ export class OmniversalRFF {
   constructor(public readonly protobufRFF: RequestForFunds) {}
 
   public asEVMRFF(): EVMRFF {
-    console.log("yge2i21ugeyu12igeui1g");
     if (this.evmRFF == null) {
       this.evmRFF = {
         sources: this.protobufRFF.sources.map((s) => ({
