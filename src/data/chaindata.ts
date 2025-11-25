@@ -799,8 +799,4 @@ export const RPCURLMap = new ChainIDKeyedMap([
     new OmniversalChainID(Universe.ETHEREUM, 10143),
     "https://lb.drpc.org/monad-testnet/Am5nENoJmEuovqui8_LMxzp4ChJzW7kR8JfPrqRhf0fE",
   ],
-  [
-    new OmniversalChainID(Universe.FUEL, 9889),
-    "https://omniscient-fittest-pallet.fuel-mainnet.quiknode.pro/3193ae52f2522af1a4357a482e475e019857f02b/v1/graphql",
-  ],
 ]);

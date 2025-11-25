@@ -15,11 +15,6 @@
       "types": "./dist/types/index.d.ts",
       "require": "./dist/cjs/index.js",
       "import": "./dist/esm/index.js"
-    },
-    "./fuelcontracts": {
-      "types": "./dist/types/fuelcontracts/index.d.ts",
-      "require": "./dist/cjs/fuelcontracts/index.js",
-      "import": "./dist/esm/fuelcontracts/index.js"
     }
   },
   "scripts": {
@@ -53,7 +48,6 @@
     "@cosmjs/stargate": "^0.34.0",
     "axios": "^1.10.0",
     "decimal.js": "^10.6.0",
-    "fuels": "^0.101.1",
     "long": "^5.3.2",
     "viem": "^2.31.7",
     "msgpackr": "^1.11.4"
