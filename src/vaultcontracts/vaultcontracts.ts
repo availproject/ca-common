@@ -128,10 +128,6 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
         new OmniversalChainID(Universe.ETHEREUM, 143),
         "0xC0DED5d7F424276c821AF21F68E1e663bC671C3D",
       ],
-      [
-        new OmniversalChainID(Universe.FUEL, 9889),
-        "0xe2586f908cc885e630cec6d8d578f02e6ade66983baf23f82757be502127dfb1",
-      ],
     ],
   ],
   [

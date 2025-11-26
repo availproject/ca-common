@@ -1,23 +1,18 @@
 import "./_polyfill";
-
-export {
-  ArcanaVault,
-  ArcanaVaultFactory
-} from './fuelcontracts'
-export * from './proto/definition'
+export * from "./proto/definition";
 export {
   QueryClientImpl,
   Query,
   GrpcWebError,
-  GrpcWebImpl
-} from './proto/grpc'
+  GrpcWebImpl,
+} from "./proto/grpc";
 
-export * from './data'
-export * from './vaultcontracts'
-export * from './permitutils'
-export * from './xcs'
-export * from './cosmos'
-export * from './rff/rff'
-export * from './types'
-export * from './balances/ub-api'
-export * from './evmabi'
+export * from "./data";
+export * from "./vaultcontracts";
+export * from "./permitutils";
+export * from "./xcs";
+export * from "./cosmos";
+export * from "./rff/rff";
+export * from "./types";
+export * from "./balances/ub-api";
+export * from "./evmabi";
