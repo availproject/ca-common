@@ -5,7 +5,7 @@ export {
   Query,
   GrpcWebError,
   GrpcWebImpl,
-} from "./proto/grpc";
+} from "./proto/cosmos";
 
 export * from "./data";
 export * from "./vaultcontracts";
