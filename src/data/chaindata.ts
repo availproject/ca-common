@@ -732,71 +732,68 @@ export const ChaindataMap = new ChainIDKeyedMap(
 export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.ETHEREUM, 421614),
-    "https://arb-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/arbitrumsepolia",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 11155420),
-    "https://opt-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/optimismsepolia",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 80002),
-    "https://polygon-amoy.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/polygonamoy",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 84532),
-    "https://base-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/basesepolia",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 11155111),
-    "https://eth-sepolia.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/sepolia",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 137),
-    "https://polygon-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/polygon",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 42161),
-    "https://arb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/arbitrum",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 10),
-    "https://opt-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/optimism",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 8453),
-    "https://base-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/base",
   ],
-  [
-    new OmniversalChainID(Universe.ETHEREUM, 1),
-    "https://eth-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-  ],
+  [new OmniversalChainID(Universe.ETHEREUM, 1), "https://rpcs.avail.so/eth"],
   [
     new OmniversalChainID(Universe.ETHEREUM, 534352),
-    "https://scroll-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
-  ],
-  [
-    new OmniversalChainID(Universe.ETHEREUM, 59144),
-    "https://linea-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/scroll",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 43114),
-    "https://avax-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/avalanche",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 999),
-    "https://rpc.hyperliquid.xyz/evm",
-  ], // Alchemy doesn't support this.
-  [
-    new OmniversalChainID(Universe.ETHEREUM, 8217),
-    "https://go.getblock.io/d7094dbd80ab474ba7042603fe912332",
-  ], // Alchemy doesn't support this.
-  [new OmniversalChainID(Universe.ETHEREUM, 50104), "https://rpc.sophon.xyz"], // Alchemy doesn't support this.
-  [
-    new OmniversalChainID(Universe.ETHEREUM, 56),
-    "https://bnb-mainnet.g.alchemy.com/v2/PfaswrKq0rjOrfYWHfE9uLQKhiD4JCdq",
+    "https://rpcs.avail.so/hyperevm",
   ],
   [
+    new OmniversalChainID(Universe.ETHEREUM, 8217),
+    "https://rpcs.avail.so/kaia",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 50104),
+    "https://sophon.gateway.tenderly.co/1d4STFT7zmG0vM5QowibCw",
+  ],
+  [new OmniversalChainID(Universe.ETHEREUM, 56), "https://rpcs.avail.so/bsc"],
+  [
     new OmniversalChainID(Universe.ETHEREUM, 10143),
-    "https://lb.drpc.org/monad-testnet/Am5nENoJmEuovqui8_LMxzp4ChJzW7kR8JfPrqRhf0fE",
+    "https://rpcs.avail.so/monadtestnet",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 143),
+    "https://rpcs.avail.so/monad",
   ],
 ]);
