@@ -73,7 +73,7 @@ message RFFSourcePair {
 message SignatureDatum {
   Universe universe = 1;
   bytes address = 2;
-  bytes signature = 3;
+  bytes signature = 3; // WARNING: This is NOT validated by Cosmos any more
   bytes hash = 4; // is to be left empty by the creator and is to be filled in during signature verification
 }
 
@@ -81,7 +81,6 @@ message RFFDestinationPair {
   bytes contractAddress = 1;
   bytes value = 2; // amount
 }
-
 
 message RequestForFunds {
   uint64 id = 1;
@@ -101,43 +100,21 @@ message RequestForFunds {
 
   bool deposited = 104;
   bool fulfilled = 105;
-  //todo: remove settled, using solver amount instead
   bool settled = 106;
   bool refunded = 107;
   int64 creationBlock = 109;
 }
 
-message MsgCreateRequestForFunds {
-  repeated RFFSourcePair      sources             = 1;
-           Universe           destinationUniverse = 2;
-           bytes              destinationChainID  = 3;
-           bytes              recipientAddress    = 9;
-  repeated RFFDestinationPair destinations        = 4;
-           bytes              nonce               = 5;
-           uint64             expiry              = 6;
-           string             user                = 7;
-  repeated SignatureDatum     signatureData       = 8;
-}
-
-message MsgCreateRequestForFundsResponse {
+message RFFCreatedEvent {
   uint64 id = 1;
 }
 
-message QueryGetRequestForFundsRequest {
+message RFFAllDepositsCompleteEvent {
   uint64 id = 1;
 }
 
-message QueryGetRequestForFundsResponse {
-  RequestForFunds requestForFunds = 1;
-}
-
-message QueryAllRequestForFundsRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllRequestForFundsResponse {
-  repeated RequestForFunds requestForFunds = 1;
-  PageResponse pagination = 2;
+message RFFFulfilledEvent {
+  uint64 id = 1;
 }
 
 message RouteFee {
@@ -164,69 +141,14 @@ message SolverData {
   repeated SolverAddress addresses = 3;
 }
 
-message QueryGetSolverDataRequest {
-  string cosmosAddress = 1;
-}
-
-message QueryGetSolverDataResponse {
-  SolverData solverData = 1;
-}
-
-message QueryAllSolverDataRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllSolverDataResponse {
-  repeated SolverData solverData = 1;
-  PageResponse pagination = 2;
-}
-
-message MsgCreateSolverData {
-  string   cosmosAddress = 1;
-  repeated RouteFee advertisedFees = 2;
-  repeated SolverAddress addresses = 3;
-}
-
-message MsgCreateSolverDataResponse {}
-
-message MsgUpdateSolverData {
-  string   cosmosAddress = 1;
-  repeated RouteFee advertisedFees = 2;
-  repeated SolverAddress addresses = 3;
-}
-
-message MsgUpdateSolverDataResponse {}
-
+// Settlement defines the Settlement message.
 message Settlement {
   bytes id = 1;
   Universe universe = 2;
-  bytes chainId = 3;
+  bytes chainID = 3;
   repeated bytes amounts = 4;
   repeated bytes contractAddresses = 5;
-  repeated bytes filler = 6;
-  bool success = 7;
-}
-
-message QueryGetSettlementRequest {
-  uint64 id = 1;
-}
-
-message QueryGetSettlementResponse {
-  Settlement Settlement = 1;
-}
-
-message QueryAllSettlementRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllSettlementResponse {
-  repeated Settlement Settlement = 1;
-  PageResponse pagination = 2;
-}
-
-message QueryRequestForFundsByAddressRequest {
-  string account = 1;
-  PageRequest pagination = 2;
+  repeated bytes solvers = 6;
 }
 
 message FixedFeeTuple {
@@ -249,76 +171,73 @@ message ProtocolFees {
   repeated AdminFeeRecipient feeRecipients = 5;
 }
 
-message QueryGetProtocolFeesRequest {}
-
-message QueryGetProtocolFeesResponse {
-  ProtocolFees ProtocolFees = 1;
-}
-
-message MsgCreateProtocolFees {
-  string creator = 1;
-  uint64 feeBP = 2;
-  repeated FixedFeeTuple collectionFees = 3;
-  repeated FixedFeeTuple fulfilmentFees = 4;
-  repeated AdminFeeRecipient feeRecipients = 5;
-}
-
-message MsgCreateProtocolFeesResponse {}
-
-message MsgUpdateProtocolFees {
-  string creator = 1;
-  uint64 feeBP = 2;
-  repeated FixedFeeTuple collectionFees = 3;
-  repeated FixedFeeTuple fulfilmentFees = 4;
-  repeated AdminFeeRecipient feeRecipients = 5;
-}
-
-message MsgUpdateProtocolFeesResponse {}
-
-message PriceOracleDatum {
-  Universe universe = 1;
-  bytes chainID = 2;
-  bytes tokenAddress = 3;
-  bytes price = 4;
-  uint32 decimals = 5;
-}
-
-message PriceOracleData {
-  repeated PriceOracleDatum priceData = 1;
-}
-
-message QueryGetPriceOracleDataRequest {}
-
-message QueryGetPriceOracleDataResponse {
-  PriceOracleData PriceOracleData = 1;
-}
-
-message MsgRefundReq {
-  string creator = 1;
-  uint64 rffID = 2;
-}
-
-message MsgRefundReqResponse {
-}
-
-message DepositVEPacket {
+message PendingSettlement {
   uint64 id = 1;
-  bool gasRefunded = 2;
+  Universe universe = 2;
+  bytes chainID = 3;
+  bytes contractAddress = 4;
+  bytes amount = 5;
+  bytes recipient = 6;
 }
 
-message FillVEPacket {
-  uint64 id = 1;
-  bytes fillerAddress = 2;
-  bytes transactionHash = 3;
-}
+message FulfilmentClaim {}
 
-message MsgDoubleCheckTx {
-  string creator = 1;
-  Universe txUniverse = 2;
-  bytes txChainID = 3;
+message RefundClaim {}
 
-  oneof packet {
-    DepositVEPacket depositPacket = 5;
-    FillVEPacket fillPacket = 6;
+message BasicClaim {
+  uint64 RFFID = 1;
+
+  oneof claim {
+    FulfilmentClaim fulfilmentClaim = 2;
+    RefundClaim refundClaim = 3;
   }
+}
+
+// PendingClaims defines the PendingClaims message.
+message PendingClaims {
+  uint64 id = 1;
+  string creator = 2;
+
+  BasicClaim claim = 3;
+  uint64 timestamp = 5;
+  uint32 attempts = 4;
+}
+
+message FulfilmentVerdict {
+  repeated uint32 depositedIndexes = 1;
+  bytes solverAddress = 2;
+}
+
+message RefundVerdict {
+  repeated uint32 depositedIndexes = 1;
+}
+
+message ClaimVerdict {
+  bool approved = 1;
+  oneof verdict {
+    FulfilmentVerdict fulfilmentVerdict = 10;
+    RefundVerdict refundVerdict = 11;
+  }
+}
+
+message ChainParams {
+  bytes chainID = 1;
+  bool allTokensDisabled = 2;
+  repeated bytes disabledTokens = 3;
+}
+
+message UniverseParams {
+  Universe universe = 1;
+  bool allChainsDisabled = 2;
+  repeated ChainParams chainParams = 3;
+}
+
+// Params defines the parameters for the module.
+message Params {
+  bytes mpcAddress = 1;
+  uint32 maxAttempts = 2;
+  uint32 settlementNo = 3;
+
+  bool newRFFDisabled = 10;
+  repeated UniverseParams universeParams = 11;
 }

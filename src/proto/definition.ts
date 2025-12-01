@@ -160,6 +160,7 @@ export interface RFFSourcePair {
 export interface SignatureDatum {
   universe: Universe;
   address: Uint8Array;
+  /** WARNING: This is NOT validated by Cosmos any more */
   signature: Uint8Array;
   /** is to be left empty by the creator and is to be filled in during signature verification */
   hash: Uint8Array;
@@ -188,43 +189,21 @@ export interface RequestForFunds {
   fulfilledAt: Long;
   deposited: boolean;
   fulfilled: boolean;
-  /** todo: remove settled, using solver amount instead */
   settled: boolean;
   refunded: boolean;
   creationBlock: Long;
 }
 
-export interface MsgCreateRequestForFunds {
-  sources: RFFSourcePair[];
-  destinationUniverse: Universe;
-  destinationChainID: Uint8Array;
-  recipientAddress: Uint8Array;
-  destinations: RFFDestinationPair[];
-  nonce: Uint8Array;
-  expiry: Long;
-  user: string;
-  signatureData: SignatureDatum[];
-}
-
-export interface MsgCreateRequestForFundsResponse {
+export interface RFFCreatedEvent {
   id: Long;
 }
 
-export interface QueryGetRequestForFundsRequest {
+export interface RFFAllDepositsCompleteEvent {
   id: Long;
 }
 
-export interface QueryGetRequestForFundsResponse {
-  requestForFunds?: RequestForFunds | undefined;
-}
-
-export interface QueryAllRequestForFundsRequest {
-  pagination?: PageRequest | undefined;
-}
-
-export interface QueryAllRequestForFundsResponse {
-  requestForFunds: RequestForFunds[];
-  pagination?: PageResponse | undefined;
+export interface RFFFulfilledEvent {
+  id: Long;
 }
 
 export interface RouteFee {
@@ -288,33 +267,10 @@ export interface MsgUpdateSolverDataResponse {
 export interface Settlement {
   id: Uint8Array;
   universe: Universe;
-  chainId: Uint8Array;
+  chainID: Uint8Array;
   amounts: Uint8Array[];
   contractAddresses: Uint8Array[];
-  filler: Uint8Array[];
-  success: boolean;
-}
-
-export interface QueryGetSettlementRequest {
-  id: Long;
-}
-
-export interface QueryGetSettlementResponse {
-  Settlement?: Settlement | undefined;
-}
-
-export interface QueryAllSettlementRequest {
-  pagination?: PageRequest | undefined;
-}
-
-export interface QueryAllSettlementResponse {
-  Settlement: Settlement[];
-  pagination?: PageResponse | undefined;
-}
-
-export interface QueryRequestForFundsByAddressRequest {
-  account: string;
-  pagination?: PageRequest | undefined;
+  solvers: Uint8Array[];
 }
 
 export interface FixedFeeTuple {
@@ -369,14 +325,12 @@ export interface MsgUpdateProtocolFeesResponse {
 export interface PriceOracleDatum {
   universe: Universe;
   chainID: Uint8Array;
-  tokenAddress: Uint8Array;
-  price: Uint8Array;
-  decimals: number;
+  contractAddress: Uint8Array;
+  amount: Uint8Array;
+  recipient: Uint8Array;
 }
 
-export interface PriceOracleData {
-  priceData: PriceOracleDatum[];
-}
+export interface FulfilmentClaim {}
 
 export interface QueryGetPriceOracleDataRequest {
 }
@@ -412,6 +366,53 @@ export interface MsgDoubleCheckTx {
     | { $case: "depositPacket"; value: DepositVEPacket }
     | { $case: "fillPacket"; value: FillVEPacket }
     | undefined;
+}
+
+/** PendingClaims defines the PendingClaims message. */
+export interface PendingClaims {
+  id: Long;
+  creator: string;
+  claim?: BasicClaim | undefined;
+  timestamp: Long;
+  attempts: number;
+}
+
+export interface FulfilmentVerdict {
+  depositedIndexes: number[];
+  solverAddress: Uint8Array;
+}
+
+export interface RefundVerdict {
+  depositedIndexes: number[];
+}
+
+export interface ClaimVerdict {
+  approved: boolean;
+  verdict?:
+    | { $case: "fulfilmentVerdict"; value: FulfilmentVerdict }
+    | { $case: "refundVerdict"; value: RefundVerdict }
+    | undefined;
+}
+
+export interface ChainParams {
+  chainID: Uint8Array;
+  allTokensDisabled: boolean;
+  disabledTokens: Uint8Array[];
+}
+
+export interface UniverseParams {
+  universe: Universe;
+  allChainsDisabled: boolean;
+  chainParams: ChainParams[];
+}
+
+/** Params defines the parameters for the module. */
+export interface Params {
+  mpcAddress: Uint8Array;
+  maxAttempts: number;
+  settlementNo: number;
+  newRFFDisabled: boolean;
+  universeParams: UniverseParams[];
 }
 
 function createBasePageRequest(): PageRequest {
@@ -1278,18 +1279,8 @@ export const RequestForFunds: MessageFns<RequestForFunds> = {
   },
 };
 
-function createBaseMsgCreateRequestForFunds(): MsgCreateRequestForFunds {
-  return {
-    sources: [],
-    destinationUniverse: 0,
-    destinationChainID: new Uint8Array(0),
-    recipientAddress: new Uint8Array(0),
-    destinations: [],
-    nonce: new Uint8Array(0),
-    expiry: Long.UZERO,
-    user: "",
-    signatureData: [],
-  };
+function createBaseRFFCreatedEvent(): RFFCreatedEvent {
+  return { id: Long.UZERO };
 }
 
 export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
@@ -1327,12 +1318,12 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
   decode(input: BinaryReader | Uint8Array, length?: number): MsgCreateRequestForFunds {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBaseMsgCreateRequestForFunds();
+    const message = createBaseRFFCreatedEvent();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
         case 1: {
-          if (tag !== 10) {
+          if (tag !== 8) {
             break;
           }
 
@@ -1434,7 +1425,7 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
     };
   },
 
-  toJSON(message: MsgCreateRequestForFunds): unknown {
+  toJSON(message: RFFCreatedEvent): unknown {
     const obj: any = {};
     if (message.sources?.length) {
       obj.sources = message.sources.map((e) => RFFSourcePair.toJSON(e));
@@ -1486,7 +1477,7 @@ export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
   },
 };
 
-function createBaseMsgCreateRequestForFundsResponse(): MsgCreateRequestForFundsResponse {
+function createBaseRFFAllDepositsCompleteEvent(): RFFAllDepositsCompleteEvent {
   return { id: Long.UZERO };
 }
 
@@ -1548,7 +1539,7 @@ export const MsgCreateRequestForFundsResponse: MessageFns<MsgCreateRequestForFun
   },
 };
 
-function createBaseQueryGetRequestForFundsRequest(): QueryGetRequestForFundsRequest {
+function createBaseRFFFulfilledEvent(): RFFFulfilledEvent {
   return { id: Long.UZERO };
 }
 
@@ -1608,9 +1599,13 @@ export const QueryGetRequestForFundsRequest: MessageFns<QueryGetRequestForFundsR
   },
 };
 
-function createBaseQueryGetRequestForFundsResponse(): QueryGetRequestForFundsResponse {
-  return { requestForFunds: undefined };
-}
+  toJSON(message: RFFFulfilledEvent): unknown {
+    const obj: any = {};
+    if (!message.id.equals(Long.UZERO)) {
+      obj.id = (message.id || Long.UZERO).toString();
+    }
+    return obj;
+  },
 
 export const QueryGetRequestForFundsResponse: MessageFns<QueryGetRequestForFundsResponse> = {
   encode(message: QueryGetRequestForFundsResponse, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
@@ -2714,11 +2709,10 @@ function createBaseSettlement(): Settlement {
   return {
     id: new Uint8Array(0),
     universe: 0,
-    chainId: new Uint8Array(0),
+    chainID: new Uint8Array(0),
     amounts: [],
     contractAddresses: [],
-    filler: [],
-    success: false,
+    solvers: [],
   };
 }
 
@@ -2730,8 +2724,8 @@ export const Settlement: MessageFns<Settlement> = {
     if (message.universe !== 0) {
       writer.uint32(16).int32(message.universe);
     }
-    if (message.chainId.length !== 0) {
-      writer.uint32(26).bytes(message.chainId);
+    if (message.chainID.length !== 0) {
+      writer.uint32(26).bytes(message.chainID);
     }
     for (const v of message.amounts) {
       writer.uint32(34).bytes(v!);
@@ -2739,11 +2733,8 @@ export const Settlement: MessageFns<Settlement> = {
     for (const v of message.contractAddresses) {
       writer.uint32(42).bytes(v!);
     }
-    for (const v of message.filler) {
+    for (const v of message.solvers) {
       writer.uint32(50).bytes(v!);
-    }
-    if (message.success !== false) {
-      writer.uint32(56).bool(message.success);
     }
     return writer;
   },
@@ -2776,7 +2767,7 @@ export const Settlement: MessageFns<Settlement> = {
             break;
           }
 
-          message.chainId = reader.bytes();
+          message.chainID = reader.bytes();
           continue;
         }
         case 4: {
@@ -2800,15 +2791,7 @@ export const Settlement: MessageFns<Settlement> = {
             break;
           }
 
-          message.filler.push(reader.bytes());
-          continue;
-        }
-        case 7: {
-          if (tag !== 56) {
-            break;
-          }
-
-          message.success = reader.bool();
+          message.solvers.push(reader.bytes());
           continue;
         }
       }
@@ -2842,8 +2825,8 @@ export const Settlement: MessageFns<Settlement> = {
     if (message.universe !== 0) {
       obj.universe = universeToJSON(message.universe);
     }
-    if (message.chainId.length !== 0) {
-      obj.chainId = base64FromBytes(message.chainId);
+    if (message.chainID.length !== 0) {
+      obj.chainID = base64FromBytes(message.chainID);
     }
     if (message.amounts?.length) {
       obj.amounts = message.amounts.map((e) => base64FromBytes(e));
@@ -2851,11 +2834,8 @@ export const Settlement: MessageFns<Settlement> = {
     if (message.contractAddresses?.length) {
       obj.contractAddresses = message.contractAddresses.map((e) => base64FromBytes(e));
     }
-    if (message.filler?.length) {
-      obj.filler = message.filler.map((e) => base64FromBytes(e));
-    }
-    if (message.success !== false) {
-      obj.success = message.success;
+    if (message.solvers?.length) {
+      obj.solvers = message.solvers.map((e) => base64FromBytes(e));
     }
     return obj;
   },
@@ -2867,11 +2847,10 @@ export const Settlement: MessageFns<Settlement> = {
     const message = createBaseSettlement();
     message.id = object.id ?? new Uint8Array(0);
     message.universe = object.universe ?? 0;
-    message.chainId = object.chainId ?? new Uint8Array(0);
+    message.chainID = object.chainID ?? new Uint8Array(0);
     message.amounts = object.amounts?.map((e) => e) || [];
     message.contractAddresses = object.contractAddresses?.map((e) => e) || [];
-    message.filler = object.filler?.map((e) => e) || [];
-    message.success = object.success ?? false;
+    message.solvers = object.solvers?.map((e) => e) || [];
     return message;
   },
 };
@@ -3981,11 +3960,12 @@ export const MsgUpdateProtocolFeesResponse: MessageFns<MsgUpdateProtocolFeesResp
 
 function createBasePriceOracleDatum(): PriceOracleDatum {
   return {
+    id: Long.UZERO,
     universe: 0,
     chainID: new Uint8Array(0),
-    tokenAddress: new Uint8Array(0),
-    price: new Uint8Array(0),
-    decimals: 0,
+    contractAddress: new Uint8Array(0),
+    amount: new Uint8Array(0),
+    recipient: new Uint8Array(0),
   };
 }
 
@@ -3994,17 +3974,11 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
     if (message.universe !== 0) {
       writer.uint32(8).int32(message.universe);
     }
-    if (message.chainID.length !== 0) {
-      writer.uint32(18).bytes(message.chainID);
+    if (message.allChainsDisabled !== false) {
+      writer.uint32(16).bool(message.allChainsDisabled);
     }
-    if (message.tokenAddress.length !== 0) {
-      writer.uint32(26).bytes(message.tokenAddress);
-    }
-    if (message.price.length !== 0) {
-      writer.uint32(34).bytes(message.price);
-    }
-    if (message.decimals !== 0) {
-      writer.uint32(40).uint32(message.decimals);
+    for (const v of message.chainParams) {
+      ChainParams.encode(v!, writer.uint32(26).fork()).join();
     }
     return writer;
   },
@@ -4012,7 +3986,7 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
   decode(input: BinaryReader | Uint8Array, length?: number): PriceOracleDatum {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePriceOracleDatum();
+    const message = createBaseUniverseParams();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -4025,11 +3999,11 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
           continue;
         }
         case 2: {
-          if (tag !== 18) {
+          if (tag !== 16) {
             break;
           }
 
-          message.chainID = reader.bytes();
+          message.allChainsDisabled = reader.bool();
           continue;
         }
         case 3: {
@@ -4037,23 +4011,7 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
             break;
           }
 
-          message.tokenAddress = reader.bytes();
-          continue;
-        }
-        case 4: {
-          if (tag !== 34) {
-            break;
-          }
-
-          message.price = reader.bytes();
-          continue;
-        }
-        case 5: {
-          if (tag !== 40) {
-            break;
-          }
-
-          message.decimals = reader.uint32();
+          message.chainParams.push(ChainParams.decode(reader, reader.uint32()));
           continue;
         }
       }
@@ -4065,7 +4023,7 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
     return message;
   },
 
-  fromJSON(object: any): PriceOracleDatum {
+  fromJSON(object: any): UniverseParams {
     return {
       universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
       chainID: isSet(object.chainID) ? bytesFromBase64(object.chainID) : new Uint8Array(0),
@@ -4075,22 +4033,16 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
     };
   },
 
-  toJSON(message: PriceOracleDatum): unknown {
+  toJSON(message: UniverseParams): unknown {
     const obj: any = {};
     if (message.universe !== 0) {
       obj.universe = universeToJSON(message.universe);
     }
-    if (message.chainID.length !== 0) {
-      obj.chainID = base64FromBytes(message.chainID);
+    if (message.allChainsDisabled !== false) {
+      obj.allChainsDisabled = message.allChainsDisabled;
     }
-    if (message.tokenAddress.length !== 0) {
-      obj.tokenAddress = base64FromBytes(message.tokenAddress);
-    }
-    if (message.price.length !== 0) {
-      obj.price = base64FromBytes(message.price);
-    }
-    if (message.decimals !== 0) {
-      obj.decimals = Math.round(message.decimals);
+    if (message.chainParams?.length) {
+      obj.chainParams = message.chainParams.map((e) => ChainParams.toJSON(e));
     }
     return obj;
   },
@@ -4101,16 +4053,21 @@ export const PriceOracleDatum: MessageFns<PriceOracleDatum> = {
   fromPartial<I extends Exact<DeepPartial<PriceOracleDatum>, I>>(object: I): PriceOracleDatum {
     const message = createBasePriceOracleDatum();
     message.universe = object.universe ?? 0;
-    message.chainID = object.chainID ?? new Uint8Array(0);
-    message.tokenAddress = object.tokenAddress ?? new Uint8Array(0);
-    message.price = object.price ?? new Uint8Array(0);
-    message.decimals = object.decimals ?? 0;
+    message.allChainsDisabled = object.allChainsDisabled ?? false;
+    message.chainParams =
+      object.chainParams?.map((e) => ChainParams.fromPartial(e)) || [];
     return message;
   },
 };
 
-function createBasePriceOracleData(): PriceOracleData {
-  return { priceData: [] };
+function createBaseParams(): Params {
+  return {
+    mpcAddress: new Uint8Array(0),
+    maxAttempts: 0,
+    settlementNo: 0,
+    newRFFDisabled: false,
+    universeParams: [],
+  };
 }
 
 export const PriceOracleData: MessageFns<PriceOracleData> = {
@@ -4124,7 +4081,7 @@ export const PriceOracleData: MessageFns<PriceOracleData> = {
   decode(input: BinaryReader | Uint8Array, length?: number): PriceOracleData {
     const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
     const end = length === undefined ? reader.len : reader.pos + length;
-    const message = createBasePriceOracleData();
+    const message = createBaseParams();
     while (reader.pos < end) {
       const tag = reader.uint32();
       switch (tag >>> 3) {
@@ -4145,18 +4102,44 @@ export const PriceOracleData: MessageFns<PriceOracleData> = {
     return message;
   },
 
-  fromJSON(object: any): PriceOracleData {
+  fromJSON(object: any): Params {
     return {
-      priceData: globalThis.Array.isArray(object?.priceData)
-        ? object.priceData.map((e: any) => PriceOracleDatum.fromJSON(e))
+      mpcAddress: isSet(object.mpcAddress)
+        ? bytesFromBase64(object.mpcAddress)
+        : new Uint8Array(0),
+      maxAttempts: isSet(object.maxAttempts)
+        ? globalThis.Number(object.maxAttempts)
+        : 0,
+      settlementNo: isSet(object.settlementNo)
+        ? globalThis.Number(object.settlementNo)
+        : 0,
+      newRFFDisabled: isSet(object.newRFFDisabled)
+        ? globalThis.Boolean(object.newRFFDisabled)
+        : false,
+      universeParams: globalThis.Array.isArray(object?.universeParams)
+        ? object.universeParams.map((e: any) => UniverseParams.fromJSON(e))
         : [],
     };
   },
 
-  toJSON(message: PriceOracleData): unknown {
+  toJSON(message: Params): unknown {
     const obj: any = {};
-    if (message.priceData?.length) {
-      obj.priceData = message.priceData.map((e) => PriceOracleDatum.toJSON(e));
+    if (message.mpcAddress.length !== 0) {
+      obj.mpcAddress = base64FromBytes(message.mpcAddress);
+    }
+    if (message.maxAttempts !== 0) {
+      obj.maxAttempts = Math.round(message.maxAttempts);
+    }
+    if (message.settlementNo !== 0) {
+      obj.settlementNo = Math.round(message.settlementNo);
+    }
+    if (message.newRFFDisabled !== false) {
+      obj.newRFFDisabled = message.newRFFDisabled;
+    }
+    if (message.universeParams?.length) {
+      obj.universeParams = message.universeParams.map((e) =>
+        UniverseParams.toJSON(e),
+      );
     }
     return obj;
   },
