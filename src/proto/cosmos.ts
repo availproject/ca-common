@@ -30,7 +30,7 @@ import {
   SolverData,
   Universe,
   universeFromJSON,
-  universeToJSON
+  universeToJSON,
 } from "./definition";
 
 export const protobufPackage = "xarchain.chainabstraction.v1";
