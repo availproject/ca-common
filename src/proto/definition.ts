@@ -415,6 +415,204 @@ export interface Params {
   universeParams: UniverseParams[];
 }
 
+/** QueryParamsRequest is request type for the Query/Params RPC method. */
+export interface QueryParamsRequest {}
+
+/** QueryParamsResponse is response type for the Query/Params RPC method. */
+export interface QueryParamsResponse {
+  /** params holds all the parameters of this module. */
+  params?: Params | undefined;
+}
+
+/** QueryGetRequestForFundsRequest defines the QueryGetRequestForFundsRequest message. */
+export interface QueryGetRequestForFundsRequest {
+  id: Long;
+}
+
+/** QueryGetRequestForFundsResponse defines the QueryGetRequestForFundsResponse message. */
+export interface QueryGetRequestForFundsResponse {
+  requestForFunds?: RequestForFunds | undefined;
+}
+
+/** QueryAllRequestForFundsRequest defines the QueryAllRequestForFundsRequest message. */
+export interface QueryAllRequestForFundsRequest {
+  pagination?: PageRequest | undefined;
+}
+
+/** QueryAllRequestForFundsResponse defines the QueryAllRequestForFundsResponse message. */
+export interface QueryAllRequestForFundsResponse {
+  requestForFunds: RequestForFunds[];
+  pagination?: PageResponse | undefined;
+}
+
+/** QueryGetPendingClaimsRequest defines the QueryGetPendingClaimsRequest message. */
+export interface QueryGetPendingClaimsRequest {
+  id: Long;
+}
+
+/** QueryGetPendingClaimsResponse defines the QueryGetPendingClaimsResponse message. */
+export interface QueryGetPendingClaimsResponse {
+  pendingClaims?: PendingClaims | undefined;
+}
+
+/** QueryAllPendingClaimsRequest defines the QueryAllPendingClaimsRequest message. */
+export interface QueryAllPendingClaimsRequest {
+  pagination?: PageRequest | undefined;
+}
+
+/** QueryAllPendingClaimsResponse defines the QueryAllPendingClaimsResponse message. */
+export interface QueryAllPendingClaimsResponse {
+  pendingClaims: PendingClaims[];
+  pagination?: PageResponse | undefined;
+}
+
+/** QueryGetPendingSettlementsRequest defines the QueryGetPendingSettlementsRequest message. */
+export interface QueryGetPendingSettlementsRequest {
+  id: Long;
+}
+
+/** QueryGetPendingSettlementsResponse defines the QueryGetPendingSettlementsResponse message. */
+export interface QueryGetPendingSettlementsResponse {
+  pendingSettlements?: PendingSettlement | undefined;
+}
+
+/** QueryAllPendingSettlementsRequest defines the QueryAllPendingSettlementsRequest message. */
+export interface QueryAllPendingSettlementsRequest {
+  pagination?: PageRequest | undefined;
+}
+
+/** QueryAllPendingSettlementsResponse defines the QueryAllPendingSettlementsResponse message. */
+export interface QueryAllPendingSettlementsResponse {
+  pendingSettlements: PendingSettlement[];
+  pagination?: PageResponse | undefined;
+}
+
+/** QueryGetProtocolFeesRequest defines the QueryGetProtocolFeesRequest message. */
+export interface QueryGetProtocolFeesRequest {}
+
+/** QueryGetProtocolFeesResponse defines the QueryGetProtocolFeesResponse message. */
+export interface QueryGetProtocolFeesResponse {
+  protocolFees?: ProtocolFees | undefined;
+}
+
+/** QueryGetSolverDataRequest defines the QueryGetSolverDataRequest message. */
+export interface QueryGetSolverDataRequest {
+  index: string;
+}
+
+/** QueryGetSolverDataResponse defines the QueryGetSolverDataResponse message. */
+export interface QueryGetSolverDataResponse {
+  solverData?: SolverData | undefined;
+}
+
+/** QueryAllSolverDataRequest defines the QueryAllSolverDataRequest message. */
+export interface QueryAllSolverDataRequest {
+  pagination?: PageRequest | undefined;
+}
+
+/** QueryAllSolverDataResponse defines the QueryAllSolverDataResponse message. */
+export interface QueryAllSolverDataResponse {
+  solverData: SolverData[];
+  pagination?: PageResponse | undefined;
+}
+
+/** QueryGetSettlementRequest defines the QueryGetSettlementRequest message. */
+export interface QueryGetSettlementRequest {
+  id: Long;
+}
+
+/** QueryGetSettlementResponse defines the QueryGetSettlementResponse message. */
+export interface QueryGetSettlementResponse {
+  settlement?: Settlement | undefined;
+}
+
+/** QueryAllSettlementRequest defines the QueryAllSettlementRequest message. */
+export interface QueryAllSettlementRequest {
+  pagination?: PageRequest | undefined;
+}
+
+/** QueryAllSettlementResponse defines the QueryAllSettlementResponse message. */
+export interface QueryAllSettlementResponse {
+  settlement: Settlement[];
+  pagination?: PageResponse | undefined;
+}
+
+/** MsgUpdateParams is the Msg/UpdateParams request type. */
+export interface MsgUpdateParams {
+  /** authority is the address that controls the module (defaults to x/gov unless overwritten). */
+  authority: string;
+  /** NOTE: All parameters must be supplied. */
+  params?: Params | undefined;
+}
+
+/**
+ * MsgUpdateParamsResponse defines the response structure for executing a
+ * MsgUpdateParams message.
+ */
+export interface MsgUpdateParamsResponse {}
+
+/** MsgCreateRequestForFunds defines the MsgCreateRequestForFunds message. */
+export interface MsgCreateRequestForFunds {
+  user: string;
+  sources: RFFSourcePair[];
+  destinationUniverse: Universe;
+  destinationChainID: Uint8Array;
+  recipientAddress: Uint8Array;
+  destinations: RFFDestinationPair[];
+  nonce: Uint8Array;
+  expiry: Long;
+  signatureData: SignatureDatum[];
+}
+
+/** MsgCreateRequestForFundsResponse defines the MsgCreateRequestForFundsResponse message. */
+export interface MsgCreateRequestForFundsResponse {
+  id: Long;
+}
+
+/** MsgCreatePendingClaims defines the MsgCreatePendingClaims message. */
+export interface MsgCreatePendingClaim {
+  creator: string;
+  claim?: BasicClaim | undefined;
+}
+
+/** MsgCreatePendingClaimsResponse defines the MsgCreatePendingClaimsResponse message. */
+export interface MsgCreatePendingClaimResponse {
+  id: Long;
+}
+
+/** MsgUpdatePendingClaims defines the MsgUpdatePendingClaims message. */
+export interface MsgProcessPendingClaim {
+  creator: string;
+  claimId: Long;
+  verdict?: ClaimVerdict | undefined;
+  signature: Uint8Array;
+}
+
+/** MsgUpdatePendingClaimsResponse defines the MsgUpdatePendingClaimsResponse message. */
+export interface MsgProcessPendingClaimResponse {}
+
+/** MsgUpsertProtocolFees defines the MsgUpsertProtocolFees message. */
+export interface MsgUpsertProtocolFees {
+  creator: string;
+  feeBP: Long;
+  collectionFees: FixedFeeTuple[];
+  fulfilmentFees: FixedFeeTuple[];
+  feeRecipients: AdminFeeRecipient[];
+}
+
+/** MsgUpsertProtocolFeesResponse defines the MsgUpsertProtocolFeesResponse message. */
+export interface MsgUpsertProtocolFeesResponse {}
+
+/** MsgCreateSolverData defines the MsgCreateSolverData message. */
+export interface MsgUpsertSolverData {
+  cosmosAddress: string;
+  advertisedFees: RouteFee[];
+  addresses: SolverAddress[];
+}
+
+/** MsgCreateSolverDataResponse defines the MsgCreateSolverDataResponse message. */
+export interface MsgUpsertSolverDataResponse {}
+
 function createBasePageRequest(): PageRequest {
   return { key: new Uint8Array(0), offset: Long.UZERO, limit: Long.UZERO, countTotal: false, reverse: false };
 }
@@ -4687,6 +4885,3137 @@ export const MsgDoubleCheckTx: MessageFns<MsgDoubleCheckTx> = {
     return message;
   },
 };
+
+function createBaseQueryParamsRequest(): QueryParamsRequest {
+  return {};
+}
+
+export const QueryParamsRequest: MessageFns<QueryParamsRequest> = {
+  encode(
+    _: QueryParamsRequest,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): QueryParamsRequest {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryParamsRequest();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): QueryParamsRequest {
+    return {};
+  },
+
+  toJSON(_: QueryParamsRequest): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryParamsRequest>, I>>(
+    base?: I,
+  ): QueryParamsRequest {
+    return QueryParamsRequest.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryParamsRequest>, I>>(
+    _: I,
+  ): QueryParamsRequest {
+    const message = createBaseQueryParamsRequest();
+    return message;
+  },
+};
+
+function createBaseQueryParamsResponse(): QueryParamsResponse {
+  return { params: undefined };
+}
+
+export const QueryParamsResponse: MessageFns<QueryParamsResponse> = {
+  encode(
+    message: QueryParamsResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.params !== undefined) {
+      Params.encode(message.params, writer.uint32(10).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): QueryParamsResponse {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseQueryParamsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.params = Params.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): QueryParamsResponse {
+    return {
+      params: isSet(object.params) ? Params.fromJSON(object.params) : undefined,
+    };
+  },
+
+  toJSON(message: QueryParamsResponse): unknown {
+    const obj: any = {};
+    if (message.params !== undefined) {
+      obj.params = Params.toJSON(message.params);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<QueryParamsResponse>, I>>(
+    base?: I,
+  ): QueryParamsResponse {
+    return QueryParamsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<QueryParamsResponse>, I>>(
+    object: I,
+  ): QueryParamsResponse {
+    const message = createBaseQueryParamsResponse();
+    message.params =
+      object.params !== undefined && object.params !== null
+        ? Params.fromPartial(object.params)
+        : undefined;
+    return message;
+  },
+};
+
+function createBaseQueryGetRequestForFundsRequest(): QueryGetRequestForFundsRequest {
+  return { id: Long.UZERO };
+}
+
+export const QueryGetRequestForFundsRequest: MessageFns<QueryGetRequestForFundsRequest> =
+  {
+    encode(
+      message: QueryGetRequestForFundsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetRequestForFundsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetRequestForFundsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetRequestForFundsRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetRequestForFundsRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>>(
+      base?: I,
+    ): QueryGetRequestForFundsRequest {
+      return QueryGetRequestForFundsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetRequestForFundsRequest>, I>,
+    >(object: I): QueryGetRequestForFundsRequest {
+      const message = createBaseQueryGetRequestForFundsRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseQueryGetRequestForFundsResponse(): QueryGetRequestForFundsResponse {
+  return { requestForFunds: undefined };
+}
+
+export const QueryGetRequestForFundsResponse: MessageFns<QueryGetRequestForFundsResponse> =
+  {
+    encode(
+      message: QueryGetRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.requestForFunds !== undefined) {
+        RequestForFunds.encode(
+          message.requestForFunds,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.requestForFunds = RequestForFunds.decode(
+              reader,
+              reader.uint32(),
+            );
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetRequestForFundsResponse {
+      return {
+        requestForFunds: isSet(object.requestForFunds)
+          ? RequestForFunds.fromJSON(object.requestForFunds)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (message.requestForFunds !== undefined) {
+        obj.requestForFunds = RequestForFunds.toJSON(message.requestForFunds);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>>(
+      base?: I,
+    ): QueryGetRequestForFundsResponse {
+      return QueryGetRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetRequestForFundsResponse>, I>,
+    >(object: I): QueryGetRequestForFundsResponse {
+      const message = createBaseQueryGetRequestForFundsResponse();
+      message.requestForFunds =
+        object.requestForFunds !== undefined && object.requestForFunds !== null
+          ? RequestForFunds.fromPartial(object.requestForFunds)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllRequestForFundsRequest(): QueryAllRequestForFundsRequest {
+  return { pagination: undefined };
+}
+
+export const QueryAllRequestForFundsRequest: MessageFns<QueryAllRequestForFundsRequest> =
+  {
+    encode(
+      message: QueryAllRequestForFundsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllRequestForFundsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllRequestForFundsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllRequestForFundsRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllRequestForFundsRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>>(
+      base?: I,
+    ): QueryAllRequestForFundsRequest {
+      return QueryAllRequestForFundsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllRequestForFundsRequest>, I>,
+    >(object: I): QueryAllRequestForFundsRequest {
+      const message = createBaseQueryAllRequestForFundsRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllRequestForFundsResponse(): QueryAllRequestForFundsResponse {
+  return { requestForFunds: [], pagination: undefined };
+}
+
+export const QueryAllRequestForFundsResponse: MessageFns<QueryAllRequestForFundsResponse> =
+  {
+    encode(
+      message: QueryAllRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.requestForFunds) {
+        RequestForFunds.encode(v!, writer.uint32(10).fork()).join();
+      }
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.requestForFunds.push(
+              RequestForFunds.decode(reader, reader.uint32()),
+            );
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllRequestForFundsResponse {
+      return {
+        requestForFunds: globalThis.Array.isArray(object?.requestForFunds)
+          ? object.requestForFunds.map((e: any) => RequestForFunds.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (message.requestForFunds?.length) {
+        obj.requestForFunds = message.requestForFunds.map((e) =>
+          RequestForFunds.toJSON(e),
+        );
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>>(
+      base?: I,
+    ): QueryAllRequestForFundsResponse {
+      return QueryAllRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllRequestForFundsResponse>, I>,
+    >(object: I): QueryAllRequestForFundsResponse {
+      const message = createBaseQueryAllRequestForFundsResponse();
+      message.requestForFunds =
+        object.requestForFunds?.map((e) => RequestForFunds.fromPartial(e)) ||
+        [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryGetPendingClaimsRequest(): QueryGetPendingClaimsRequest {
+  return { id: Long.UZERO };
+}
+
+export const QueryGetPendingClaimsRequest: MessageFns<QueryGetPendingClaimsRequest> =
+  {
+    encode(
+      message: QueryGetPendingClaimsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPendingClaimsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPendingClaimsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetPendingClaimsRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetPendingClaimsRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetPendingClaimsRequest>, I>>(
+      base?: I,
+    ): QueryGetPendingClaimsRequest {
+      return QueryGetPendingClaimsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetPendingClaimsRequest>, I>>(
+      object: I,
+    ): QueryGetPendingClaimsRequest {
+      const message = createBaseQueryGetPendingClaimsRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseQueryGetPendingClaimsResponse(): QueryGetPendingClaimsResponse {
+  return { pendingClaims: undefined };
+}
+
+export const QueryGetPendingClaimsResponse: MessageFns<QueryGetPendingClaimsResponse> =
+  {
+    encode(
+      message: QueryGetPendingClaimsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pendingClaims !== undefined) {
+        PendingClaims.encode(
+          message.pendingClaims,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPendingClaimsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPendingClaimsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pendingClaims = PendingClaims.decode(
+              reader,
+              reader.uint32(),
+            );
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetPendingClaimsResponse {
+      return {
+        pendingClaims: isSet(object.pendingClaims)
+          ? PendingClaims.fromJSON(object.pendingClaims)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetPendingClaimsResponse): unknown {
+      const obj: any = {};
+      if (message.pendingClaims !== undefined) {
+        obj.pendingClaims = PendingClaims.toJSON(message.pendingClaims);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetPendingClaimsResponse>, I>>(
+      base?: I,
+    ): QueryGetPendingClaimsResponse {
+      return QueryGetPendingClaimsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetPendingClaimsResponse>, I>>(
+      object: I,
+    ): QueryGetPendingClaimsResponse {
+      const message = createBaseQueryGetPendingClaimsResponse();
+      message.pendingClaims =
+        object.pendingClaims !== undefined && object.pendingClaims !== null
+          ? PendingClaims.fromPartial(object.pendingClaims)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllPendingClaimsRequest(): QueryAllPendingClaimsRequest {
+  return { pagination: undefined };
+}
+
+export const QueryAllPendingClaimsRequest: MessageFns<QueryAllPendingClaimsRequest> =
+  {
+    encode(
+      message: QueryAllPendingClaimsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllPendingClaimsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllPendingClaimsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllPendingClaimsRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllPendingClaimsRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllPendingClaimsRequest>, I>>(
+      base?: I,
+    ): QueryAllPendingClaimsRequest {
+      return QueryAllPendingClaimsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllPendingClaimsRequest>, I>>(
+      object: I,
+    ): QueryAllPendingClaimsRequest {
+      const message = createBaseQueryAllPendingClaimsRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllPendingClaimsResponse(): QueryAllPendingClaimsResponse {
+  return { pendingClaims: [], pagination: undefined };
+}
+
+export const QueryAllPendingClaimsResponse: MessageFns<QueryAllPendingClaimsResponse> =
+  {
+    encode(
+      message: QueryAllPendingClaimsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.pendingClaims) {
+        PendingClaims.encode(v!, writer.uint32(10).fork()).join();
+      }
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllPendingClaimsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllPendingClaimsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pendingClaims.push(
+              PendingClaims.decode(reader, reader.uint32()),
+            );
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllPendingClaimsResponse {
+      return {
+        pendingClaims: globalThis.Array.isArray(object?.pendingClaims)
+          ? object.pendingClaims.map((e: any) => PendingClaims.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllPendingClaimsResponse): unknown {
+      const obj: any = {};
+      if (message.pendingClaims?.length) {
+        obj.pendingClaims = message.pendingClaims.map((e) =>
+          PendingClaims.toJSON(e),
+        );
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllPendingClaimsResponse>, I>>(
+      base?: I,
+    ): QueryAllPendingClaimsResponse {
+      return QueryAllPendingClaimsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllPendingClaimsResponse>, I>>(
+      object: I,
+    ): QueryAllPendingClaimsResponse {
+      const message = createBaseQueryAllPendingClaimsResponse();
+      message.pendingClaims =
+        object.pendingClaims?.map((e) => PendingClaims.fromPartial(e)) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryGetPendingSettlementsRequest(): QueryGetPendingSettlementsRequest {
+  return { id: Long.UZERO };
+}
+
+export const QueryGetPendingSettlementsRequest: MessageFns<QueryGetPendingSettlementsRequest> =
+  {
+    encode(
+      message: QueryGetPendingSettlementsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPendingSettlementsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPendingSettlementsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetPendingSettlementsRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetPendingSettlementsRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetPendingSettlementsRequest>, I>>(
+      base?: I,
+    ): QueryGetPendingSettlementsRequest {
+      return QueryGetPendingSettlementsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetPendingSettlementsRequest>, I>,
+    >(object: I): QueryGetPendingSettlementsRequest {
+      const message = createBaseQueryGetPendingSettlementsRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseQueryGetPendingSettlementsResponse(): QueryGetPendingSettlementsResponse {
+  return { pendingSettlements: undefined };
+}
+
+export const QueryGetPendingSettlementsResponse: MessageFns<QueryGetPendingSettlementsResponse> =
+  {
+    encode(
+      message: QueryGetPendingSettlementsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pendingSettlements !== undefined) {
+        PendingSettlement.encode(
+          message.pendingSettlements,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetPendingSettlementsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetPendingSettlementsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pendingSettlements = PendingSettlement.decode(
+              reader,
+              reader.uint32(),
+            );
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetPendingSettlementsResponse {
+      return {
+        pendingSettlements: isSet(object.pendingSettlements)
+          ? PendingSettlement.fromJSON(object.pendingSettlements)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetPendingSettlementsResponse): unknown {
+      const obj: any = {};
+      if (message.pendingSettlements !== undefined) {
+        obj.pendingSettlements = PendingSettlement.toJSON(
+          message.pendingSettlements,
+        );
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetPendingSettlementsResponse>, I>>(
+      base?: I,
+    ): QueryGetPendingSettlementsResponse {
+      return QueryGetPendingSettlementsResponse.fromPartial(
+        base ?? ({} as any),
+      );
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryGetPendingSettlementsResponse>, I>,
+    >(object: I): QueryGetPendingSettlementsResponse {
+      const message = createBaseQueryGetPendingSettlementsResponse();
+      message.pendingSettlements =
+        object.pendingSettlements !== undefined &&
+        object.pendingSettlements !== null
+          ? PendingSettlement.fromPartial(object.pendingSettlements)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllPendingSettlementsRequest(): QueryAllPendingSettlementsRequest {
+  return { pagination: undefined };
+}
+
+export const QueryAllPendingSettlementsRequest: MessageFns<QueryAllPendingSettlementsRequest> =
+  {
+    encode(
+      message: QueryAllPendingSettlementsRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllPendingSettlementsRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllPendingSettlementsRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllPendingSettlementsRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllPendingSettlementsRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllPendingSettlementsRequest>, I>>(
+      base?: I,
+    ): QueryAllPendingSettlementsRequest {
+      return QueryAllPendingSettlementsRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllPendingSettlementsRequest>, I>,
+    >(object: I): QueryAllPendingSettlementsRequest {
+      const message = createBaseQueryAllPendingSettlementsRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllPendingSettlementsResponse(): QueryAllPendingSettlementsResponse {
+  return { pendingSettlements: [], pagination: undefined };
+}
+
+export const QueryAllPendingSettlementsResponse: MessageFns<QueryAllPendingSettlementsResponse> =
+  {
+    encode(
+      message: QueryAllPendingSettlementsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.pendingSettlements) {
+        PendingSettlement.encode(v!, writer.uint32(10).fork()).join();
+      }
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllPendingSettlementsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllPendingSettlementsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pendingSettlements.push(
+              PendingSettlement.decode(reader, reader.uint32()),
+            );
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllPendingSettlementsResponse {
+      return {
+        pendingSettlements: globalThis.Array.isArray(object?.pendingSettlements)
+          ? object.pendingSettlements.map((e: any) =>
+              PendingSettlement.fromJSON(e),
+            )
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllPendingSettlementsResponse): unknown {
+      const obj: any = {};
+      if (message.pendingSettlements?.length) {
+        obj.pendingSettlements = message.pendingSettlements.map((e) =>
+          PendingSettlement.toJSON(e),
+        );
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllPendingSettlementsResponse>, I>>(
+      base?: I,
+    ): QueryAllPendingSettlementsResponse {
+      return QueryAllPendingSettlementsResponse.fromPartial(
+        base ?? ({} as any),
+      );
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<QueryAllPendingSettlementsResponse>, I>,
+    >(object: I): QueryAllPendingSettlementsResponse {
+      const message = createBaseQueryAllPendingSettlementsResponse();
+      message.pendingSettlements =
+        object.pendingSettlements?.map((e) =>
+          PendingSettlement.fromPartial(e),
+        ) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryGetProtocolFeesRequest(): QueryGetProtocolFeesRequest {
+  return {};
+}
+
+export const QueryGetProtocolFeesRequest: MessageFns<QueryGetProtocolFeesRequest> =
+  {
+    encode(
+      _: QueryGetProtocolFeesRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetProtocolFeesRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetProtocolFeesRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(_: any): QueryGetProtocolFeesRequest {
+      return {};
+    },
+
+    toJSON(_: QueryGetProtocolFeesRequest): unknown {
+      const obj: any = {};
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(
+      base?: I,
+    ): QueryGetProtocolFeesRequest {
+      return QueryGetProtocolFeesRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesRequest>, I>>(
+      _: I,
+    ): QueryGetProtocolFeesRequest {
+      const message = createBaseQueryGetProtocolFeesRequest();
+      return message;
+    },
+  };
+
+function createBaseQueryGetProtocolFeesResponse(): QueryGetProtocolFeesResponse {
+  return { protocolFees: undefined };
+}
+
+export const QueryGetProtocolFeesResponse: MessageFns<QueryGetProtocolFeesResponse> =
+  {
+    encode(
+      message: QueryGetProtocolFeesResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.protocolFees !== undefined) {
+        ProtocolFees.encode(
+          message.protocolFees,
+          writer.uint32(10).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetProtocolFeesResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetProtocolFeesResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.protocolFees = ProtocolFees.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetProtocolFeesResponse {
+      return {
+        protocolFees: isSet(object.protocolFees)
+          ? ProtocolFees.fromJSON(object.protocolFees)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetProtocolFeesResponse): unknown {
+      const obj: any = {};
+      if (message.protocolFees !== undefined) {
+        obj.protocolFees = ProtocolFees.toJSON(message.protocolFees);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(
+      base?: I,
+    ): QueryGetProtocolFeesResponse {
+      return QueryGetProtocolFeesResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetProtocolFeesResponse>, I>>(
+      object: I,
+    ): QueryGetProtocolFeesResponse {
+      const message = createBaseQueryGetProtocolFeesResponse();
+      message.protocolFees =
+        object.protocolFees !== undefined && object.protocolFees !== null
+          ? ProtocolFees.fromPartial(object.protocolFees)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryGetSolverDataRequest(): QueryGetSolverDataRequest {
+  return { index: "" };
+}
+
+export const QueryGetSolverDataRequest: MessageFns<QueryGetSolverDataRequest> =
+  {
+    encode(
+      message: QueryGetSolverDataRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.index !== "") {
+        writer.uint32(10).string(message.index);
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSolverDataRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSolverDataRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.index = reader.string();
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSolverDataRequest {
+      return {
+        index: isSet(object.index) ? globalThis.String(object.index) : "",
+      };
+    },
+
+    toJSON(message: QueryGetSolverDataRequest): unknown {
+      const obj: any = {};
+      if (message.index !== "") {
+        obj.index = message.index;
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(
+      base?: I,
+    ): QueryGetSolverDataRequest {
+      return QueryGetSolverDataRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataRequest>, I>>(
+      object: I,
+    ): QueryGetSolverDataRequest {
+      const message = createBaseQueryGetSolverDataRequest();
+      message.index = object.index ?? "";
+      return message;
+    },
+  };
+
+function createBaseQueryGetSolverDataResponse(): QueryGetSolverDataResponse {
+  return { solverData: undefined };
+}
+
+export const QueryGetSolverDataResponse: MessageFns<QueryGetSolverDataResponse> =
+  {
+    encode(
+      message: QueryGetSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.solverData !== undefined) {
+        SolverData.encode(message.solverData, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.solverData = SolverData.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSolverDataResponse {
+      return {
+        solverData: isSet(object.solverData)
+          ? SolverData.fromJSON(object.solverData)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetSolverDataResponse): unknown {
+      const obj: any = {};
+      if (message.solverData !== undefined) {
+        obj.solverData = SolverData.toJSON(message.solverData);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(
+      base?: I,
+    ): QueryGetSolverDataResponse {
+      return QueryGetSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSolverDataResponse>, I>>(
+      object: I,
+    ): QueryGetSolverDataResponse {
+      const message = createBaseQueryGetSolverDataResponse();
+      message.solverData =
+        object.solverData !== undefined && object.solverData !== null
+          ? SolverData.fromPartial(object.solverData)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllSolverDataRequest(): QueryAllSolverDataRequest {
+  return { pagination: undefined };
+}
+
+export const QueryAllSolverDataRequest: MessageFns<QueryAllSolverDataRequest> =
+  {
+    encode(
+      message: QueryAllSolverDataRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSolverDataRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSolverDataRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSolverDataRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSolverDataRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(
+      base?: I,
+    ): QueryAllSolverDataRequest {
+      return QueryAllSolverDataRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataRequest>, I>>(
+      object: I,
+    ): QueryAllSolverDataRequest {
+      const message = createBaseQueryAllSolverDataRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllSolverDataResponse(): QueryAllSolverDataResponse {
+  return { solverData: [], pagination: undefined };
+}
+
+export const QueryAllSolverDataResponse: MessageFns<QueryAllSolverDataResponse> =
+  {
+    encode(
+      message: QueryAllSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.solverData) {
+        SolverData.encode(v!, writer.uint32(10).fork()).join();
+      }
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.solverData.push(SolverData.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSolverDataResponse {
+      return {
+        solverData: globalThis.Array.isArray(object?.solverData)
+          ? object.solverData.map((e: any) => SolverData.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSolverDataResponse): unknown {
+      const obj: any = {};
+      if (message.solverData?.length) {
+        obj.solverData = message.solverData.map((e) => SolverData.toJSON(e));
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(
+      base?: I,
+    ): QueryAllSolverDataResponse {
+      return QueryAllSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSolverDataResponse>, I>>(
+      object: I,
+    ): QueryAllSolverDataResponse {
+      const message = createBaseQueryAllSolverDataResponse();
+      message.solverData =
+        object.solverData?.map((e) => SolverData.fromPartial(e)) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryGetSettlementRequest(): QueryGetSettlementRequest {
+  return { id: Long.UZERO };
+}
+
+export const QueryGetSettlementRequest: MessageFns<QueryGetSettlementRequest> =
+  {
+    encode(
+      message: QueryGetSettlementRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSettlementRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSettlementRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSettlementRequest {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: QueryGetSettlementRequest): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(
+      base?: I,
+    ): QueryGetSettlementRequest {
+      return QueryGetSettlementRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSettlementRequest>, I>>(
+      object: I,
+    ): QueryGetSettlementRequest {
+      const message = createBaseQueryGetSettlementRequest();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseQueryGetSettlementResponse(): QueryGetSettlementResponse {
+  return { settlement: undefined };
+}
+
+export const QueryGetSettlementResponse: MessageFns<QueryGetSettlementResponse> =
+  {
+    encode(
+      message: QueryGetSettlementResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.settlement !== undefined) {
+        Settlement.encode(message.settlement, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryGetSettlementResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryGetSettlementResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.settlement = Settlement.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryGetSettlementResponse {
+      return {
+        settlement: isSet(object.settlement)
+          ? Settlement.fromJSON(object.settlement)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryGetSettlementResponse): unknown {
+      const obj: any = {};
+      if (message.settlement !== undefined) {
+        obj.settlement = Settlement.toJSON(message.settlement);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(
+      base?: I,
+    ): QueryGetSettlementResponse {
+      return QueryGetSettlementResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryGetSettlementResponse>, I>>(
+      object: I,
+    ): QueryGetSettlementResponse {
+      const message = createBaseQueryGetSettlementResponse();
+      message.settlement =
+        object.settlement !== undefined && object.settlement !== null
+          ? Settlement.fromPartial(object.settlement)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllSettlementRequest(): QueryAllSettlementRequest {
+  return { pagination: undefined };
+}
+
+export const QueryAllSettlementRequest: MessageFns<QueryAllSettlementRequest> =
+  {
+    encode(
+      message: QueryAllSettlementRequest,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (message.pagination !== undefined) {
+        PageRequest.encode(message.pagination, writer.uint32(10).fork()).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSettlementRequest {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSettlementRequest();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.pagination = PageRequest.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSettlementRequest {
+      return {
+        pagination: isSet(object.pagination)
+          ? PageRequest.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSettlementRequest): unknown {
+      const obj: any = {};
+      if (message.pagination !== undefined) {
+        obj.pagination = PageRequest.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(
+      base?: I,
+    ): QueryAllSettlementRequest {
+      return QueryAllSettlementRequest.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSettlementRequest>, I>>(
+      object: I,
+    ): QueryAllSettlementRequest {
+      const message = createBaseQueryAllSettlementRequest();
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageRequest.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseQueryAllSettlementResponse(): QueryAllSettlementResponse {
+  return { settlement: [], pagination: undefined };
+}
+
+export const QueryAllSettlementResponse: MessageFns<QueryAllSettlementResponse> =
+  {
+    encode(
+      message: QueryAllSettlementResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      for (const v of message.settlement) {
+        Settlement.encode(v!, writer.uint32(10).fork()).join();
+      }
+      if (message.pagination !== undefined) {
+        PageResponse.encode(
+          message.pagination,
+          writer.uint32(18).fork(),
+        ).join();
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): QueryAllSettlementResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseQueryAllSettlementResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 10) {
+              break;
+            }
+
+            message.settlement.push(Settlement.decode(reader, reader.uint32()));
+            continue;
+          }
+          case 2: {
+            if (tag !== 18) {
+              break;
+            }
+
+            message.pagination = PageResponse.decode(reader, reader.uint32());
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): QueryAllSettlementResponse {
+      return {
+        settlement: globalThis.Array.isArray(object?.settlement)
+          ? object.settlement.map((e: any) => Settlement.fromJSON(e))
+          : [],
+        pagination: isSet(object.pagination)
+          ? PageResponse.fromJSON(object.pagination)
+          : undefined,
+      };
+    },
+
+    toJSON(message: QueryAllSettlementResponse): unknown {
+      const obj: any = {};
+      if (message.settlement?.length) {
+        obj.settlement = message.settlement.map((e) => Settlement.toJSON(e));
+      }
+      if (message.pagination !== undefined) {
+        obj.pagination = PageResponse.toJSON(message.pagination);
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(
+      base?: I,
+    ): QueryAllSettlementResponse {
+      return QueryAllSettlementResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<QueryAllSettlementResponse>, I>>(
+      object: I,
+    ): QueryAllSettlementResponse {
+      const message = createBaseQueryAllSettlementResponse();
+      message.settlement =
+        object.settlement?.map((e) => Settlement.fromPartial(e)) || [];
+      message.pagination =
+        object.pagination !== undefined && object.pagination !== null
+          ? PageResponse.fromPartial(object.pagination)
+          : undefined;
+      return message;
+    },
+  };
+
+function createBaseMsgUpdateParams(): MsgUpdateParams {
+  return { authority: "", params: undefined };
+}
+
+export const MsgUpdateParams: MessageFns<MsgUpdateParams> = {
+  encode(
+    message: MsgUpdateParams,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.authority !== "") {
+      writer.uint32(10).string(message.authority);
+    }
+    if (message.params !== undefined) {
+      Params.encode(message.params, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): MsgUpdateParams {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpdateParams();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.authority = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.params = Params.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgUpdateParams {
+    return {
+      authority: isSet(object.authority)
+        ? globalThis.String(object.authority)
+        : "",
+      params: isSet(object.params) ? Params.fromJSON(object.params) : undefined,
+    };
+  },
+
+  toJSON(message: MsgUpdateParams): unknown {
+    const obj: any = {};
+    if (message.authority !== "") {
+      obj.authority = message.authority;
+    }
+    if (message.params !== undefined) {
+      obj.params = Params.toJSON(message.params);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpdateParams>, I>>(
+    base?: I,
+  ): MsgUpdateParams {
+    return MsgUpdateParams.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateParams>, I>>(
+    object: I,
+  ): MsgUpdateParams {
+    const message = createBaseMsgUpdateParams();
+    message.authority = object.authority ?? "";
+    message.params =
+      object.params !== undefined && object.params !== null
+        ? Params.fromPartial(object.params)
+        : undefined;
+    return message;
+  },
+};
+
+function createBaseMsgUpdateParamsResponse(): MsgUpdateParamsResponse {
+  return {};
+}
+
+export const MsgUpdateParamsResponse: MessageFns<MsgUpdateParamsResponse> = {
+  encode(
+    _: MsgUpdateParamsResponse,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgUpdateParamsResponse {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpdateParamsResponse();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(_: any): MsgUpdateParamsResponse {
+    return {};
+  },
+
+  toJSON(_: MsgUpdateParamsResponse): unknown {
+    const obj: any = {};
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpdateParamsResponse>, I>>(
+    base?: I,
+  ): MsgUpdateParamsResponse {
+    return MsgUpdateParamsResponse.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpdateParamsResponse>, I>>(
+    _: I,
+  ): MsgUpdateParamsResponse {
+    const message = createBaseMsgUpdateParamsResponse();
+    return message;
+  },
+};
+
+function createBaseMsgCreateRequestForFunds(): MsgCreateRequestForFunds {
+  return {
+    user: "",
+    sources: [],
+    destinationUniverse: 0,
+    destinationChainID: new Uint8Array(0),
+    recipientAddress: new Uint8Array(0),
+    destinations: [],
+    nonce: new Uint8Array(0),
+    expiry: Long.UZERO,
+    signatureData: [],
+  };
+}
+
+export const MsgCreateRequestForFunds: MessageFns<MsgCreateRequestForFunds> = {
+  encode(
+    message: MsgCreateRequestForFunds,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.user !== "") {
+      writer.uint32(58).string(message.user);
+    }
+    for (const v of message.sources) {
+      RFFSourcePair.encode(v!, writer.uint32(10).fork()).join();
+    }
+    if (message.destinationUniverse !== 0) {
+      writer.uint32(16).int32(message.destinationUniverse);
+    }
+    if (message.destinationChainID.length !== 0) {
+      writer.uint32(26).bytes(message.destinationChainID);
+    }
+    if (message.recipientAddress.length !== 0) {
+      writer.uint32(74).bytes(message.recipientAddress);
+    }
+    for (const v of message.destinations) {
+      RFFDestinationPair.encode(v!, writer.uint32(34).fork()).join();
+    }
+    if (message.nonce.length !== 0) {
+      writer.uint32(42).bytes(message.nonce);
+    }
+    if (!message.expiry.equals(Long.UZERO)) {
+      writer.uint32(48).uint64(message.expiry.toString());
+    }
+    for (const v of message.signatureData) {
+      SignatureDatum.encode(v!, writer.uint32(66).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgCreateRequestForFunds {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgCreateRequestForFunds();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 7: {
+          if (tag !== 58) {
+            break;
+          }
+
+          message.user = reader.string();
+          continue;
+        }
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.sources.push(RFFSourcePair.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.destinationUniverse = reader.int32() as any;
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.destinationChainID = reader.bytes();
+          continue;
+        }
+        case 9: {
+          if (tag !== 74) {
+            break;
+          }
+
+          message.recipientAddress = reader.bytes();
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.destinations.push(
+            RFFDestinationPair.decode(reader, reader.uint32()),
+          );
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.nonce = reader.bytes();
+          continue;
+        }
+        case 6: {
+          if (tag !== 48) {
+            break;
+          }
+
+          message.expiry = Long.fromString(reader.uint64().toString(), true);
+          continue;
+        }
+        case 8: {
+          if (tag !== 66) {
+            break;
+          }
+
+          message.signatureData.push(
+            SignatureDatum.decode(reader, reader.uint32()),
+          );
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgCreateRequestForFunds {
+    return {
+      user: isSet(object.user) ? globalThis.String(object.user) : "",
+      sources: globalThis.Array.isArray(object?.sources)
+        ? object.sources.map((e: any) => RFFSourcePair.fromJSON(e))
+        : [],
+      destinationUniverse: isSet(object.destinationUniverse)
+        ? universeFromJSON(object.destinationUniverse)
+        : 0,
+      destinationChainID: isSet(object.destinationChainID)
+        ? bytesFromBase64(object.destinationChainID)
+        : new Uint8Array(0),
+      recipientAddress: isSet(object.recipientAddress)
+        ? bytesFromBase64(object.recipientAddress)
+        : new Uint8Array(0),
+      destinations: globalThis.Array.isArray(object?.destinations)
+        ? object.destinations.map((e: any) => RFFDestinationPair.fromJSON(e))
+        : [],
+      nonce: isSet(object.nonce)
+        ? bytesFromBase64(object.nonce)
+        : new Uint8Array(0),
+      expiry: isSet(object.expiry) ? Long.fromValue(object.expiry) : Long.UZERO,
+      signatureData: globalThis.Array.isArray(object?.signatureData)
+        ? object.signatureData.map((e: any) => SignatureDatum.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MsgCreateRequestForFunds): unknown {
+    const obj: any = {};
+    if (message.user !== "") {
+      obj.user = message.user;
+    }
+    if (message.sources?.length) {
+      obj.sources = message.sources.map((e) => RFFSourcePair.toJSON(e));
+    }
+    if (message.destinationUniverse !== 0) {
+      obj.destinationUniverse = universeToJSON(message.destinationUniverse);
+    }
+    if (message.destinationChainID.length !== 0) {
+      obj.destinationChainID = base64FromBytes(message.destinationChainID);
+    }
+    if (message.recipientAddress.length !== 0) {
+      obj.recipientAddress = base64FromBytes(message.recipientAddress);
+    }
+    if (message.destinations?.length) {
+      obj.destinations = message.destinations.map((e) =>
+        RFFDestinationPair.toJSON(e),
+      );
+    }
+    if (message.nonce.length !== 0) {
+      obj.nonce = base64FromBytes(message.nonce);
+    }
+    if (!message.expiry.equals(Long.UZERO)) {
+      obj.expiry = (message.expiry || Long.UZERO).toString();
+    }
+    if (message.signatureData?.length) {
+      obj.signatureData = message.signatureData.map((e) =>
+        SignatureDatum.toJSON(e),
+      );
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(
+    base?: I,
+  ): MsgCreateRequestForFunds {
+    return MsgCreateRequestForFunds.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgCreateRequestForFunds>, I>>(
+    object: I,
+  ): MsgCreateRequestForFunds {
+    const message = createBaseMsgCreateRequestForFunds();
+    message.user = object.user ?? "";
+    message.sources =
+      object.sources?.map((e) => RFFSourcePair.fromPartial(e)) || [];
+    message.destinationUniverse = object.destinationUniverse ?? 0;
+    message.destinationChainID = object.destinationChainID ?? new Uint8Array(0);
+    message.recipientAddress = object.recipientAddress ?? new Uint8Array(0);
+    message.destinations =
+      object.destinations?.map((e) => RFFDestinationPair.fromPartial(e)) || [];
+    message.nonce = object.nonce ?? new Uint8Array(0);
+    message.expiry =
+      object.expiry !== undefined && object.expiry !== null
+        ? Long.fromValue(object.expiry)
+        : Long.UZERO;
+    message.signatureData =
+      object.signatureData?.map((e) => SignatureDatum.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseMsgCreateRequestForFundsResponse(): MsgCreateRequestForFundsResponse {
+  return { id: Long.UZERO };
+}
+
+export const MsgCreateRequestForFundsResponse: MessageFns<MsgCreateRequestForFundsResponse> =
+  {
+    encode(
+      message: MsgCreateRequestForFundsResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgCreateRequestForFundsResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgCreateRequestForFundsResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): MsgCreateRequestForFundsResponse {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: MsgCreateRequestForFundsResponse): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>>(
+      base?: I,
+    ): MsgCreateRequestForFundsResponse {
+      return MsgCreateRequestForFundsResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<MsgCreateRequestForFundsResponse>, I>,
+    >(object: I): MsgCreateRequestForFundsResponse {
+      const message = createBaseMsgCreateRequestForFundsResponse();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseMsgCreatePendingClaim(): MsgCreatePendingClaim {
+  return { creator: "", claim: undefined };
+}
+
+export const MsgCreatePendingClaim: MessageFns<MsgCreatePendingClaim> = {
+  encode(
+    message: MsgCreatePendingClaim,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (message.claim !== undefined) {
+      BasicClaim.encode(message.claim, writer.uint32(18).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgCreatePendingClaim {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgCreatePendingClaim();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.creator = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.claim = BasicClaim.decode(reader, reader.uint32());
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgCreatePendingClaim {
+    return {
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+      claim: isSet(object.claim)
+        ? BasicClaim.fromJSON(object.claim)
+        : undefined,
+    };
+  },
+
+  toJSON(message: MsgCreatePendingClaim): unknown {
+    const obj: any = {};
+    if (message.creator !== "") {
+      obj.creator = message.creator;
+    }
+    if (message.claim !== undefined) {
+      obj.claim = BasicClaim.toJSON(message.claim);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgCreatePendingClaim>, I>>(
+    base?: I,
+  ): MsgCreatePendingClaim {
+    return MsgCreatePendingClaim.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgCreatePendingClaim>, I>>(
+    object: I,
+  ): MsgCreatePendingClaim {
+    const message = createBaseMsgCreatePendingClaim();
+    message.creator = object.creator ?? "";
+    message.claim =
+      object.claim !== undefined && object.claim !== null
+        ? BasicClaim.fromPartial(object.claim)
+        : undefined;
+    return message;
+  },
+};
+
+function createBaseMsgCreatePendingClaimResponse(): MsgCreatePendingClaimResponse {
+  return { id: Long.UZERO };
+}
+
+export const MsgCreatePendingClaimResponse: MessageFns<MsgCreatePendingClaimResponse> =
+  {
+    encode(
+      message: MsgCreatePendingClaimResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      if (!message.id.equals(Long.UZERO)) {
+        writer.uint32(8).uint64(message.id.toString());
+      }
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgCreatePendingClaimResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgCreatePendingClaimResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+          case 1: {
+            if (tag !== 8) {
+              break;
+            }
+
+            message.id = Long.fromString(reader.uint64().toString(), true);
+            continue;
+          }
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(object: any): MsgCreatePendingClaimResponse {
+      return { id: isSet(object.id) ? Long.fromValue(object.id) : Long.UZERO };
+    },
+
+    toJSON(message: MsgCreatePendingClaimResponse): unknown {
+      const obj: any = {};
+      if (!message.id.equals(Long.UZERO)) {
+        obj.id = (message.id || Long.UZERO).toString();
+      }
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<MsgCreatePendingClaimResponse>, I>>(
+      base?: I,
+    ): MsgCreatePendingClaimResponse {
+      return MsgCreatePendingClaimResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgCreatePendingClaimResponse>, I>>(
+      object: I,
+    ): MsgCreatePendingClaimResponse {
+      const message = createBaseMsgCreatePendingClaimResponse();
+      message.id =
+        object.id !== undefined && object.id !== null
+          ? Long.fromValue(object.id)
+          : Long.UZERO;
+      return message;
+    },
+  };
+
+function createBaseMsgProcessPendingClaim(): MsgProcessPendingClaim {
+  return {
+    creator: "",
+    claimId: Long.UZERO,
+    verdict: undefined,
+    signature: new Uint8Array(0),
+  };
+}
+
+export const MsgProcessPendingClaim: MessageFns<MsgProcessPendingClaim> = {
+  encode(
+    message: MsgProcessPendingClaim,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (!message.claimId.equals(Long.UZERO)) {
+      writer.uint32(16).uint64(message.claimId.toString());
+    }
+    if (message.verdict !== undefined) {
+      ClaimVerdict.encode(message.verdict, writer.uint32(26).fork()).join();
+    }
+    if (message.signature.length !== 0) {
+      writer.uint32(34).bytes(message.signature);
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgProcessPendingClaim {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgProcessPendingClaim();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.creator = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.claimId = Long.fromString(reader.uint64().toString(), true);
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.verdict = ClaimVerdict.decode(reader, reader.uint32());
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.signature = reader.bytes();
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgProcessPendingClaim {
+    return {
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+      claimId: isSet(object.claimId)
+        ? Long.fromValue(object.claimId)
+        : Long.UZERO,
+      verdict: isSet(object.verdict)
+        ? ClaimVerdict.fromJSON(object.verdict)
+        : undefined,
+      signature: isSet(object.signature)
+        ? bytesFromBase64(object.signature)
+        : new Uint8Array(0),
+    };
+  },
+
+  toJSON(message: MsgProcessPendingClaim): unknown {
+    const obj: any = {};
+    if (message.creator !== "") {
+      obj.creator = message.creator;
+    }
+    if (!message.claimId.equals(Long.UZERO)) {
+      obj.claimId = (message.claimId || Long.UZERO).toString();
+    }
+    if (message.verdict !== undefined) {
+      obj.verdict = ClaimVerdict.toJSON(message.verdict);
+    }
+    if (message.signature.length !== 0) {
+      obj.signature = base64FromBytes(message.signature);
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgProcessPendingClaim>, I>>(
+    base?: I,
+  ): MsgProcessPendingClaim {
+    return MsgProcessPendingClaim.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgProcessPendingClaim>, I>>(
+    object: I,
+  ): MsgProcessPendingClaim {
+    const message = createBaseMsgProcessPendingClaim();
+    message.creator = object.creator ?? "";
+    message.claimId =
+      object.claimId !== undefined && object.claimId !== null
+        ? Long.fromValue(object.claimId)
+        : Long.UZERO;
+    message.verdict =
+      object.verdict !== undefined && object.verdict !== null
+        ? ClaimVerdict.fromPartial(object.verdict)
+        : undefined;
+    message.signature = object.signature ?? new Uint8Array(0);
+    return message;
+  },
+};
+
+function createBaseMsgProcessPendingClaimResponse(): MsgProcessPendingClaimResponse {
+  return {};
+}
+
+export const MsgProcessPendingClaimResponse: MessageFns<MsgProcessPendingClaimResponse> =
+  {
+    encode(
+      _: MsgProcessPendingClaimResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgProcessPendingClaimResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgProcessPendingClaimResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(_: any): MsgProcessPendingClaimResponse {
+      return {};
+    },
+
+    toJSON(_: MsgProcessPendingClaimResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<MsgProcessPendingClaimResponse>, I>>(
+      base?: I,
+    ): MsgProcessPendingClaimResponse {
+      return MsgProcessPendingClaimResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<
+      I extends Exact<DeepPartial<MsgProcessPendingClaimResponse>, I>,
+    >(_: I): MsgProcessPendingClaimResponse {
+      const message = createBaseMsgProcessPendingClaimResponse();
+      return message;
+    },
+  };
+
+function createBaseMsgUpsertProtocolFees(): MsgUpsertProtocolFees {
+  return {
+    creator: "",
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    feeRecipients: [],
+  };
+}
+
+export const MsgUpsertProtocolFees: MessageFns<MsgUpsertProtocolFees> = {
+  encode(
+    message: MsgUpsertProtocolFees,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.creator !== "") {
+      writer.uint32(10).string(message.creator);
+    }
+    if (!message.feeBP.equals(Long.UZERO)) {
+      writer.uint32(16).uint64(message.feeBP.toString());
+    }
+    for (const v of message.collectionFees) {
+      FixedFeeTuple.encode(v!, writer.uint32(26).fork()).join();
+    }
+    for (const v of message.fulfilmentFees) {
+      FixedFeeTuple.encode(v!, writer.uint32(34).fork()).join();
+    }
+    for (const v of message.feeRecipients) {
+      AdminFeeRecipient.encode(v!, writer.uint32(42).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgUpsertProtocolFees {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpsertProtocolFees();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.creator = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 16) {
+            break;
+          }
+
+          message.feeBP = Long.fromString(reader.uint64().toString(), true);
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.collectionFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
+          continue;
+        }
+        case 4: {
+          if (tag !== 34) {
+            break;
+          }
+
+          message.fulfilmentFees.push(
+            FixedFeeTuple.decode(reader, reader.uint32()),
+          );
+          continue;
+        }
+        case 5: {
+          if (tag !== 42) {
+            break;
+          }
+
+          message.feeRecipients.push(
+            AdminFeeRecipient.decode(reader, reader.uint32()),
+          );
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgUpsertProtocolFees {
+    return {
+      creator: isSet(object.creator) ? globalThis.String(object.creator) : "",
+      feeBP: isSet(object.feeBP) ? Long.fromValue(object.feeBP) : Long.UZERO,
+      collectionFees: globalThis.Array.isArray(object?.collectionFees)
+        ? object.collectionFees.map((e: any) => FixedFeeTuple.fromJSON(e))
+        : [],
+      fulfilmentFees: globalThis.Array.isArray(object?.fulfilmentFees)
+        ? object.fulfilmentFees.map((e: any) => FixedFeeTuple.fromJSON(e))
+        : [],
+      feeRecipients: globalThis.Array.isArray(object?.feeRecipients)
+        ? object.feeRecipients.map((e: any) => AdminFeeRecipient.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MsgUpsertProtocolFees): unknown {
+    const obj: any = {};
+    if (message.creator !== "") {
+      obj.creator = message.creator;
+    }
+    if (!message.feeBP.equals(Long.UZERO)) {
+      obj.feeBP = (message.feeBP || Long.UZERO).toString();
+    }
+    if (message.collectionFees?.length) {
+      obj.collectionFees = message.collectionFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
+    }
+    if (message.fulfilmentFees?.length) {
+      obj.fulfilmentFees = message.fulfilmentFees.map((e) =>
+        FixedFeeTuple.toJSON(e),
+      );
+    }
+    if (message.feeRecipients?.length) {
+      obj.feeRecipients = message.feeRecipients.map((e) =>
+        AdminFeeRecipient.toJSON(e),
+      );
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpsertProtocolFees>, I>>(
+    base?: I,
+  ): MsgUpsertProtocolFees {
+    return MsgUpsertProtocolFees.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpsertProtocolFees>, I>>(
+    object: I,
+  ): MsgUpsertProtocolFees {
+    const message = createBaseMsgUpsertProtocolFees();
+    message.creator = object.creator ?? "";
+    message.feeBP =
+      object.feeBP !== undefined && object.feeBP !== null
+        ? Long.fromValue(object.feeBP)
+        : Long.UZERO;
+    message.collectionFees =
+      object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.fulfilmentFees =
+      object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
+    message.feeRecipients =
+      object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseMsgUpsertProtocolFeesResponse(): MsgUpsertProtocolFeesResponse {
+  return {};
+}
+
+export const MsgUpsertProtocolFeesResponse: MessageFns<MsgUpsertProtocolFeesResponse> =
+  {
+    encode(
+      _: MsgUpsertProtocolFeesResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgUpsertProtocolFeesResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgUpsertProtocolFeesResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(_: any): MsgUpsertProtocolFeesResponse {
+      return {};
+    },
+
+    toJSON(_: MsgUpsertProtocolFeesResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<MsgUpsertProtocolFeesResponse>, I>>(
+      base?: I,
+    ): MsgUpsertProtocolFeesResponse {
+      return MsgUpsertProtocolFeesResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgUpsertProtocolFeesResponse>, I>>(
+      _: I,
+    ): MsgUpsertProtocolFeesResponse {
+      const message = createBaseMsgUpsertProtocolFeesResponse();
+      return message;
+    },
+  };
+
+function createBaseMsgUpsertSolverData(): MsgUpsertSolverData {
+  return { cosmosAddress: "", advertisedFees: [], addresses: [] };
+}
+
+export const MsgUpsertSolverData: MessageFns<MsgUpsertSolverData> = {
+  encode(
+    message: MsgUpsertSolverData,
+    writer: BinaryWriter = new BinaryWriter(),
+  ): BinaryWriter {
+    if (message.cosmosAddress !== "") {
+      writer.uint32(10).string(message.cosmosAddress);
+    }
+    for (const v of message.advertisedFees) {
+      RouteFee.encode(v!, writer.uint32(18).fork()).join();
+    }
+    for (const v of message.addresses) {
+      SolverAddress.encode(v!, writer.uint32(26).fork()).join();
+    }
+    return writer;
+  },
+
+  decode(
+    input: BinaryReader | Uint8Array,
+    length?: number,
+  ): MsgUpsertSolverData {
+    const reader =
+      input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBaseMsgUpsertSolverData();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 10) {
+            break;
+          }
+
+          message.cosmosAddress = reader.string();
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.advertisedFees.push(RouteFee.decode(reader, reader.uint32()));
+          continue;
+        }
+        case 3: {
+          if (tag !== 26) {
+            break;
+          }
+
+          message.addresses.push(SolverAddress.decode(reader, reader.uint32()));
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): MsgUpsertSolverData {
+    return {
+      cosmosAddress: isSet(object.cosmosAddress)
+        ? globalThis.String(object.cosmosAddress)
+        : "",
+      advertisedFees: globalThis.Array.isArray(object?.advertisedFees)
+        ? object.advertisedFees.map((e: any) => RouteFee.fromJSON(e))
+        : [],
+      addresses: globalThis.Array.isArray(object?.addresses)
+        ? object.addresses.map((e: any) => SolverAddress.fromJSON(e))
+        : [],
+    };
+  },
+
+  toJSON(message: MsgUpsertSolverData): unknown {
+    const obj: any = {};
+    if (message.cosmosAddress !== "") {
+      obj.cosmosAddress = message.cosmosAddress;
+    }
+    if (message.advertisedFees?.length) {
+      obj.advertisedFees = message.advertisedFees.map((e) =>
+        RouteFee.toJSON(e),
+      );
+    }
+    if (message.addresses?.length) {
+      obj.addresses = message.addresses.map((e) => SolverAddress.toJSON(e));
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<MsgUpsertSolverData>, I>>(
+    base?: I,
+  ): MsgUpsertSolverData {
+    return MsgUpsertSolverData.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<MsgUpsertSolverData>, I>>(
+    object: I,
+  ): MsgUpsertSolverData {
+    const message = createBaseMsgUpsertSolverData();
+    message.cosmosAddress = object.cosmosAddress ?? "";
+    message.advertisedFees =
+      object.advertisedFees?.map((e) => RouteFee.fromPartial(e)) || [];
+    message.addresses =
+      object.addresses?.map((e) => SolverAddress.fromPartial(e)) || [];
+    return message;
+  },
+};
+
+function createBaseMsgUpsertSolverDataResponse(): MsgUpsertSolverDataResponse {
+  return {};
+}
+
+export const MsgUpsertSolverDataResponse: MessageFns<MsgUpsertSolverDataResponse> =
+  {
+    encode(
+      _: MsgUpsertSolverDataResponse,
+      writer: BinaryWriter = new BinaryWriter(),
+    ): BinaryWriter {
+      return writer;
+    },
+
+    decode(
+      input: BinaryReader | Uint8Array,
+      length?: number,
+    ): MsgUpsertSolverDataResponse {
+      const reader =
+        input instanceof BinaryReader ? input : new BinaryReader(input);
+      const end = length === undefined ? reader.len : reader.pos + length;
+      const message = createBaseMsgUpsertSolverDataResponse();
+      while (reader.pos < end) {
+        const tag = reader.uint32();
+        switch (tag >>> 3) {
+        }
+        if ((tag & 7) === 4 || tag === 0) {
+          break;
+        }
+        reader.skip(tag & 7);
+      }
+      return message;
+    },
+
+    fromJSON(_: any): MsgUpsertSolverDataResponse {
+      return {};
+    },
+
+    toJSON(_: MsgUpsertSolverDataResponse): unknown {
+      const obj: any = {};
+      return obj;
+    },
+
+    create<I extends Exact<DeepPartial<MsgUpsertSolverDataResponse>, I>>(
+      base?: I,
+    ): MsgUpsertSolverDataResponse {
+      return MsgUpsertSolverDataResponse.fromPartial(base ?? ({} as any));
+    },
+    fromPartial<I extends Exact<DeepPartial<MsgUpsertSolverDataResponse>, I>>(
+      _: I,
+    ): MsgUpsertSolverDataResponse {
+      const message = createBaseMsgUpsertSolverDataResponse();
+      return message;
+    },
+  };
 
 function bytesFromBase64(b64: string): Uint8Array {
   if ((globalThis as any).Buffer) {
