@@ -16,6 +16,8 @@ import {
   MsgCreatePendingClaimResponse,
   MsgCreateRequestForFunds,
   MsgCreateRequestForFundsResponse,
+  MsgUpsertSolverData,
+  MsgUpsertSolverDataResponse,
 } from "../proto/definition";
 import { Bytes } from "../types";
 
@@ -37,6 +39,14 @@ export const Registry = new CosmosRegistry(defaultRegistryTypes);
   Registry.register(
     "/xarchain.chainabstraction.v1.MsgCreatePendingClaimResponse",
     MsgCreatePendingClaimResponse,
+  );
+  Registry.register(
+    "/xarchain.chainabstraction.v1.MsgUpsertSolverData",
+    MsgUpsertSolverData,
+  );
+  Registry.register(
+    "/xarchain.chainabstraction.v1.MsgUpsertSolverDataResponse",
+    MsgUpsertSolverDataResponse,
   );
 }
 
