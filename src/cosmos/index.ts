@@ -16,7 +16,7 @@ import {
   MsgCreatePendingClaimResponse,
   MsgCreateRequestForFunds,
   MsgCreateRequestForFundsResponse,
-} from "../proto/cosmos";
+} from "../proto/definition";
 import { Bytes } from "../types";
 
 export const Registry = new CosmosRegistry(defaultRegistryTypes);
