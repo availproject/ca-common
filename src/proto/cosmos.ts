@@ -35,9 +35,7 @@ import {
 
 export const protobufPackage = "xarchain.chainabstraction.v1";
 
-
-
-// TODO Ugly but it works on my machine. Let's refactor this ASAP
+// If `window` is undefined it means that we running in backend mode thus we need to use NodeHttpTransport
 if (typeof window === undefined) {
   (async function () {
     const lib = await import('@improbable-eng/grpc-web-node-http-transport');
@@ -547,9 +545,9 @@ export class GrpcWebImpl {
     const maybeCombinedMetadata =
       metadata && this.options.metadata
         ? new BrowserHeaders({
-          ...this.options?.metadata.headersMap,
-          ...metadata?.headersMap,
-        })
+            ...this.options?.metadata.headersMap,
+            ...metadata?.headersMap,
+          })
         : (metadata ?? this.options.metadata);
     return new Promise((resolve, reject) => {
       grpc.unary(methodDesc, {
@@ -589,16 +587,16 @@ type Builtin =
 export type DeepPartial<T> = T extends Builtin
   ? T
   : T extends Long
-  ? string | number | Long
-  : T extends globalThis.Array<infer U>
-  ? globalThis.Array<DeepPartial<U>>
-  : T extends ReadonlyArray<infer U>
-  ? ReadonlyArray<DeepPartial<U>>
-  : T extends { $case: string; value: unknown }
-  ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
-  : T extends {}
-  ? { [K in keyof T]?: DeepPartial<T[K]> }
-  : Partial<T>;
+    ? string | number | Long
+    : T extends globalThis.Array<infer U>
+      ? globalThis.Array<DeepPartial<U>>
+      : T extends ReadonlyArray<infer U>
+        ? ReadonlyArray<DeepPartial<U>>
+        : T extends { $case: string; value: unknown }
+          ? { $case: T["$case"]; value?: DeepPartial<T["value"]> }
+          : T extends {}
+            ? { [K in keyof T]?: DeepPartial<T[K]> }
+            : Partial<T>;
 
 export class GrpcWebError extends globalThis.Error {
   constructor(
