@@ -58,6 +58,7 @@
     "@improbable-eng/grpc-web": "^0.15.0",
     "browser-headers": "^0.4.1",
     "es-toolkit": "^1.39.7",
-    "tslib": "^2.8.1"
+    "tslib": "^2.8.1",
+    "@improbable-eng/grpc-web-node-http-transport": "0.15.0"
   }
 }

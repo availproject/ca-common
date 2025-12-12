@@ -6,7 +6,7 @@ export {
   GrpcWebError,
   GrpcWebImpl,
 } from "./proto/grpc";
-
+export { createGrpcWebImpl } from "./proto/client";
 export * from "./data";
 export * from "./vaultcontracts";
 export * from "./permitutils";
