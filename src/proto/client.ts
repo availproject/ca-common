@@ -1,4 +1,4 @@
-import { GrpcWebImpl } from "./grpc";
+import { GrpcWebImpl } from "./cosmos";
 
 export const createGrpcWebImpl = async (url: string) => {
   const options: ConstructorParameters<typeof GrpcWebImpl>[1] = {};
