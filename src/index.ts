@@ -1,6 +1,11 @@
 import "./_polyfill";
 export * from "./proto/definition";
-export { QueryClientImpl, Query, GrpcWebError } from "./proto/grpc";
+export {
+  QueryClientImpl,
+  Query,
+  GrpcWebError,
+  GrpcWebImpl,
+} from "./proto/grpc";
 export { createGrpcWebImpl } from "./proto/client";
 export * from "./data";
 export * from "./vaultcontracts";
