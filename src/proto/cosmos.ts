@@ -2,21 +2,27 @@
 // versions:
 //   protoc-gen-ts_proto  v2.8.3
 //   protoc               v6.32.1
-// source: grpc.proto
+// source: cosmos.proto
 
 /* eslint-disable */
 import { grpc } from "@improbable-eng/grpc-web";
 import { BrowserHeaders } from "browser-headers";
 import Long from "long";
 import {
+  QueryAllPendingClaimsRequest,
+  QueryAllPendingClaimsResponse,
+  QueryAllPendingSettlementsRequest,
+  QueryAllPendingSettlementsResponse,
   QueryAllRequestForFundsRequest,
   QueryAllRequestForFundsResponse,
   QueryAllSettlementRequest,
   QueryAllSettlementResponse,
   QueryAllSolverDataRequest,
   QueryAllSolverDataResponse,
-  QueryGetPriceOracleDataRequest,
-  QueryGetPriceOracleDataResponse,
+  QueryGetPendingClaimsRequest,
+  QueryGetPendingClaimsResponse,
+  QueryGetPendingSettlementsRequest,
+  QueryGetPendingSettlementsResponse,
   QueryGetProtocolFeesRequest,
   QueryGetProtocolFeesResponse,
   QueryGetRequestForFundsRequest,
@@ -25,48 +31,66 @@ import {
   QueryGetSettlementResponse,
   QueryGetSolverDataRequest,
   QueryGetSolverDataResponse,
-  QueryRequestForFundsByAddressRequest,
 } from "./definition";
 
-export const protobufPackage = "xarchain.chainabstraction";
+export const protobufPackage = "xarchain.chainabstraction.v1";
 
 export interface Query {
-  RequestForFunds(
+  /** ListRequestForFunds Queries a list of RequestForFunds items. */
+  GetRequestForFunds(
     request: DeepPartial<QueryGetRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetRequestForFundsResponse>;
-  RequestForFundsAll(
+  /** ListRequestForFunds defines the ListRequestForFunds RPC. */
+  ListRequestForFunds(
     request: DeepPartial<QueryAllRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryAllRequestForFundsResponse>;
-  RequestForFundsByAddress(
-    request: DeepPartial<QueryRequestForFundsByAddressRequest>,
+  /** ListPendingClaims Queries a list of PendingClaims items. */
+  GetPendingClaims(
+    request: DeepPartial<QueryGetPendingClaimsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryAllRequestForFundsResponse>;
-  SolverData(
-    request: DeepPartial<QueryGetSolverDataRequest>,
+  ): Promise<QueryGetPendingClaimsResponse>;
+  /** ListPendingClaims defines the ListPendingClaims RPC. */
+  ListPendingClaims(
+    request: DeepPartial<QueryAllPendingClaimsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryGetSolverDataResponse>;
-  SolverDataAll(
-    request: DeepPartial<QueryAllSolverDataRequest>,
+  ): Promise<QueryAllPendingClaimsResponse>;
+  /** ListPendingSettlements Queries a list of PendingSettlements items. */
+  GetPendingSettlements(
+    request: DeepPartial<QueryGetPendingSettlementsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryAllSolverDataResponse>;
-  Settlement(
-    request: DeepPartial<QueryGetSettlementRequest>,
+  ): Promise<QueryGetPendingSettlementsResponse>;
+  /** ListPendingSettlements defines the ListPendingSettlements RPC. */
+  ListPendingSettlements(
+    request: DeepPartial<QueryAllPendingSettlementsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryGetSettlementResponse>;
-  SettlementAll(
-    request: DeepPartial<QueryAllSettlementRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<QueryAllSettlementResponse>;
-  ProtocolFees(
+  ): Promise<QueryAllPendingSettlementsResponse>;
+  /** Queries a ProtocolFees by index. */
+  GetProtocolFees(
     request: DeepPartial<QueryGetProtocolFeesRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetProtocolFeesResponse>;
-  PriceOracleData(
-    request: DeepPartial<QueryGetPriceOracleDataRequest>,
+  /** ListSolverData Queries a list of SolverData items. */
+  GetSolverData(
+    request: DeepPartial<QueryGetSolverDataRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryGetPriceOracleDataResponse>;
+  ): Promise<QueryGetSolverDataResponse>;
+  /** ListSolverData defines the ListSolverData RPC. */
+  ListSolverData(
+    request: DeepPartial<QueryAllSolverDataRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryAllSolverDataResponse>;
+  /** ListSettlement Queries a list of Settlement items. */
+  GetSettlement(
+    request: DeepPartial<QueryGetSettlementRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryGetSettlementResponse>;
+  /** ListSettlement defines the ListSettlement RPC. */
+  ListSettlement(
+    request: DeepPartial<QueryAllSettlementRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryAllSettlementResponse>;
 }
 
 export class QueryClientImpl implements Query {
@@ -74,89 +98,109 @@ export class QueryClientImpl implements Query {
 
   constructor(rpc: Rpc) {
     this.rpc = rpc;
-    this.RequestForFunds = this.RequestForFunds.bind(this);
-    this.RequestForFundsAll = this.RequestForFundsAll.bind(this);
-    this.RequestForFundsByAddress = this.RequestForFundsByAddress.bind(this);
-    this.SolverData = this.SolverData.bind(this);
-    this.SolverDataAll = this.SolverDataAll.bind(this);
-    this.Settlement = this.Settlement.bind(this);
-    this.SettlementAll = this.SettlementAll.bind(this);
-    this.ProtocolFees = this.ProtocolFees.bind(this);
-    this.PriceOracleData = this.PriceOracleData.bind(this);
+    this.GetRequestForFunds = this.GetRequestForFunds.bind(this);
+    this.ListRequestForFunds = this.ListRequestForFunds.bind(this);
+    this.GetPendingClaims = this.GetPendingClaims.bind(this);
+    this.ListPendingClaims = this.ListPendingClaims.bind(this);
+    this.GetPendingSettlements = this.GetPendingSettlements.bind(this);
+    this.ListPendingSettlements = this.ListPendingSettlements.bind(this);
+    this.GetProtocolFees = this.GetProtocolFees.bind(this);
+    this.GetSolverData = this.GetSolverData.bind(this);
+    this.ListSolverData = this.ListSolverData.bind(this);
+    this.GetSettlement = this.GetSettlement.bind(this);
+    this.ListSettlement = this.ListSettlement.bind(this);
   }
 
-  RequestForFunds(
+  GetRequestForFunds(
     request: DeepPartial<QueryGetRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetRequestForFundsResponse> {
-    return this.rpc.unary(QueryRequestForFundsDesc, QueryGetRequestForFundsRequest.fromPartial(request), metadata);
+    return this.rpc.unary(QueryGetRequestForFundsDesc, QueryGetRequestForFundsRequest.fromPartial(request), metadata);
   }
 
-  RequestForFundsAll(
+  ListRequestForFunds(
     request: DeepPartial<QueryAllRequestForFundsRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryAllRequestForFundsResponse> {
-    return this.rpc.unary(QueryRequestForFundsAllDesc, QueryAllRequestForFundsRequest.fromPartial(request), metadata);
+    return this.rpc.unary(QueryListRequestForFundsDesc, QueryAllRequestForFundsRequest.fromPartial(request), metadata);
   }
 
-  RequestForFundsByAddress(
-    request: DeepPartial<QueryRequestForFundsByAddressRequest>,
+  GetPendingClaims(
+    request: DeepPartial<QueryGetPendingClaimsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryAllRequestForFundsResponse> {
+  ): Promise<QueryGetPendingClaimsResponse> {
+    return this.rpc.unary(QueryGetPendingClaimsDesc, QueryGetPendingClaimsRequest.fromPartial(request), metadata);
+  }
+
+  ListPendingClaims(
+    request: DeepPartial<QueryAllPendingClaimsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryAllPendingClaimsResponse> {
+    return this.rpc.unary(QueryListPendingClaimsDesc, QueryAllPendingClaimsRequest.fromPartial(request), metadata);
+  }
+
+  GetPendingSettlements(
+    request: DeepPartial<QueryGetPendingSettlementsRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryGetPendingSettlementsResponse> {
     return this.rpc.unary(
-      QueryRequestForFundsByAddressDesc,
-      QueryRequestForFundsByAddressRequest.fromPartial(request),
+      QueryGetPendingSettlementsDesc,
+      QueryGetPendingSettlementsRequest.fromPartial(request),
       metadata,
     );
   }
 
-  SolverData(
-    request: DeepPartial<QueryGetSolverDataRequest>,
+  ListPendingSettlements(
+    request: DeepPartial<QueryAllPendingSettlementsRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryGetSolverDataResponse> {
-    return this.rpc.unary(QuerySolverDataDesc, QueryGetSolverDataRequest.fromPartial(request), metadata);
+  ): Promise<QueryAllPendingSettlementsResponse> {
+    return this.rpc.unary(
+      QueryListPendingSettlementsDesc,
+      QueryAllPendingSettlementsRequest.fromPartial(request),
+      metadata,
+    );
   }
 
-  SolverDataAll(
-    request: DeepPartial<QueryAllSolverDataRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<QueryAllSolverDataResponse> {
-    return this.rpc.unary(QuerySolverDataAllDesc, QueryAllSolverDataRequest.fromPartial(request), metadata);
-  }
-
-  Settlement(
-    request: DeepPartial<QueryGetSettlementRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<QueryGetSettlementResponse> {
-    return this.rpc.unary(QuerySettlementDesc, QueryGetSettlementRequest.fromPartial(request), metadata);
-  }
-
-  SettlementAll(
-    request: DeepPartial<QueryAllSettlementRequest>,
-    metadata?: grpc.Metadata,
-  ): Promise<QueryAllSettlementResponse> {
-    return this.rpc.unary(QuerySettlementAllDesc, QueryAllSettlementRequest.fromPartial(request), metadata);
-  }
-
-  ProtocolFees(
+  GetProtocolFees(
     request: DeepPartial<QueryGetProtocolFeesRequest>,
     metadata?: grpc.Metadata,
   ): Promise<QueryGetProtocolFeesResponse> {
-    return this.rpc.unary(QueryProtocolFeesDesc, QueryGetProtocolFeesRequest.fromPartial(request), metadata);
+    return this.rpc.unary(QueryGetProtocolFeesDesc, QueryGetProtocolFeesRequest.fromPartial(request), metadata);
   }
 
-  PriceOracleData(
-    request: DeepPartial<QueryGetPriceOracleDataRequest>,
+  GetSolverData(
+    request: DeepPartial<QueryGetSolverDataRequest>,
     metadata?: grpc.Metadata,
-  ): Promise<QueryGetPriceOracleDataResponse> {
-    return this.rpc.unary(QueryPriceOracleDataDesc, QueryGetPriceOracleDataRequest.fromPartial(request), metadata);
+  ): Promise<QueryGetSolverDataResponse> {
+    return this.rpc.unary(QueryGetSolverDataDesc, QueryGetSolverDataRequest.fromPartial(request), metadata);
+  }
+
+  ListSolverData(
+    request: DeepPartial<QueryAllSolverDataRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryAllSolverDataResponse> {
+    return this.rpc.unary(QueryListSolverDataDesc, QueryAllSolverDataRequest.fromPartial(request), metadata);
+  }
+
+  GetSettlement(
+    request: DeepPartial<QueryGetSettlementRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryGetSettlementResponse> {
+    return this.rpc.unary(QueryGetSettlementDesc, QueryGetSettlementRequest.fromPartial(request), metadata);
+  }
+
+  ListSettlement(
+    request: DeepPartial<QueryAllSettlementRequest>,
+    metadata?: grpc.Metadata,
+  ): Promise<QueryAllSettlementResponse> {
+    return this.rpc.unary(QueryListSettlementDesc, QueryAllSettlementRequest.fromPartial(request), metadata);
   }
 }
 
-export const QueryDesc = { serviceName: "xarchain.chainabstraction.Query" };
+export const QueryDesc = { serviceName: "xarchain.chainabstraction.v1.Query" };
 
-export const QueryRequestForFundsDesc: UnaryMethodDefinitionish = {
-  methodName: "RequestForFunds",
+export const QueryGetRequestForFundsDesc: UnaryMethodDefinitionish = {
+  methodName: "GetRequestForFunds",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
@@ -178,8 +222,8 @@ export const QueryRequestForFundsDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QueryRequestForFundsAllDesc: UnaryMethodDefinitionish = {
-  methodName: "RequestForFundsAll",
+export const QueryListRequestForFundsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListRequestForFunds",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
@@ -201,19 +245,19 @@ export const QueryRequestForFundsAllDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QueryRequestForFundsByAddressDesc: UnaryMethodDefinitionish = {
-  methodName: "RequestForFundsByAddress",
+export const QueryGetPendingClaimsDesc: UnaryMethodDefinitionish = {
+  methodName: "GetPendingClaims",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return QueryRequestForFundsByAddressRequest.encode(this).finish();
+      return QueryGetPendingClaimsRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
-      const value = QueryAllRequestForFundsResponse.decode(data);
+      const value = QueryGetPendingClaimsResponse.decode(data);
       return {
         ...value,
         toObject() {
@@ -224,19 +268,19 @@ export const QueryRequestForFundsByAddressDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QuerySolverDataDesc: UnaryMethodDefinitionish = {
-  methodName: "SolverData",
+export const QueryListPendingClaimsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListPendingClaims",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return QueryGetSolverDataRequest.encode(this).finish();
+      return QueryAllPendingClaimsRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
-      const value = QueryGetSolverDataResponse.decode(data);
+      const value = QueryAllPendingClaimsResponse.decode(data);
       return {
         ...value,
         toObject() {
@@ -247,19 +291,19 @@ export const QuerySolverDataDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QuerySolverDataAllDesc: UnaryMethodDefinitionish = {
-  methodName: "SolverDataAll",
+export const QueryGetPendingSettlementsDesc: UnaryMethodDefinitionish = {
+  methodName: "GetPendingSettlements",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return QueryAllSolverDataRequest.encode(this).finish();
+      return QueryGetPendingSettlementsRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
-      const value = QueryAllSolverDataResponse.decode(data);
+      const value = QueryGetPendingSettlementsResponse.decode(data);
       return {
         ...value,
         toObject() {
@@ -270,19 +314,19 @@ export const QuerySolverDataAllDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QuerySettlementDesc: UnaryMethodDefinitionish = {
-  methodName: "Settlement",
+export const QueryListPendingSettlementsDesc: UnaryMethodDefinitionish = {
+  methodName: "ListPendingSettlements",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return QueryGetSettlementRequest.encode(this).finish();
+      return QueryAllPendingSettlementsRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
-      const value = QueryGetSettlementResponse.decode(data);
+      const value = QueryAllPendingSettlementsResponse.decode(data);
       return {
         ...value,
         toObject() {
@@ -293,31 +337,8 @@ export const QuerySettlementDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QuerySettlementAllDesc: UnaryMethodDefinitionish = {
-  methodName: "SettlementAll",
-  service: QueryDesc,
-  requestStream: false,
-  responseStream: false,
-  requestType: {
-    serializeBinary() {
-      return QueryAllSettlementRequest.encode(this).finish();
-    },
-  } as any,
-  responseType: {
-    deserializeBinary(data: Uint8Array) {
-      const value = QueryAllSettlementResponse.decode(data);
-      return {
-        ...value,
-        toObject() {
-          return value;
-        },
-      };
-    },
-  } as any,
-};
-
-export const QueryProtocolFeesDesc: UnaryMethodDefinitionish = {
-  methodName: "ProtocolFees",
+export const QueryGetProtocolFeesDesc: UnaryMethodDefinitionish = {
+  methodName: "GetProtocolFees",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
@@ -339,19 +360,88 @@ export const QueryProtocolFeesDesc: UnaryMethodDefinitionish = {
   } as any,
 };
 
-export const QueryPriceOracleDataDesc: UnaryMethodDefinitionish = {
-  methodName: "PriceOracleData",
+export const QueryGetSolverDataDesc: UnaryMethodDefinitionish = {
+  methodName: "GetSolverData",
   service: QueryDesc,
   requestStream: false,
   responseStream: false,
   requestType: {
     serializeBinary() {
-      return QueryGetPriceOracleDataRequest.encode(this).finish();
+      return QueryGetSolverDataRequest.encode(this).finish();
     },
   } as any,
   responseType: {
     deserializeBinary(data: Uint8Array) {
-      const value = QueryGetPriceOracleDataResponse.decode(data);
+      const value = QueryGetSolverDataResponse.decode(data);
+      return {
+        ...value,
+        toObject() {
+          return value;
+        },
+      };
+    },
+  } as any,
+};
+
+export const QueryListSolverDataDesc: UnaryMethodDefinitionish = {
+  methodName: "ListSolverData",
+  service: QueryDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return QueryAllSolverDataRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      const value = QueryAllSolverDataResponse.decode(data);
+      return {
+        ...value,
+        toObject() {
+          return value;
+        },
+      };
+    },
+  } as any,
+};
+
+export const QueryGetSettlementDesc: UnaryMethodDefinitionish = {
+  methodName: "GetSettlement",
+  service: QueryDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return QueryGetSettlementRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      const value = QueryGetSettlementResponse.decode(data);
+      return {
+        ...value,
+        toObject() {
+          return value;
+        },
+      };
+    },
+  } as any,
+};
+
+export const QueryListSettlementDesc: UnaryMethodDefinitionish = {
+  methodName: "ListSettlement",
+  service: QueryDesc,
+  requestStream: false,
+  responseStream: false,
+  requestType: {
+    serializeBinary() {
+      return QueryAllSettlementRequest.encode(this).finish();
+    },
+  } as any,
+  responseType: {
+    deserializeBinary(data: Uint8Array) {
+      const value = QueryAllSettlementResponse.decode(data);
       return {
         ...value,
         toObject() {

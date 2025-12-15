@@ -73,7 +73,7 @@ message RFFSourcePair {
 message SignatureDatum {
   Universe universe = 1;
   bytes address = 2;
-  bytes signature = 3;
+  bytes signature = 3; // WARNING: This is NOT validated by Cosmos any more
   bytes hash = 4; // is to be left empty by the creator and is to be filled in during signature verification
 }
 
@@ -81,7 +81,6 @@ message RFFDestinationPair {
   bytes contractAddress = 1;
   bytes value = 2; // amount
 }
-
 
 message RequestForFunds {
   uint64 id = 1;
@@ -101,43 +100,21 @@ message RequestForFunds {
 
   bool deposited = 104;
   bool fulfilled = 105;
-  //todo: remove settled, using solver amount instead
   bool settled = 106;
   bool refunded = 107;
   int64 creationBlock = 109;
 }
 
-message MsgCreateRequestForFunds {
-  repeated RFFSourcePair      sources             = 1;
-           Universe           destinationUniverse = 2;
-           bytes              destinationChainID  = 3;
-           bytes              recipientAddress    = 9;
-  repeated RFFDestinationPair destinations        = 4;
-           bytes              nonce               = 5;
-           uint64             expiry              = 6;
-           string             user                = 7;
-  repeated SignatureDatum     signatureData       = 8;
-}
-
-message MsgCreateRequestForFundsResponse {
+message RFFCreatedEvent {
   uint64 id = 1;
 }
 
-message QueryGetRequestForFundsRequest {
+message RFFAllDepositsCompleteEvent {
   uint64 id = 1;
 }
 
-message QueryGetRequestForFundsResponse {
-  RequestForFunds requestForFunds = 1;
-}
-
-message QueryAllRequestForFundsRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllRequestForFundsResponse {
-  repeated RequestForFunds requestForFunds = 1;
-  PageResponse pagination = 2;
+message RFFFulfilledEvent {
+  uint64 id = 1;
 }
 
 message RouteFee {
@@ -164,69 +141,14 @@ message SolverData {
   repeated SolverAddress addresses = 3;
 }
 
-message QueryGetSolverDataRequest {
-  string cosmosAddress = 1;
-}
-
-message QueryGetSolverDataResponse {
-  SolverData solverData = 1;
-}
-
-message QueryAllSolverDataRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllSolverDataResponse {
-  repeated SolverData solverData = 1;
-  PageResponse pagination = 2;
-}
-
-message MsgCreateSolverData {
-  string   cosmosAddress = 1;
-  repeated RouteFee advertisedFees = 2;
-  repeated SolverAddress addresses = 3;
-}
-
-message MsgCreateSolverDataResponse {}
-
-message MsgUpdateSolverData {
-  string   cosmosAddress = 1;
-  repeated RouteFee advertisedFees = 2;
-  repeated SolverAddress addresses = 3;
-}
-
-message MsgUpdateSolverDataResponse {}
-
+// Settlement defines the Settlement message.
 message Settlement {
   bytes id = 1;
   Universe universe = 2;
-  bytes chainId = 3;
+  bytes chainID = 3;
   repeated bytes amounts = 4;
   repeated bytes contractAddresses = 5;
-  repeated bytes filler = 6;
-  bool success = 7;
-}
-
-message QueryGetSettlementRequest {
-  uint64 id = 1;
-}
-
-message QueryGetSettlementResponse {
-  Settlement Settlement = 1;
-}
-
-message QueryAllSettlementRequest {
-  PageRequest pagination = 1;
-}
-
-message QueryAllSettlementResponse {
-  repeated Settlement Settlement = 1;
-  PageResponse pagination = 2;
-}
-
-message QueryRequestForFundsByAddressRequest {
-  string account = 1;
-  PageRequest pagination = 2;
+  repeated bytes solvers = 6;
 }
 
 message FixedFeeTuple {
@@ -249,76 +171,272 @@ message ProtocolFees {
   repeated AdminFeeRecipient feeRecipients = 5;
 }
 
-message QueryGetProtocolFeesRequest {}
-
-message QueryGetProtocolFeesResponse {
-  ProtocolFees ProtocolFees = 1;
-}
-
-message MsgCreateProtocolFees {
-  string creator = 1;
-  uint64 feeBP = 2;
-  repeated FixedFeeTuple collectionFees = 3;
-  repeated FixedFeeTuple fulfilmentFees = 4;
-  repeated AdminFeeRecipient feeRecipients = 5;
-}
-
-message MsgCreateProtocolFeesResponse {}
-
-message MsgUpdateProtocolFees {
-  string creator = 1;
-  uint64 feeBP = 2;
-  repeated FixedFeeTuple collectionFees = 3;
-  repeated FixedFeeTuple fulfilmentFees = 4;
-  repeated AdminFeeRecipient feeRecipients = 5;
-}
-
-message MsgUpdateProtocolFeesResponse {}
-
-message PriceOracleDatum {
-  Universe universe = 1;
-  bytes chainID = 2;
-  bytes tokenAddress = 3;
-  bytes price = 4;
-  uint32 decimals = 5;
-}
-
-message PriceOracleData {
-  repeated PriceOracleDatum priceData = 1;
-}
-
-message QueryGetPriceOracleDataRequest {}
-
-message QueryGetPriceOracleDataResponse {
-  PriceOracleData PriceOracleData = 1;
-}
-
-message MsgRefundReq {
-  string creator = 1;
-  uint64 rffID = 2;
-}
-
-message MsgRefundReqResponse {
-}
-
-message DepositVEPacket {
+message PendingSettlement {
   uint64 id = 1;
-  bool gasRefunded = 2;
+  Universe universe = 2;
+  bytes chainID = 3;
+  bytes contractAddress = 4;
+  bytes amount = 5;
+  bytes recipient = 6;
 }
 
-message FillVEPacket {
-  uint64 id = 1;
-  bytes fillerAddress = 2;
-  bytes transactionHash = 3;
-}
+message FulfilmentClaim {}
 
-message MsgDoubleCheckTx {
-  string creator = 1;
-  Universe txUniverse = 2;
-  bytes txChainID = 3;
+message RefundClaim {}
 
-  oneof packet {
-    DepositVEPacket depositPacket = 5;
-    FillVEPacket fillPacket = 6;
+message BasicClaim {
+  uint64 RFFID = 1;
+
+  oneof claim {
+    FulfilmentClaim fulfilmentClaim = 2;
+    RefundClaim refundClaim = 3;
   }
 }
+
+// PendingClaims defines the PendingClaims message.
+message PendingClaims {
+  uint64 id = 1;
+  string creator = 2;
+
+  BasicClaim claim = 3;
+  uint64 timestamp = 5;
+  uint32 attempts = 4;
+}
+
+message FulfilmentVerdict {
+  repeated uint32 depositedIndexes = 1;
+  bytes solverAddress = 2;
+}
+
+message RefundVerdict {
+  repeated uint32 depositedIndexes = 1;
+}
+
+message ClaimVerdict {
+  bool approved = 1;
+  oneof verdict {
+    FulfilmentVerdict fulfilmentVerdict = 10;
+    RefundVerdict refundVerdict = 11;
+  }
+}
+
+message ChainParams {
+  bytes chainID = 1;
+  bool allTokensDisabled = 2;
+  repeated bytes disabledTokens = 3;
+}
+
+message UniverseParams {
+  Universe universe = 1;
+  bool allChainsDisabled = 2;
+  repeated ChainParams chainParams = 3;
+}
+
+// Params defines the parameters for the module.
+message Params {
+  bytes mpcAddress = 1;
+  uint32 maxAttempts = 2;
+  uint32 settlementNo = 3;
+
+  bool newRFFDisabled = 10;
+  repeated UniverseParams universeParams = 11;
+}
+
+// QueryParamsRequest is request type for the Query/Params RPC method.
+message QueryParamsRequest {}
+
+// QueryParamsResponse is response type for the Query/Params RPC method.
+message QueryParamsResponse {
+  // params holds all the parameters of this module.
+  Params params = 1;
+}
+
+// QueryGetRequestForFundsRequest defines the QueryGetRequestForFundsRequest message.
+message QueryGetRequestForFundsRequest {
+  uint64 id = 1;
+}
+
+// QueryGetRequestForFundsResponse defines the QueryGetRequestForFundsResponse message.
+message QueryGetRequestForFundsResponse {
+  RequestForFunds request_for_funds = 1 ;
+}
+
+// QueryAllRequestForFundsRequest defines the QueryAllRequestForFundsRequest message.
+message QueryAllRequestForFundsRequest {
+  PageRequest pagination = 1;
+}
+
+// QueryAllRequestForFundsResponse defines the QueryAllRequestForFundsResponse message.
+message QueryAllRequestForFundsResponse {
+  repeated RequestForFunds request_for_funds = 1 ;
+  PageResponse pagination = 2;
+}
+
+// QueryGetPendingClaimsRequest defines the QueryGetPendingClaimsRequest message.
+message QueryGetPendingClaimsRequest {
+  uint64 id = 1;
+}
+
+// QueryGetPendingClaimsResponse defines the QueryGetPendingClaimsResponse message.
+message QueryGetPendingClaimsResponse {
+  PendingClaims pending_claims = 1 ;
+}
+
+// QueryAllPendingClaimsRequest defines the QueryAllPendingClaimsRequest message.
+message QueryAllPendingClaimsRequest {
+  PageRequest pagination = 1;
+}
+
+// QueryAllPendingClaimsResponse defines the QueryAllPendingClaimsResponse message.
+message QueryAllPendingClaimsResponse {
+  repeated PendingClaims pending_claims = 1 ;
+  PageResponse pagination = 2;
+}
+
+// QueryGetPendingSettlementsRequest defines the QueryGetPendingSettlementsRequest message.
+message QueryGetPendingSettlementsRequest {
+  uint64 id = 1;
+}
+
+// QueryGetPendingSettlementsResponse defines the QueryGetPendingSettlementsResponse message.
+message QueryGetPendingSettlementsResponse {
+  PendingSettlement pending_settlements = 1 ;
+}
+
+// QueryAllPendingSettlementsRequest defines the QueryAllPendingSettlementsRequest message.
+message QueryAllPendingSettlementsRequest {
+  PageRequest pagination = 1;
+}
+
+// QueryAllPendingSettlementsResponse defines the QueryAllPendingSettlementsResponse message.
+message QueryAllPendingSettlementsResponse {
+  repeated PendingSettlement pending_settlements = 1 ;
+  PageResponse pagination = 2;
+}
+
+// QueryGetProtocolFeesRequest defines the QueryGetProtocolFeesRequest message.
+message QueryGetProtocolFeesRequest {}
+
+// QueryGetProtocolFeesResponse defines the QueryGetProtocolFeesResponse message.
+message QueryGetProtocolFeesResponse {
+  ProtocolFees protocol_fees = 1 ;
+}
+
+// QueryGetSolverDataRequest defines the QueryGetSolverDataRequest message.
+message QueryGetSolverDataRequest {
+  string index = 1;
+}
+
+// QueryGetSolverDataResponse defines the QueryGetSolverDataResponse message.
+message QueryGetSolverDataResponse {
+  SolverData solver_data = 1 ;
+}
+
+// QueryAllSolverDataRequest defines the QueryAllSolverDataRequest message.
+message QueryAllSolverDataRequest {
+  PageRequest pagination = 1;
+}
+
+// QueryAllSolverDataResponse defines the QueryAllSolverDataResponse message.
+message QueryAllSolverDataResponse {
+  repeated SolverData solver_data = 1;
+  PageResponse pagination = 2;
+}
+
+// QueryGetSettlementRequest defines the QueryGetSettlementRequest message.
+message QueryGetSettlementRequest {
+  uint64 id = 1;
+}
+
+// QueryGetSettlementResponse defines the QueryGetSettlementResponse message.
+message QueryGetSettlementResponse {
+  Settlement settlement = 1;
+}
+
+// QueryAllSettlementRequest defines the QueryAllSettlementRequest message.
+message QueryAllSettlementRequest {
+  PageRequest pagination = 1;
+}
+
+// QueryAllSettlementResponse defines the QueryAllSettlementResponse message.
+message QueryAllSettlementResponse {
+  repeated Settlement settlement = 1;
+  PageResponse pagination = 2;
+}
+
+// MsgUpdateParams is the Msg/UpdateParams request type.
+message MsgUpdateParams {
+  // authority is the address that controls the module (defaults to x/gov unless overwritten).
+  string authority = 1 ;
+
+  // params defines the module parameters to update.
+
+  // NOTE: All parameters must be supplied.
+  Params params = 2;
+}
+
+// MsgUpdateParamsResponse defines the response structure for executing a
+// MsgUpdateParams message.
+message MsgUpdateParamsResponse {}
+
+// MsgCreateRequestForFunds defines the MsgCreateRequestForFunds message.
+message MsgCreateRequestForFunds {
+  string user = 7 ;
+  repeated RFFSourcePair sources = 1;
+  Universe destinationUniverse = 2;
+  bytes destinationChainID = 3;
+  bytes recipientAddress = 9;
+  repeated RFFDestinationPair destinations = 4;
+  bytes nonce = 5;
+  uint64 expiry = 6;
+  repeated SignatureDatum signatureData = 8;
+}
+
+// MsgCreateRequestForFundsResponse defines the MsgCreateRequestForFundsResponse message.
+message MsgCreateRequestForFundsResponse {
+  uint64 id = 1;
+}
+
+// MsgCreatePendingClaims defines the MsgCreatePendingClaims message.
+message MsgCreatePendingClaim {
+  string creator = 1 ;
+  BasicClaim claim = 2;
+}
+
+// MsgCreatePendingClaimsResponse defines the MsgCreatePendingClaimsResponse message.
+message MsgCreatePendingClaimResponse {
+  uint64 id = 1;
+}
+
+// MsgUpdatePendingClaims defines the MsgUpdatePendingClaims message.
+message MsgProcessPendingClaim {
+  string creator = 1 ;
+  uint64 claimId = 2;
+  ClaimVerdict verdict = 3;
+  bytes signature = 4;
+}
+
+// MsgUpdatePendingClaimsResponse defines the MsgUpdatePendingClaimsResponse message.
+message MsgProcessPendingClaimResponse {}
+
+// MsgUpsertProtocolFees defines the MsgUpsertProtocolFees message.
+message MsgUpsertProtocolFees {
+  string creator = 1 ;
+  uint64 feeBP = 2;
+  repeated FixedFeeTuple collectionFees = 3;
+  repeated FixedFeeTuple fulfilmentFees = 4;
+  repeated AdminFeeRecipient feeRecipients = 5;
+}
+
+// MsgUpsertProtocolFeesResponse defines the MsgUpsertProtocolFeesResponse message.
+message MsgUpsertProtocolFeesResponse {}
+
+// MsgCreateSolverData defines the MsgCreateSolverData message.
+message MsgUpsertSolverData {
+  string cosmosAddress = 1 ;
+  repeated RouteFee advertisedFees = 2;
+  repeated SolverAddress addresses = 3;
+}
+
+// MsgCreateSolverDataResponse defines the MsgCreateSolverDataResponse message.
+message MsgUpsertSolverDataResponse {}

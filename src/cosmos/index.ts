@@ -12,14 +12,10 @@ import {
 import { Hex, hexToBytes } from "viem";
 
 import {
+  MsgCreatePendingClaim,
+  MsgCreatePendingClaimResponse,
   MsgCreateRequestForFunds,
   MsgCreateRequestForFundsResponse,
-  MsgCreateSolverData,
-  MsgCreateSolverDataResponse,
-  MsgDoubleCheckTx,
-  MsgRefundReq,
-  MsgRefundReqResponse,
-  MsgUpdateSolverData,
 } from "../proto/definition";
 import { Bytes } from "../types";
 
@@ -27,35 +23,21 @@ export const Registry = new CosmosRegistry(defaultRegistryTypes);
 
 {
   Registry.register(
-    "/xarchain.chainabstraction.MsgCreateSolverData",
-    MsgCreateSolverData,
-  );
-  Registry.register(
-    "/xarchain.chainabstraction.MsgCreateSolverDataResponse",
-    MsgCreateSolverDataResponse,
-  );
-  Registry.register(
-    "/xarchain.chainabstraction.MsgUpdateSolverData",
-    MsgUpdateSolverData,
-  );
-  Registry.register(
-    "/xarchain.chainabstraction.MsgUpdateSolverDataResponse",
-    MsgCreateSolverDataResponse,
-  );
-  Registry.register(
-    "/xarchain.chainabstraction.MsgCreateRequestForFunds",
+    "/xarchain.chainabstraction.v1.MsgCreateRequestForFunds",
     MsgCreateRequestForFunds,
   );
   Registry.register(
-    "/xarchain.chainabstraction.MsgCreateRequestForFundsResponse",
+    "/xarchain.chainabstraction.v1.MsgCreateRequestForFundsResponse",
     MsgCreateRequestForFundsResponse,
   );
-  Registry.register("/xarchain.chainabstraction.MsgRefundReq", MsgRefundReq);
   Registry.register(
-    "/xarchain.chainabstraction.MsgRefundReqResponse",
-    MsgRefundReqResponse,
+    "/xarchain.chainabstraction.v1.MsgCreatePendingClaim",
+    MsgCreatePendingClaim,
   );
-  Registry.register("/xarchain.chainabstraction.MsgDoubleCheckTx", MsgDoubleCheckTx);
+  Registry.register(
+    "/xarchain.chainabstraction.v1.MsgCreatePendingClaimResponse",
+    MsgCreatePendingClaimResponse,
+  );
 }
 
 export function createCosmosWallet(

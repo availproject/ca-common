@@ -1,0 +1,49 @@
+syntax = "proto3";
+import "definition.proto";
+package xarchain.chainabstraction.v1;
+
+service Query {
+  // ListRequestForFunds Queries a list of RequestForFunds items.
+  rpc GetRequestForFunds(QueryGetRequestForFundsRequest) returns (QueryGetRequestForFundsResponse) {
+  }
+
+  // ListRequestForFunds defines the ListRequestForFunds RPC.
+  rpc ListRequestForFunds(QueryAllRequestForFundsRequest) returns (QueryAllRequestForFundsResponse) {
+  }
+
+  // ListPendingClaims Queries a list of PendingClaims items.
+  rpc GetPendingClaims(QueryGetPendingClaimsRequest) returns (QueryGetPendingClaimsResponse) {
+  }
+
+  // ListPendingClaims defines the ListPendingClaims RPC.
+  rpc ListPendingClaims(QueryAllPendingClaimsRequest) returns (QueryAllPendingClaimsResponse) {
+  }
+
+  // ListPendingSettlements Queries a list of PendingSettlements items.
+  rpc GetPendingSettlements(QueryGetPendingSettlementsRequest) returns (QueryGetPendingSettlementsResponse) {
+  }
+
+  // ListPendingSettlements defines the ListPendingSettlements RPC.
+  rpc ListPendingSettlements(QueryAllPendingSettlementsRequest) returns (QueryAllPendingSettlementsResponse) {
+  }
+
+  // Queries a ProtocolFees by index.
+  rpc GetProtocolFees(QueryGetProtocolFeesRequest) returns (QueryGetProtocolFeesResponse) {
+  }
+
+  // ListSolverData Queries a list of SolverData items.
+  rpc GetSolverData(QueryGetSolverDataRequest) returns (QueryGetSolverDataResponse) {
+  }
+
+  // ListSolverData defines the ListSolverData RPC.
+  rpc ListSolverData(QueryAllSolverDataRequest) returns (QueryAllSolverDataResponse) {
+  }
+
+  // ListSettlement Queries a list of Settlement items.
+  rpc GetSettlement(QueryGetSettlementRequest) returns (QueryGetSettlementResponse) {
+  }
+
+  // ListSettlement defines the ListSettlement RPC.
+  rpc ListSettlement(QueryAllSettlementRequest) returns (QueryAllSettlementResponse) {
+  }
+}
