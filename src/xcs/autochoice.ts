@@ -158,7 +158,10 @@ export async function autoSelectSourcesV2(
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ) {
   // Assumption: Holding is already sorted in usage priority
-  console.log("XCS | SS | Holdings:", holdings);
+  console.log("XCS | SSV2:", {
+    holdings,
+    outputRequired: outputRequired.toFixed(),
+  });
 
   const fullLiquidationQuotes: {
     req: QuoteRequestExactInput;
@@ -222,6 +225,55 @@ export async function autoSelectSourcesV2(
         cur: correspondingCurrency,
         idx,
       });
+    }
+  }
+
+  // Check if continuous COTs from the start can cover the entire requirement
+  // We can skip quoting unused holdings
+  if (cotList.length > 0 && cotList[0].idx === 0) {
+    let continuousCOTAmount = new Decimal(0);
+    let continuousCount = 0;
+
+    for (const cot of cotList) {
+      // only consecutive cots allowed, otherwise we need to go to quoting
+      if (cot.idx !== continuousCount) break;
+
+      continuousCOTAmount = continuousCOTAmount.add(cot.amount);
+      continuousCount++;
+
+      if (continuousCOTAmount.gte(outputRequired)) {
+        console.log(
+          "XCS | SS | Continuous COTs can satisfy requirement, skipping quotes",
+        );
+
+        const usedCOTs: {
+          originalHolding: Holding;
+          amountUsed: Decimal;
+          idx: number;
+          cur: Currency;
+        }[] = [];
+
+        let remainder = outputRequired;
+        for (let i = 0; i < continuousCount; i++) {
+          const cot = cotList[i];
+          const amountToUse = Decimal.min(remainder, cot.amount);
+
+          usedCOTs.push({
+            originalHolding: cot.originalHolding,
+            amountUsed: amountToUse,
+            idx: cot.idx,
+            cur: cot.currency,
+          });
+
+          remainder = remainder.minus(amountToUse);
+          if (remainder.lte(0)) break;
+        }
+
+        console.log("XCS | SS | Early return with continuous COTs:", {
+          cots: usedCOTs,
+        });
+        return { quotes: [], usedCOTs };
+      }
     }
   }
 
@@ -320,16 +372,13 @@ export async function autoSelectSourcesV2(
         agg,
       });
       const divisor = Decimal.pow(10, quoteData.cur.decimals);
-      const oamD = convertBigIntToDecimal(resp.outputAmountMinimum).div(
-        divisor,
-      );
+      const oamD = Decimal.div(resp.outputAmountMinimum, divisor);
       if (oamD.gt(remainder)) {
-        const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
-          convertBigIntToDecimal(resp.outputAmountMinimum),
+        const indicativePrice = Decimal.div(
+          resp.inputAmount,
+          resp.outputAmountMinimum,
         );
-        const userBal = convertBigIntToDecimal(
-          quoteData.originalHolding.amount,
-        );
+        const userBal = new Decimal(quoteData.originalHolding.amount);
         // remainder is the output we want, so the input amount is remainder × indicativePrice
         let expectedInput = Decimal.min(
           remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
@@ -362,9 +411,10 @@ export async function autoSelectSourcesV2(
           console.log("XCS | SS | 2⒜⑴", {
             adequateQuote,
           });
-          const oam2D = convertBigIntToDecimal(
+          const oam2D = Decimal.div(
             adequateQuote.quote.outputAmountMinimum,
-          ).div(divisor);
+            divisor,
+          );
           if (oam2D.gte(remainder)) {
             final.push({
               ...quoteData,
@@ -407,7 +457,7 @@ export async function autoSelectSourcesV2(
     );
   }
   console.log("XCS | SS | Final:", { quotes: final, cots: usedCOTs });
-  return { quotes: final, cots: usedCOTs };
+  return { quotes: final, usedCOTs };
 }
 
 export async function autoSelectSources(
