@@ -1,4 +1,4 @@
-import { groupBy } from "es-toolkit";
+import { groupBy, orderBy } from "es-toolkit";
 import { bytesToBigInt, bytesToHex } from "viem";
 import Decimal from "decimal.js";
 
@@ -465,9 +465,9 @@ export async function autoSelectSources(
   holdings: Holding[],
   outputRequired: Decimal,
   aggregators: Aggregator[],
+  collectionFees: FixedFeeTuple[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ) {
-  // Assumption: Holding is already sorted in usage priority
   console.log("XCS | SS | Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
@@ -476,10 +476,10 @@ export async function autoSelectSources(
 
   const fullLiquidationQuotes: {
     req: QuoteRequestExactInput;
+    cfee: bigint;
     originalHolding: Holding;
     cur: Currency;
   }[] = [];
-
   for (const holdings of Object.values(groupedByChainID)) {
     const chain = ChaindataMap.get(holdings[0].chainID);
     if (chain == null) {
@@ -495,6 +495,16 @@ export async function autoSelectSources(
       });
       continue;
     }
+    const cfeeTuple = collectionFees.find((cf) => {
+      return (
+        cf.universe === chain.Universe &&
+        Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
+        // output token is the CA one
+        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
+          0
+      );
+    });
+    const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
 
     for (const holding of holdings) {
       if (
@@ -521,6 +531,8 @@ export async function autoSelectSources(
           outputToken: correspondingCurrency.tokenAddress,
           seriousness: QuoteSeriousness.PRICE_SURVEY,
         },
+        // necessary for various purposes
+        cfee,
         originalHolding: holding,
         cur: correspondingCurrency,
       });
@@ -528,8 +540,17 @@ export async function autoSelectSources(
   }
 
   // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
+  const quotesByValue = orderBy(
+    fullLiquidationQuotes,
+    [
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown => quoteOut.cfee,
+      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown =>
+        quoteOut.originalHolding.value, // once optimized for collections, we select the biggest asset we hold
+    ],
+    ["asc", "desc"],
+  );
   const responses = await aggregateAggregators(
-    fullLiquidationQuotes.map((fq) => fq.req),
+    quotesByValue.map((fq) => fq.req),
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
@@ -539,12 +560,12 @@ export async function autoSelectSources(
     agg: Aggregator;
   })[] = [];
 
-  let remainder = outputRequired;
-  for (let i = 0; i < fullLiquidationQuotes.length; i++) {
+  let remainder = outputRequired; // assuming all that chains have the same amount of fixed point places
+  for (let i = 0; i < quotesByValue.length; i++) {
     if (remainder.lte(0)) {
       break;
     }
-    const q = fullLiquidationQuotes[i];
+    const q = quotesByValue[i];
     const { quote: resp, aggregator: agg } = responses[i];
     if (resp == null) {
       continue;
