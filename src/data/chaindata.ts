@@ -680,6 +680,46 @@ const RawData = [
       },
     ],
   },
+  {
+    Universe: 0,
+    ChainID32:
+      "0x00000000000000000000000000000000000000000000000000000000000010e6",
+    Currencies: [
+      {
+        CurrencyID: 3,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
+  // Citrea Testnet
+  {
+    Universe: 0,
+    ChainID32:
+      "0x00000000000000000000000000000000000000000000000000000000000013fb",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x000000000000000000000000b669dC8cC6D044307Ba45366C0c836eC3c7e31AA",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 2,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 21,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
 ];
 
 class CurrencyMap {
@@ -795,5 +835,13 @@ export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.ETHEREUM, 143),
     "https://rpcs.avail.so/monad",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 4326),
+    "https://rpcs.avail.so/megeth",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 5115),
+    "https://rpcs.avail.so/citrea-testnet",
   ],
 ]);
