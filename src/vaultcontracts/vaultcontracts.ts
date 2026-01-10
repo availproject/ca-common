@@ -19,23 +19,27 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
     Environment.FOLLY,
     [
       [
+        new OmniversalChainID(Universe.ETHEREUM, 11155111),
+        "0xd579B76e3f51884c50eB8e8efdef5C593666B8fb",
+      ],
+      [
         new OmniversalChainID(Universe.ETHEREUM, 421614),
-        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
+        "0x10B69f0E3c21C1187526940A615959E9ee6012F9",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 11155420),
-        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
-      ],
-      [
-        new OmniversalChainID(Universe.ETHEREUM, 80002),
-        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
+        "0x10B69f0E3c21C1187526940A615959E9ee6012F9",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 84532),
-        "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
+        "0xA7458040272226378397C3036eda862D60C3b307",
       ],
       [
-        new OmniversalChainID(Universe.ETHEREUM, 11155111),
+        new OmniversalChainID(Universe.ETHEREUM, 5115),
+        "0x10B69f0E3c21C1187526940A615959E9ee6012F9",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 80002),
         "0xEFF0C81eC6D7c2a3B924e98B65303DDaa3030a81",
       ],
       [
@@ -62,6 +66,10 @@ const dataSets = new Map<Environment, [OmniversalChainID, string][]>([
       [
         new OmniversalChainID(Universe.ETHEREUM, 8453),
         "0x111111eA4f8BdfB5AE22c37ebC3eE17b82072F57",
+      ],
+      [
+        new OmniversalChainID(Universe.ETHEREUM, 4326),
+        "0x10B69f0E3c21C1187526940A615959E9ee6012F9",
       ],
       [
         new OmniversalChainID(Universe.ETHEREUM, 534352),
