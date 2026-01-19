@@ -688,7 +688,7 @@ const RawData = [
       {
         CurrencyID: 1,
         TokenContractAddress:
-          "0x000000000000000000000000FAfDdbb3FC7688494971a79cc65DCa3EF82079E7",
+          "0x000000000000000000000000590cb8868c6DeBc12CCd42E837042659cfB91504",
         PermitVariant: PermitVariant.EIP2612Canonical,
         PermitContractVersion: 2,
         TokenDecimals: 6,
