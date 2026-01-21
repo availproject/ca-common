@@ -836,7 +836,10 @@ export const RPCURLMap = new ChainIDKeyedMap([
     new OmniversalChainID(Universe.ETHEREUM, 50104),
     "https://sophon.gateway.tenderly.co/1d4STFT7zmG0vM5QowibCw",
   ],
-  [new OmniversalChainID(Universe.ETHEREUM, 56), "https://rpcs.avail.so/bsc"],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 56), 
+   "https://rpcs.avail.so/bsc",
+  ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 10143),
     "https://rpcs.avail.so/monadtestnet",
@@ -847,7 +850,7 @@ export const RPCURLMap = new ChainIDKeyedMap([
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 4326),
-    "https://rpcs.avail.so/megeth",
+    "https://rpcs.avail.so/megaeth",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 5115),
