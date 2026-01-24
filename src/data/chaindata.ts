@@ -730,7 +730,7 @@ const RawData = [
         IsGasToken: false,
       },
       {
-        CurrencyID: 3,
+        CurrencyID: 21,
         TokenContractAddress:
           "0x0000000000000000000000000000000000000000000000000000000000000000",
         PermitVariant: PermitVariant.Unsupported,
