@@ -17,6 +17,7 @@ export enum CurrencyID {
   SOPH = 0x12,
   TRX = 0x13,
   MON = 0x14,
+  CBTC = 0x15,
 }
 
 export class Currency {
