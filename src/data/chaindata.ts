@@ -680,6 +680,7 @@ const RawData = [
       },
     ],
   },
+  //megaeth mainnet
   {
     Universe: 0,
     ChainID32:
@@ -691,6 +692,40 @@ const RawData = [
           "0x000000000000000000000000590cb8868c6DeBc12CCd42E837042659cfB91504",
         PermitVariant: PermitVariant.EIP2612Canonical,
         PermitContractVersion: 2,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 3,
+        TokenContractAddress:
+          "0x0000000000000000000000000000000000000000000000000000000000000000",
+        PermitVariant: PermitVariant.Unsupported,
+        TokenDecimals: 18,
+        IsGasToken: true,
+      },
+    ],
+  },
+  //citrea mainnet
+  {
+    Universe: 0,
+    ChainID32:
+      "0x0000000000000000000000000000000000000000000000000000000000001012",
+    Currencies: [
+      {
+        CurrencyID: 1,
+        TokenContractAddress:
+          "0x000000000000000000000000E045e6c36cF77FAA2CfB54466D71A3aEF7bbE839",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 2,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
+      {
+        CurrencyID: 2,
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 1,
+        TokenContractAddress:
+          "0x0000000000000000000000009f3096Bac87e7F03DC09b0B416eB0DF837304dc4",
         TokenDecimals: 6,
         IsGasToken: false,
       },
@@ -851,6 +886,10 @@ export const RPCURLMap = new ChainIDKeyedMap([
   [
     new OmniversalChainID(Universe.ETHEREUM, 4326),
     "https://rpcs.avail.so/megaeth",
+  ],
+  [
+    new OmniversalChainID(Universe.ETHEREUM, 4114),
+    "https://rpcs.avail.so/citrea",
   ],
   [
     new OmniversalChainID(Universe.ETHEREUM, 5115),
