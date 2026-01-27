@@ -1,6 +1,6 @@
 {
   "name": "@avail-project/ca-common",
-  "version": "1.0.0-beta.16",
+  "version": "1.0.0-beta.17",
   "description": "common utilities for CA",
   "files": [
     "dist"
