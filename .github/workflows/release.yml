@@ -17,10 +17,18 @@ jobs:
       contents: write
       id-token: write
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Generate a token
+        id: generate_token
+        uses: actions/create-github-app-token@v1
         with:
-          fetch-depth: 0
+          app-id: ${{ secrets.RELEASER_APP_ID }}
+          private-key: ${{ secrets.RELEASER_APP_KEY }}
+      - uses: actions/checkout@v4
+        with:
+          token: ${{ steps.generate_token.outputs.token }}
+      - run: |
+          git config --global user.email "releaser-bot"
+          git config --global user.name "releaser-bot"
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -34,11 +42,6 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
-
-      - name: Configure git
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
 
       - name: Determine release type
         id: release-type
@@ -65,4 +68,4 @@ jobs:
             --github.preRelease=${{ steps.release-type.outputs.prerelease }} \
             --ci
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ steps.generate_token.outputs.token }}
