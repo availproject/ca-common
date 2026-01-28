@@ -46,7 +46,7 @@ jobs:
 
   release:
     needs: determine-release-type
-    if: needs.determine-release-type.outputs.is_stable_version == 'true'
+    if: needs.determine-release-type.outputs.is_stable_version == 'true' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     environment: release
     permissions:
