@@ -689,7 +689,7 @@ const RawData = [
       {
         CurrencyID: 1,
         TokenContractAddress:
-          "0x000000000000000000000000590cb8868c6DeBc12CCd42E837042659cfB91504",
+          "0x000000000000000000000000FAfDdbb3FC7688494971a79cc65DCa3EF82079E7",
         PermitVariant: PermitVariant.EIP2612Canonical,
         PermitContractVersion: 2,
         TokenDecimals: 6,
@@ -871,10 +871,7 @@ export const RPCURLMap = new ChainIDKeyedMap([
     new OmniversalChainID(Universe.ETHEREUM, 50104),
     "https://sophon.gateway.tenderly.co/1d4STFT7zmG0vM5QowibCw",
   ],
-  [
-    new OmniversalChainID(Universe.ETHEREUM, 56), 
-   "https://rpcs.avail.so/bsc",
-  ],
+  [new OmniversalChainID(Universe.ETHEREUM, 56), "https://rpcs.avail.so/bsc"],
   [
     new OmniversalChainID(Universe.ETHEREUM, 10143),
     "https://rpcs.avail.so/monadtestnet",
