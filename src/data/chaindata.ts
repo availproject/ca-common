@@ -703,6 +703,15 @@ const RawData = [
         TokenDecimals: 18,
         IsGasToken: true,
       },
+      {
+        CurrencyID: 2,
+        TokenContractAddress:
+          "0x000000000000000000000000b8ce59fc3717ada4c02eadf9682a9e934f625ebb",
+        PermitVariant: PermitVariant.EIP2612Canonical,
+        PermitContractVersion: 1,
+        TokenDecimals: 6,
+        IsGasToken: false,
+      },
     ],
   },
   //citrea mainnet
