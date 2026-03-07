@@ -271,6 +271,14 @@ export class BebopAggregator implements Aggregator {
               value: buyT.priceUsd,
               symbol: buyT.symbol,
             },
+            txData: {
+              approvalAddress: bestRoute.quote.approvalTarget,
+              tx: {
+                to: bestRoute.quote.tx.to,
+                value: bestRoute.quote.tx.value,
+                data: bestRoute.quote.tx.data,
+              },
+            },
           };
         },
       ),

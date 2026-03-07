@@ -21,7 +21,6 @@ export interface Quote {
     contractAddress: string;
     amount: string;
     amountRaw: bigint;
-
     decimals: number;
     value: number;
     symbol: string;
@@ -33,6 +32,14 @@ export interface Quote {
     decimals: number;
     value: number;
     symbol: string;
+  };
+  txData: {
+    approvalAddress: string;
+    tx: {
+      to: string;
+      data: string;
+      value: string;
+    };
   };
 }
 

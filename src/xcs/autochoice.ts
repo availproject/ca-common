@@ -672,7 +672,7 @@ export async function determineDestinationSwaps(
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ): Promise<{
-  quote: Quote | null;
+  quote: Quote;
   aggregator: Aggregator;
   inputAmount: Decimal;
   outputAmount: bigint;
@@ -749,6 +749,7 @@ export async function determineDestinationSwaps(
     if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
       return {
         ...buyQuote,
+        quote: buyQuote.quote,
         inputAmount: convertBigIntToDecimal(buyQuote.quote.inputAmount).div(
           Decimal.pow(10, COT.decimals),
         ),
@@ -922,6 +923,7 @@ export async function destinationSwapWithExactIn(
   }
   return {
     ...fullLiquidationQuote,
+    quote: fullLiquidationQuote.quote,
     inputAmount: convertBigIntToDecimal(inputAmount).div(
       Decimal.pow(10, COT.decimals),
     ),

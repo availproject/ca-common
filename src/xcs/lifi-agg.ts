@@ -146,6 +146,7 @@ export class LiFiAggregator implements Aggregator {
 
           const {
             estimate,
+            transactionRequest: { to, value, data },
             action: { fromToken, toToken },
           } = resp.data;
           return {
@@ -173,6 +174,14 @@ export class LiFiAggregator implements Aggregator {
               decimals: toToken.decimals,
               value: Number(estimate.toAmountUSD),
               symbol: toToken.symbol,
+            },
+            txData: {
+              approvalAddress: estimate.approvalAddress,
+              tx: {
+                to,
+                value,
+                data,
+              },
             },
           };
         },
