@@ -158,7 +158,7 @@ export async function autoSelectSourcesV2(
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ) {
   // Assumption: Holding is already sorted in usage priority
-  console.log("XCS | SSV2:", {
+  console.debug("XCS | SSV2:", {
     holdings,
     outputRequired: outputRequired.toFixed(),
   });
@@ -187,10 +187,13 @@ export async function autoSelectSourcesV2(
       (cur) => cur.currencyID === commonCurrencyID,
     );
     if (correspondingCurrency == null) {
-      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
-        chain,
-        correspondingCurrency,
-      });
+      console.debug(
+        "XCS | SS | Skipping because correspondingCurrency is null",
+        {
+          chain,
+          correspondingCurrency,
+        },
+      );
       continue;
     }
 
@@ -269,7 +272,7 @@ export async function autoSelectSourcesV2(
           if (remainder.lte(0)) break;
         }
 
-        console.log("XCS | SS | Early return with continuous COTs:", {
+        console.debug("XCS | SS | Early return with continuous COTs:", {
           cots: usedCOTs,
         });
         return { quotes: [], usedCOTs };
@@ -317,7 +320,7 @@ export async function autoSelectSourcesV2(
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
-  console.log("XCS | SS | Responses:", responses);
+  console.debug("AutoSelectSources:Quotes", responses);
 
   const final: ((typeof fullLiquidationQuotes)[0] & {
     quote: Quote;
@@ -351,7 +354,7 @@ export async function autoSelectSourcesV2(
 
       remainder = remainder.minus(amountToUse);
 
-      console.log("XCS | SS | Used COT", {
+      console.log("selection:cot", {
         idx: cotData.idx,
         amountToUse: amountToUse.toFixed(),
         remainder: remainder.toFixed(),
@@ -363,13 +366,10 @@ export async function autoSelectSourcesV2(
       if (resp == null) {
         continue;
       }
-      console.log("XCS | SS | 1", {
-        i: responseIdx,
-        idx: quoteData.idx,
-        remainder,
-        q: quoteData,
-        resp,
-        agg,
+      console.log("selection:quote", {
+        remainder: remainder.toFixed(),
+        input: resp.input,
+        output: resp.output,
       });
       const divisor = Decimal.pow(10, quoteData.cur.decimals);
       const oamD = Decimal.div(resp.outputAmountMinimum, divisor);
@@ -448,14 +448,13 @@ export async function autoSelectSourcesV2(
     }
   }
   console.log("XCS | SS | 3⒜", {
-    remainder,
+    remainder: remainder.toFixed(),
     final,
   });
   if (remainder.gt(0)) {
-    throw new AutoSelectionError(
-      "Failed to accumulate enough swaps to meet requirement",
-    );
+    throw new AutoSelectionError("NOT_ENOUGH_SWAP_FOR_REQUIREMENT");
   }
+
   console.log("XCS | SS | Final:", { quotes: final, cots: usedCOTs });
   return { quotes: final, usedCOTs };
 }
@@ -468,7 +467,7 @@ export async function autoSelectSources(
   collectionFees: FixedFeeTuple[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
 ) {
-  console.log("XCS | SS | Holdings:", holdings);
+  console.debug("XCS | SS | Holdings:", holdings);
 
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -489,10 +488,13 @@ export async function autoSelectSources(
       (cur) => cur.currencyID === commonCurrencyID,
     );
     if (correspondingCurrency == null) {
-      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
-        chain,
-        correspondingCurrency,
-      });
+      console.debug(
+        "XCS | SS | Skipping because correspondingCurrency is null",
+        {
+          chain,
+          correspondingCurrency,
+        },
+      );
       continue;
     }
     const cfeeTuple = collectionFees.find((cf) => {
@@ -513,7 +515,7 @@ export async function autoSelectSources(
           correspondingCurrency.tokenAddress,
         ) === 0
       ) {
-        console.log(
+        console.debug(
           "XCS | SS | Disqualifying",
           holding,
           "because holding.tokenAddress = CA asset",
@@ -554,7 +556,7 @@ export async function autoSelectSources(
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
-  console.log("XCS | SS | Responses:", responses);
+  console.debug("XCS | SS | Responses:", responses);
   const final: ((typeof fullLiquidationQuotes)[0] & {
     quote: Quote;
     agg: Aggregator;
@@ -570,7 +572,7 @@ export async function autoSelectSources(
     if (resp == null) {
       continue;
     }
-    console.log("XCS | SS | 1", {
+    console.debug("XCS | SS | 1", {
       i,
       remainder,
       q,
@@ -590,7 +592,7 @@ export async function autoSelectSources(
         userBal,
       );
       while (true) {
-        console.log("XCS | SS | 2⒜", {
+        console.debug("XCS | SS | 2⒜", {
           indicativePrice,
           expectedInput,
           userBal,
@@ -613,7 +615,7 @@ export async function autoSelectSources(
         if (adequateQuote.quote == null) {
           throw new AutoSelectionError("Couldn't get buy quote");
         }
-        console.log("XCS | SS | 2⒜⑴", {
+        console.debug("XCS | SS | 2⒜⑴", {
           adequateQuote,
         });
         const oam2D = convertBigIntToDecimal(
@@ -639,7 +641,7 @@ export async function autoSelectSources(
         }
       }
     } else {
-      console.log("XCS | SS | 2⒝", resp);
+      console.debug("XCS | SS | 2⒝", resp);
       final.push({
         ...q,
         quote: resp,
@@ -650,7 +652,7 @@ export async function autoSelectSources(
       );
     }
   }
-  console.log("XCS | SS | 3⒜", {
+  console.debug("XCS | SS | 3⒜", {
     remainder,
     final,
   });
@@ -659,7 +661,7 @@ export async function autoSelectSources(
       "Failed to accumulate enough swaps to meet requirement",
     );
   }
-  console.log("XCS | SS | Final:", final);
+  console.debug("XCS | SS | Final:", final);
   return final;
 }
 

@@ -10,6 +10,7 @@ import {
 } from "./iface";
 import { Universe } from "../proto/definition";
 import { encodeChainID36 } from "../data";
+import Decimal from "decimal.js";
 
 // https://api.bebop.xyz/{jam|pmm}/chains
 const ChainNameMapping = new Map(
@@ -241,6 +242,7 @@ export class BebopAggregator implements Aggregator {
             return null;
           }
           const buyT = bestRoute.quote.buyTokens[outputTokenAddr];
+          const sellT = bestRoute.quote.sellTokens[inputTokenAddr];
           return {
             type: r.type,
             inputAmount: BigInt(
@@ -249,6 +251,26 @@ export class BebopAggregator implements Aggregator {
             outputAmountMinimum: BigInt(buyT.minimumAmount),
             outputAmountLikely: BigInt(buyT.amount),
             originalResponse: bestRoute,
+            input: {
+              amount: new Decimal(sellT.amount)
+                .div(Decimal.pow(10, sellT.decimals))
+                .toFixed(sellT.decimals),
+              amountRaw: BigInt(sellT.amount),
+              contractAddress: inputTokenAddr,
+              decimals: sellT.decimals,
+              value: sellT.priceUsd,
+              symbol: sellT.symbol,
+            },
+            output: {
+              amount: new Decimal(buyT.minimumAmount)
+                .div(Decimal.pow(10, buyT.decimals))
+                .toFixed(buyT.decimals),
+              amountRaw: BigInt(buyT.minimumAmount),
+              contractAddress: outputTokenAddr,
+              decimals: buyT.decimals,
+              value: buyT.priceUsd,
+              symbol: buyT.symbol,
+            },
           };
         },
       ),

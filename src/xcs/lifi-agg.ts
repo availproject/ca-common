@@ -9,6 +9,7 @@ import {
   QuoteType,
 } from "./iface";
 import { Universe } from "../proto/definition";
+import Decimal from "decimal.js";
 
 export type LiFiResponse = {
   type: string;
@@ -22,6 +23,16 @@ export type LiFiResponse = {
     executionDuration: number;
     fromAmountUSD: string;
     toAmountUSD: string;
+  };
+  action: {
+    fromToken: {
+      symbol: string;
+      decimals: number;
+    };
+    toToken: {
+      symbol: string;
+      decimals: number;
+    };
   };
   integrator: string;
   transactionRequest: {
@@ -133,12 +144,36 @@ export class LiFiAggregator implements Aggregator {
             throw e;
           }
 
+          const {
+            estimate,
+            action: { fromToken, toToken },
+          } = resp.data;
           return {
             type: r.type,
-            inputAmount: BigInt(resp.data.estimate.fromAmount),
-            outputAmountMinimum: BigInt(resp.data.estimate.toAmountMin),
-            outputAmountLikely: BigInt(resp.data.estimate.toAmount),
+            inputAmount: BigInt(estimate.fromAmount),
+            outputAmountMinimum: BigInt(estimate.toAmountMin),
+            outputAmountLikely: BigInt(estimate.toAmount),
             originalResponse: resp.data,
+            input: {
+              amount: new Decimal(estimate.fromAmount)
+                .div(Decimal.pow(10, fromToken.decimals))
+                .toFixed(fromToken.decimals),
+              amountRaw: BigInt(estimate.fromAmount),
+              contractAddress: inputTokenAddr,
+              decimals: fromToken.decimals,
+              value: Number(estimate.fromAmountUSD),
+              symbol: fromToken.symbol,
+            },
+            output: {
+              amount: new Decimal(estimate.toAmountMin)
+                .div(Decimal.pow(10, toToken.decimals))
+                .toFixed(toToken.decimals),
+              amountRaw: BigInt(estimate.toAmountMin),
+              contractAddress: outputTokenAddr,
+              decimals: toToken.decimals,
+              value: Number(estimate.toAmountUSD),
+              symbol: toToken.symbol,
+            },
           };
         },
       ),

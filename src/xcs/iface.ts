@@ -17,6 +17,23 @@ export interface Quote {
   inputAmount: bigint;
   outputAmountMinimum: bigint;
   outputAmountLikely: bigint;
+  input: {
+    contractAddress: string;
+    amount: string;
+    amountRaw: bigint;
+
+    decimals: number;
+    value: number;
+    symbol: string;
+  };
+  output: {
+    contractAddress: string;
+    amount: string;
+    amountRaw: bigint;
+    decimals: number;
+    value: number;
+    symbol: string;
+  };
 }
 
 type CommonQuoteParameters = {
@@ -25,7 +42,7 @@ type CommonQuoteParameters = {
   inputToken: Bytes;
   outputToken: Bytes;
   seriousness: QuoteSeriousness;
-}
+};
 
 export type QuoteRequestExactInput = CommonQuoteParameters & {
   type: QuoteType.EXACT_IN;
