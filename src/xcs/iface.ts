@@ -1,5 +1,6 @@
 import { Bytes } from "../types";
 import { OmniversalChainID } from "../data";
+import { Hex } from "viem";
 
 export enum QuoteType {
   EXACT_IN,
@@ -11,14 +12,24 @@ export enum QuoteSeriousness {
   SERIOUS,
 }
 
+export type QuoteResponse = {
+  chainID: number;
+  quote: Quote;
+  holding: Holding;
+  aggregator: Aggregator;
+};
+
+export type Holding = {
+  chainID: OmniversalChainID;
+  tokenAddress: Bytes;
+  amountRaw: bigint;
+};
+
 export interface Quote {
-  originalResponse: unknown;
-  type: QuoteType;
-  inputAmount: bigint;
-  outputAmountMinimum: bigint;
-  outputAmountLikely: bigint;
+  // New output
+  expiry?: number;
   input: {
-    contractAddress: string;
+    contractAddress: Hex;
     amount: string;
     amountRaw: bigint;
     decimals: number;
@@ -26,7 +37,7 @@ export interface Quote {
     symbol: string;
   };
   output: {
-    contractAddress: string;
+    contractAddress: Hex;
     amount: string;
     amountRaw: bigint;
     decimals: number;
@@ -34,11 +45,11 @@ export interface Quote {
     symbol: string;
   };
   txData: {
-    approvalAddress: string;
+    approvalAddress: Hex;
     tx: {
-      to: string;
-      data: string;
-      value: string;
+      to: Hex;
+      data: Hex;
+      value: Hex;
     };
   };
 }

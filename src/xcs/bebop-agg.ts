@@ -75,7 +75,7 @@ export type BebopCommonQuote = {
     }
   >;
   settlementAddress: string;
-  approvalTarget: string;
+  approvalTarget: Hex;
   requiredSignatures: Array<never>;
   priceImpact: number;
   warnings: Array<never>;
@@ -163,17 +163,18 @@ export class BebopAggregator implements Aggregator {
       params: {
         source: "arcana",
       },
+      timeout: 10_000,
     });
   }
 
   async getQuotes(
     requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
-  ): Promise<(BebopQuote | null)[]> {
+  ): Promise<(Quote | null)[]> {
     const list = await Promise.allSettled(
       requests.map(
         async (
           r: QuoteRequestExactInput | QuoteRequestExactOutput,
-        ): Promise<BebopQuote | null> => {
+        ): Promise<Quote | null> => {
           const chainName = ChainNameMapping.get(bytesToHex(r.chain.toBytes()));
           if (chainName == null) {
             return null;
@@ -243,32 +244,36 @@ export class BebopAggregator implements Aggregator {
           }
           const buyT = bestRoute.quote.buyTokens[outputTokenAddr];
           const sellT = bestRoute.quote.sellTokens[inputTokenAddr];
+
+          const outputAmountInDecimal = new Decimal(buyT.minimumAmount)
+            .div(Decimal.pow(10, buyT.decimals))
+            .toFixed(buyT.decimals);
+          const inputAmountInDecimal = new Decimal(sellT.amount)
+            .div(Decimal.pow(10, sellT.decimals))
+            .toFixed(sellT.decimals);
+
           return {
-            type: r.type,
-            inputAmount: BigInt(
-              bestRoute.quote.sellTokens[inputTokenAddr].amount,
-            ),
-            outputAmountMinimum: BigInt(buyT.minimumAmount),
-            outputAmountLikely: BigInt(buyT.amount),
-            originalResponse: bestRoute,
+            expiry: bestRoute.quote.expiry,
             input: {
-              amount: new Decimal(sellT.amount)
-                .div(Decimal.pow(10, sellT.decimals))
-                .toFixed(sellT.decimals),
+              amount: inputAmountInDecimal,
               amountRaw: BigInt(sellT.amount),
               contractAddress: inputTokenAddr,
               decimals: sellT.decimals,
-              value: sellT.priceUsd,
+              value: Decimal.mul(
+                inputAmountInDecimal,
+                sellT.priceUsd,
+              ).toNumber(),
               symbol: sellT.symbol,
             },
             output: {
-              amount: new Decimal(buyT.minimumAmount)
-                .div(Decimal.pow(10, buyT.decimals))
-                .toFixed(buyT.decimals),
+              amount: outputAmountInDecimal,
               amountRaw: BigInt(buyT.minimumAmount),
               contractAddress: outputTokenAddr,
               decimals: buyT.decimals,
-              value: buyT.priceUsd,
+              value: Decimal.mul(
+                buyT.priceUsd,
+                outputAmountInDecimal,
+              ).toNumber(),
               symbol: buyT.symbol,
             },
             txData: {
