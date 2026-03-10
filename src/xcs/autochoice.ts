@@ -84,7 +84,8 @@ export async function aggregateAggregators(
       for (let i = 0; i < requests.length; i++) {
         const best = minByBigInt(
           responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
-          (r) => r.quote?.input.amountRaw ?? 0n,
+          // Default null quotes to MAX so they never win as the minimum
+          (r) => r.quote?.input.amountRaw ?? BigInt(Number.MAX_SAFE_INTEGER),
         );
         if (best != null) {
           final[i] = best;
@@ -379,7 +380,11 @@ export async function autoSelectSourcesV2(
           remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
           userBal,
         );
+        let attempts = 0;
         while (true) {
+          if (++attempts > 10) {
+            throw new AutoSelectionError("Partial quote did not converge");
+          }
           console.debug("partial_quote_loop", {
             indicativePrice: indicativePrice.toFixed(),
             expectedInput: expectedInput.toFixed(),
@@ -398,7 +403,9 @@ export async function autoSelectSourcesV2(
             AggregateAggregatorsMode.MaximizeOutput,
           );
           if (adequateQuoteResult.length !== 1) {
-            throw new AutoSelectionError("???");
+            throw new AutoSelectionError(
+              "Unexpected response length from aggregateAggregators",
+            );
           }
           const adequateQuote = adequateQuoteResult[0];
           if (adequateQuote.quote == null) {
@@ -487,8 +494,11 @@ export async function determineDestinationSwaps(
     AggregateAggregatorsMode.MaximizeOutput,
   );
   if (fullLiquidationResult.length !== 1) {
-    throw new AutoSelectionError("???");
+    throw new AutoSelectionError(
+      "Unexpected response length from aggregateAggregators",
+    );
   }
+
   const fullLiquidationQuote = fullLiquidationResult[0];
   if (fullLiquidationQuote.quote == null) {
     throw new AutoSelectionError("Couldn't get full liquidation quote");
@@ -498,7 +508,11 @@ export async function determineDestinationSwaps(
     fullLiquidationQuote.quote.output.amountRaw,
   ).mul(safetyMultiplier);
 
+  let attempts = 0;
   while (true) {
+    if (++attempts > 10) {
+      throw new AutoSelectionError("Destination swap quote did not converge");
+    }
     const buyQuoteResult = await aggregateAggregators(
       [
         {
@@ -515,8 +529,11 @@ export async function determineDestinationSwaps(
       AggregateAggregatorsMode.MaximizeOutput,
     );
     if (buyQuoteResult.length !== 1) {
-      throw new AutoSelectionError("???");
+      throw new AutoSelectionError(
+        "Unexpected response length from aggregateAggregators",
+      );
     }
+
     const buyQuote = buyQuoteResult[0];
     if (buyQuote.quote == null) {
       throw new AutoSelectionError("Couldn't get buy quote");
@@ -662,12 +679,16 @@ export async function destinationSwapWithExactIn(
     AggregateAggregatorsMode.MaximizeOutput,
   );
   if (fullLiquidationResult.length !== 1) {
-    throw new AutoSelectionError("???");
+    throw new AutoSelectionError(
+      "Unexpected response length from aggregateAggregators",
+    );
   }
+
   const fullLiquidationQuote = fullLiquidationResult[0];
   if (fullLiquidationQuote.quote == null) {
     throw new AutoSelectionError("Couldn't get full liquidation quote");
   }
+
   return {
     chainID: Number(omniChainID.chainID),
     quote: fullLiquidationQuote.quote,
