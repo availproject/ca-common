@@ -1,5 +1,5 @@
-import { groupBy, orderBy } from "es-toolkit";
-import { bytesToBigInt, bytesToHex } from "viem";
+import { groupBy } from "es-toolkit";
+import { bytesToHex } from "viem";
 import Decimal from "decimal.js";
 
 import {
@@ -7,6 +7,7 @@ import {
   Quote,
   QuoteRequestExactInput,
   QuoteRequestExactOutput,
+  QuoteResponse,
   QuoteSeriousness,
   QuoteType,
 } from "./iface";
@@ -21,17 +22,7 @@ import {
   OmniversalChainID,
 } from "../data";
 import { Bytes } from "../types";
-import { FixedFeeTuple } from "../proto/definition";
-
-type Asset = {
-  tokenAddress: Bytes;
-  amount: bigint;
-};
-
-export type Holding = {
-  chainID: OmniversalChainID;
-  value: number;
-} & Asset;
+import { Holding } from "./iface";
 
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.025");
@@ -76,7 +67,7 @@ export async function aggregateAggregators(
       for (let i = 0; i < requests.length; i++) {
         const best = maxByBigInt(
           responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
-          (r) => r.quote?.outputAmountMinimum ?? 0n,
+          (r) => r.quote?.output.amountRaw ?? 0n,
         );
         if (best != null) {
           final[i] = best;
@@ -93,7 +84,8 @@ export async function aggregateAggregators(
       for (let i = 0; i < requests.length; i++) {
         const best = minByBigInt(
           responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
-          (r) => r.quote?.inputAmount ?? 0n,
+          // Default null quotes to MAX so they never win as the minimum
+          (r) => r.quote?.input.amountRaw ?? BigInt(Number.MAX_SAFE_INTEGER),
         );
         if (best != null) {
           final[i] = best;
@@ -150,15 +142,24 @@ cots = [(1 COT, 1), (1 COT, 4)]
     break
 5. return quotes and assets used.
 */
+
 export async function autoSelectSourcesV2(
   userAddress: Bytes,
   holdings: Holding[],
   outputRequired: Decimal,
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
-) {
+): Promise<{
+  quoteResponses: QuoteResponse[];
+  usedCOTs: {
+    originalHolding: Holding;
+    amountUsed: Decimal;
+    idx: number;
+    cur: Currency;
+  }[];
+}> {
   // Assumption: Holding is already sorted in usage priority
-  console.log("XCS | SSV2:", {
+  console.debug("XCS | SSV2:", {
     holdings,
     outputRequired: outputRequired.toFixed(),
   });
@@ -187,10 +188,13 @@ export async function autoSelectSourcesV2(
       (cur) => cur.currencyID === commonCurrencyID,
     );
     if (correspondingCurrency == null) {
-      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
-        chain,
-        correspondingCurrency,
-      });
+      console.debug(
+        "XCS | SS | Skipping because correspondingCurrency is null",
+        {
+          chain,
+          correspondingCurrency,
+        },
+      );
       continue;
     }
 
@@ -200,7 +204,7 @@ export async function autoSelectSourcesV2(
         correspondingCurrency.tokenAddress,
       ) === 0
     ) {
-      const normalizedAmount = new Decimal(holding.amount).div(
+      const normalizedAmount = new Decimal(holding.amountRaw).div(
         Decimal.pow(10, correspondingCurrency.decimals),
       );
       cotList.push({
@@ -217,7 +221,7 @@ export async function autoSelectSourcesV2(
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
-          inputAmount: holding.amount,
+          inputAmount: holding.amountRaw,
           outputToken: correspondingCurrency.tokenAddress,
           seriousness: QuoteSeriousness.PRICE_SURVEY,
         },
@@ -269,25 +273,23 @@ export async function autoSelectSourcesV2(
           if (remainder.lte(0)) break;
         }
 
-        console.log("XCS | SS | Early return with continuous COTs:", {
+        console.debug("XCS | SS | Early return with continuous COTs:", {
           cots: usedCOTs,
         });
-        return { quotes: [], usedCOTs };
+        return { quoteResponses: [], usedCOTs };
       }
     }
   }
 
-  type ProcessingItem = {
-    idx: number;
-    isCOT: boolean;
-  } & (
-    | { isCOT: true; cotData: (typeof cotList)[0] }
+  type ProcessingItem =
+    | { idx: number; isCOT: true; cotData: (typeof cotList)[0] }
     | {
+        idx: number;
+
         isCOT: false;
         quoteData: (typeof fullLiquidationQuotes)[0];
         responseIdx: number;
-      }
-  );
+      };
   const processingQueue: ProcessingItem[] = [];
 
   // Add COT holdings
@@ -317,12 +319,9 @@ export async function autoSelectSourcesV2(
     aggregators,
     AggregateAggregatorsMode.MaximizeOutput,
   );
-  console.log("XCS | SS | Responses:", responses);
+  console.debug("AutoSelectSources:Quotes", responses);
 
-  const final: ((typeof fullLiquidationQuotes)[0] & {
-    quote: Quote;
-    agg: Aggregator;
-  })[] = [];
+  const final: QuoteResponse[] = [];
 
   const usedCOTs: {
     originalHolding: Holding;
@@ -351,7 +350,7 @@ export async function autoSelectSourcesV2(
 
       remainder = remainder.minus(amountToUse);
 
-      console.log("XCS | SS | Used COT", {
+      console.debug("selection:cot", {
         idx: cotData.idx,
         amountToUse: amountToUse.toFixed(),
         remainder: remainder.toFixed(),
@@ -359,36 +358,38 @@ export async function autoSelectSourcesV2(
     } else {
       // Process non-COT holding - use existing quote logic
       const { quoteData, responseIdx } = item;
-      const { quote: resp, aggregator: agg } = responses[responseIdx];
+      const { quote: resp, aggregator } = responses[responseIdx];
       if (resp == null) {
         continue;
       }
-      console.log("XCS | SS | 1", {
-        i: responseIdx,
-        idx: quoteData.idx,
-        remainder,
-        q: quoteData,
-        resp,
-        agg,
+      console.debug("selection:quote", {
+        remainder: remainder.toFixed(),
+        input: resp.input,
+        output: resp.output,
       });
       const divisor = Decimal.pow(10, quoteData.cur.decimals);
-      const oamD = Decimal.div(resp.outputAmountMinimum, divisor);
+      const oamD = new Decimal(resp.output.amount);
       if (oamD.gt(remainder)) {
         const indicativePrice = Decimal.div(
-          resp.inputAmount,
-          resp.outputAmountMinimum,
+          resp.input.amountRaw,
+          resp.output.amountRaw,
         );
-        const userBal = new Decimal(quoteData.originalHolding.amount);
+        const userBal = new Decimal(quoteData.originalHolding.amountRaw);
         // remainder is the output we want, so the input amount is remainder × indicativePrice
         let expectedInput = Decimal.min(
           remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
           userBal,
         );
+        let attempts = 0;
         while (true) {
-          console.log("XCS | SS | 2⒜", {
-            indicativePrice,
-            expectedInput,
-            userBal,
+          if (++attempts > 10) {
+            throw new AutoSelectionError("Partial quote did not converge");
+          }
+          console.debug("partial_quote_loop", {
+            indicativePrice: indicativePrice.toFixed(),
+            expectedInput: expectedInput.toFixed(),
+            userBal: userBal.toFixed(),
+            remainder: remainder.toFixed(),
           });
           const adequateQuoteResult = await aggregateAggregators(
             [
@@ -402,24 +403,25 @@ export async function autoSelectSourcesV2(
             AggregateAggregatorsMode.MaximizeOutput,
           );
           if (adequateQuoteResult.length !== 1) {
-            throw new AutoSelectionError("???");
+            throw new AutoSelectionError(
+              "Unexpected response length from aggregateAggregators",
+            );
           }
           const adequateQuote = adequateQuoteResult[0];
           if (adequateQuote.quote == null) {
             throw new AutoSelectionError("Couldn't get buy quote");
           }
-          console.log("XCS | SS | 2⒜⑴", {
-            adequateQuote,
+          const quote = adequateQuote.quote;
+          console.log("partial_quote", {
+            quote,
           });
-          const oam2D = Decimal.div(
-            adequateQuote.quote.outputAmountMinimum,
-            divisor,
-          );
+          const oam2D = new Decimal(adequateQuote.quote.output.amount);
           if (oam2D.gte(remainder)) {
             final.push({
-              ...quoteData,
-              quote: adequateQuote.quote,
-              agg: adequateQuote.aggregator,
+              quote,
+              aggregator: adequateQuote.aggregator,
+              holding: quoteData.originalHolding,
+              chainID: Number(quoteData.req.chain.chainID),
             });
             remainder = remainder.minus(oam2D);
             break;
@@ -435,247 +437,36 @@ export async function autoSelectSourcesV2(
           }
         }
       } else {
-        console.log("XCS | SS | 2⒝", resp);
+        console.debug("full_quote", resp);
         final.push({
-          ...quoteData,
           quote: resp,
-          agg,
+          holding: quoteData.originalHolding,
+          aggregator,
+          chainID: Number(quoteData.req.chain.chainID),
         });
-        remainder = remainder.minus(
-          convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor),
-        );
+        remainder = remainder.minus(resp.output.amount);
       }
     }
   }
-  console.log("XCS | SS | 3⒜", {
-    remainder,
+  console.debug("quotes_and_remainder", {
+    remainder: remainder.toFixed(),
     final,
   });
   if (remainder.gt(0)) {
-    throw new AutoSelectionError(
-      "Failed to accumulate enough swaps to meet requirement",
-    );
-  }
-  console.log("XCS | SS | Final:", { quotes: final, cots: usedCOTs });
-  return { quotes: final, usedCOTs };
-}
-
-export async function autoSelectSources(
-  userAddress: Bytes,
-  holdings: Holding[],
-  outputRequired: Decimal,
-  aggregators: Aggregator[],
-  collectionFees: FixedFeeTuple[],
-  commonCurrencyID: CurrencyID = CurrencyID.USDC,
-) {
-  console.log("XCS | SS | Holdings:", holdings);
-
-  const groupedByChainID = groupBy(holdings, (h) =>
-    bytesToHex(h.chainID.toBytes()),
-  );
-
-  const fullLiquidationQuotes: {
-    req: QuoteRequestExactInput;
-    cfee: bigint;
-    originalHolding: Holding;
-    cur: Currency;
-  }[] = [];
-  for (const holdings of Object.values(groupedByChainID)) {
-    const chain = ChaindataMap.get(holdings[0].chainID);
-    if (chain == null) {
-      throw new AutoSelectionError("Chain not found");
-    }
-    const correspondingCurrency = chain.Currencies.find(
-      (cur) => cur.currencyID === commonCurrencyID,
-    );
-    if (correspondingCurrency == null) {
-      console.log("XCS | SS | Skipping because correspondingCurrency is null", {
-        chain,
-        correspondingCurrency,
-      });
-      continue;
-    }
-    const cfeeTuple = collectionFees.find((cf) => {
-      return (
-        cf.universe === chain.Universe &&
-        Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
-        // output token is the CA one
-        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
-          0
-      );
-    });
-    const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
-
-    for (const holding of holdings) {
-      if (
-        Buffer.compare(
-          holding.tokenAddress,
-          correspondingCurrency.tokenAddress,
-        ) === 0
-      ) {
-        console.log(
-          "XCS | SS | Disqualifying",
-          holding,
-          "because holding.tokenAddress = CA asset",
-        );
-        continue;
-      }
-
-      fullLiquidationQuotes.push({
-        req: {
-          userAddress,
-          type: QuoteType.EXACT_IN,
-          chain: chain.ChainID,
-          inputToken: holding.tokenAddress,
-          inputAmount: holding.amount,
-          outputToken: correspondingCurrency.tokenAddress,
-          seriousness: QuoteSeriousness.PRICE_SURVEY,
-        },
-        // necessary for various purposes
-        cfee,
-        originalHolding: holding,
-        cur: correspondingCurrency,
-      });
-    }
+    throw new AutoSelectionError("NOT_ENOUGH_SWAP_FOR_REQUIREMENT");
   }
 
-  // const groupedByChainID = groupBy(quoteOutputs, h => h.chainIDHex)
-  const quotesByValue = orderBy(
-    fullLiquidationQuotes,
-    [
-      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown => quoteOut.cfee,
-      (quoteOut: (typeof fullLiquidationQuotes)[0]): unknown =>
-        quoteOut.originalHolding.value, // once optimized for collections, we select the biggest asset we hold
-    ],
-    ["asc", "desc"],
-  );
-  const responses = await aggregateAggregators(
-    quotesByValue.map((fq) => fq.req),
-    aggregators,
-    AggregateAggregatorsMode.MaximizeOutput,
-  );
-  console.log("XCS | SS | Responses:", responses);
-  const final: ((typeof fullLiquidationQuotes)[0] & {
-    quote: Quote;
-    agg: Aggregator;
-  })[] = [];
-
-  let remainder = outputRequired; // assuming all that chains have the same amount of fixed point places
-  for (let i = 0; i < quotesByValue.length; i++) {
-    if (remainder.lte(0)) {
-      break;
-    }
-    const q = quotesByValue[i];
-    const { quote: resp, aggregator: agg } = responses[i];
-    if (resp == null) {
-      continue;
-    }
-    console.log("XCS | SS | 1", {
-      i,
-      remainder,
-      q,
-      resp,
-      agg,
-    });
-    const divisor = Decimal.pow(10, q.cur.decimals);
-    const oamD = convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor);
-    if (oamD.gt(remainder)) {
-      const indicativePrice = convertBigIntToDecimal(resp.inputAmount).div(
-        convertBigIntToDecimal(resp.outputAmountMinimum),
-      );
-      const userBal = convertBigIntToDecimal(q.originalHolding.amount);
-      // remainder is the output we want, so the input amount is remainder × indicativePrice
-      let expectedInput = Decimal.min(
-        remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
-        userBal,
-      );
-      while (true) {
-        console.log("XCS | SS | 2⒜", {
-          indicativePrice,
-          expectedInput,
-          userBal,
-        });
-        const adequateQuoteResult = await aggregateAggregators(
-          [
-            {
-              ...q.req,
-              seriousness: QuoteSeriousness.SERIOUS,
-              inputAmount: convertDecimalToBigInt(expectedInput),
-            },
-          ],
-          aggregators,
-          AggregateAggregatorsMode.MaximizeOutput,
-        );
-        if (adequateQuoteResult.length !== 1) {
-          throw new AutoSelectionError("???");
-        }
-        const adequateQuote = adequateQuoteResult[0];
-        if (adequateQuote.quote == null) {
-          throw new AutoSelectionError("Couldn't get buy quote");
-        }
-        console.log("XCS | SS | 2⒜⑴", {
-          adequateQuote,
-        });
-        const oam2D = convertBigIntToDecimal(
-          adequateQuote.quote.outputAmountMinimum,
-        ).div(divisor);
-        if (oam2D.gte(remainder)) {
-          final.push({
-            ...q,
-            quote: adequateQuote.quote,
-            agg: adequateQuote.aggregator,
-          });
-          remainder = remainder.minus(oam2D);
-          break;
-        } else if (expectedInput.eq(userBal)) {
-          throw new AutoSelectionError(
-            "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
-          );
-        } else {
-          expectedInput = Decimal.min(
-            expectedInput.mul(safetyMultiplier),
-            userBal,
-          ); // try again with higher amount
-        }
-      }
-    } else {
-      console.log("XCS | SS | 2⒝", resp);
-      final.push({
-        ...q,
-        quote: resp,
-        agg,
-      });
-      remainder = remainder.minus(
-        convertBigIntToDecimal(resp.outputAmountMinimum).div(divisor),
-      );
-    }
-  }
-  console.log("XCS | SS | 3⒜", {
-    remainder,
-    final,
-  });
-  if (remainder.gt(0)) {
-    throw new AutoSelectionError(
-      "Failed to accumulate enough swaps to meet requirement",
-    );
-  }
-  console.log("XCS | SS | Final:", final);
-  return final;
+  console.log("final_quotes", { quotes: final, cots: usedCOTs });
+  return { quoteResponses: final, usedCOTs };
 }
 
 export async function determineDestinationSwaps(
   userAddress: Bytes,
-  chainID: OmniversalChainID,
-  requirement: Asset,
+  requirement: Holding,
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
-): Promise<{
-  quote: Quote | null;
-  aggregator: Aggregator;
-  inputAmount: Decimal;
-  outputAmount: bigint;
-}> {
-  const chaindata = ChaindataMap.get(chainID);
+): Promise<QuoteResponse> {
+  const chaindata = ChaindataMap.get(requirement.chainID);
   if (chaindata == null) {
     throw new AutoSelectionError("Chain not found");
   }
@@ -690,11 +481,11 @@ export async function determineDestinationSwaps(
   // what happens if we happen to sell the requirement for the COT, what would the amount be?
   const fullLiquidationQR: QuoteRequestExactInput = {
     type: QuoteType.EXACT_IN,
-    chain: chainID,
+    chain: requirement.chainID,
     userAddress,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
-    inputAmount: requirement.amount,
+    inputAmount: requirement.amountRaw,
     seriousness: QuoteSeriousness.PRICE_SURVEY,
   };
   const fullLiquidationResult = await aggregateAggregators(
@@ -703,27 +494,31 @@ export async function determineDestinationSwaps(
     AggregateAggregatorsMode.MaximizeOutput,
   );
   if (fullLiquidationResult.length !== 1) {
-    throw new AutoSelectionError("???");
+    throw new AutoSelectionError(
+      "Unexpected response length from aggregateAggregators",
+    );
   }
+
   const fullLiquidationQuote = fullLiquidationResult[0];
   if (fullLiquidationQuote.quote == null) {
     throw new AutoSelectionError("Couldn't get full liquidation quote");
   }
+
   let curAmount = convertBigIntToDecimal(
-    fullLiquidationQuote.quote.outputAmountLikely,
+    fullLiquidationQuote.quote.output.amountRaw,
   ).mul(safetyMultiplier);
-  console.log("XCS | DDS | 1⒜", {
-    fullLiquidationQR,
-    fullLiquidationResult,
-    COT,
-  });
+
+  let attempts = 0;
   while (true) {
+    if (++attempts > 10) {
+      throw new AutoSelectionError("Destination swap quote did not converge");
+    }
     const buyQuoteResult = await aggregateAggregators(
       [
         {
           type: QuoteType.EXACT_IN,
           userAddress,
-          chain: chainID,
+          chain: requirement.chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
           inputAmount: convertDecimalToBigInt(curAmount),
@@ -734,23 +529,25 @@ export async function determineDestinationSwaps(
       AggregateAggregatorsMode.MaximizeOutput,
     );
     if (buyQuoteResult.length !== 1) {
-      throw new AutoSelectionError("???");
+      throw new AutoSelectionError(
+        "Unexpected response length from aggregateAggregators",
+      );
     }
+
     const buyQuote = buyQuoteResult[0];
     if (buyQuote.quote == null) {
       throw new AutoSelectionError("Couldn't get buy quote");
     }
-    console.log("XCS | DDS | 2⒜ iteration", {
+    console.debug("XCS | DDS | 2⒜ iteration", {
       buyQuote,
       curAmount,
     });
-    if (buyQuote.quote.outputAmountMinimum >= requirement.amount) {
+    if (buyQuote.quote.output.amountRaw >= requirement.amountRaw) {
       return {
-        ...buyQuote,
-        inputAmount: convertBigIntToDecimal(buyQuote.quote.inputAmount).div(
-          Decimal.pow(10, COT.decimals),
-        ),
-        outputAmount: requirement.amount,
+        chainID: Number(requirement.chainID.chainID),
+        quote: buyQuote.quote,
+        aggregator: buyQuote.aggregator,
+        holding: requirement,
       };
     } else {
       curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
@@ -762,17 +559,15 @@ export async function liquidateInputHoldings(
   userAddress: Bytes,
   holdings: Holding[],
   aggregators: Aggregator[],
-  collectionFees: FixedFeeTuple[],
   commonCurrencyID = CurrencyID.USDC,
-) {
-  console.log("XCS | LIH | Holdings:", holdings);
+): Promise<QuoteResponse[]> {
+  console.debug("XCS | LIH | Holdings:", holdings);
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
   );
 
   const fullLiquidationQuotes: {
     req: QuoteRequestExactInput;
-    cfee: bigint;
     originalHolding: Holding;
     cur: Currency;
   }[] = [];
@@ -786,7 +581,7 @@ export async function liquidateInputHoldings(
       (cur) => cur.currencyID === commonCurrencyID,
     );
     if (correspondingCurrency == null) {
-      console.log(
+      console.debug(
         "XCS | LIH | Skipping because correspondingCurrency is null",
         {
           chain,
@@ -795,17 +590,6 @@ export async function liquidateInputHoldings(
       );
       continue;
     }
-    const cfeeTuple = collectionFees.find((cf) => {
-      return (
-        cf.universe === chain.Universe &&
-        Buffer.compare(cf.chainID, chain.ChainID32) === 0 &&
-        // output token is the CA one
-        Buffer.compare(cf.tokenAddress, correspondingCurrency.tokenAddress) ===
-          0
-      );
-    });
-
-    const cfee = cfeeTuple != null ? bytesToBigInt(cfeeTuple.fee) : 0n;
 
     for (const holding of holdings) {
       if (
@@ -827,12 +611,11 @@ export async function liquidateInputHoldings(
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
-          inputAmount: holding.amount,
+          inputAmount: holding.amountRaw,
           outputToken: correspondingCurrency.tokenAddress,
           seriousness: QuoteSeriousness.SERIOUS,
         },
         // necessary for various purposes
-        cfee,
         originalHolding: holding,
         cur: correspondingCurrency,
       });
@@ -845,53 +628,37 @@ export async function liquidateInputHoldings(
     AggregateAggregatorsMode.MaximizeOutput,
   );
 
-  console.log("XCS | LIH | Responses:", responses);
+  console.debug("XCS | LIH | Responses:", responses);
 
-  const validResponses = responses
-    .filter((r) => r.quote !== null)
-    .map((r, i) => ({
-      ...r,
-      ...fullLiquidationQuotes[i],
-      agg: r.aggregator,
-      quote: r.quote,
-    })) as {
-    agg: Aggregator;
-    quote: Quote;
-    req: QuoteRequestExactInput;
-    cfee: bigint;
-    originalHolding: Holding;
-    cur: Currency;
-    aggregator: Aggregator;
-  }[];
+  const quotes: QuoteResponse[] = [];
+  for (const [i, response] of responses.entries()) {
+    if (response.quote !== null) {
+      quotes.push({
+        quote: response.quote,
+        aggregator: response.aggregator,
+        holding: fullLiquidationQuotes[i].originalHolding,
+        chainID: Number(fullLiquidationQuotes[i].req.chain.chainID),
+      });
+    }
+  }
 
-  const total = validResponses.reduce((acc, r) => {
-    return acc.add(
-      new Decimal(r.quote!.outputAmountMinimum ?? 0n).div(
-        Decimal.pow(10, r.cur.decimals),
-      ),
-    );
-  }, new Decimal(0));
-
-  return {
-    quotes: validResponses,
-    total,
-  };
+  return quotes;
 }
 
 export async function destinationSwapWithExactIn(
   userAddress: Bytes,
-  chainID: OmniversalChainID,
+  omniChainID: OmniversalChainID,
   inputAmount: bigint,
   outputToken: Bytes,
   aggregators: Aggregator[],
-  commonCurrencyID: CurrencyID = CurrencyID.USDC,
-) {
-  const chaindata = ChaindataMap.get(chainID);
+  inputCurrency: CurrencyID = CurrencyID.USDC,
+): Promise<QuoteResponse> {
+  const chaindata = ChaindataMap.get(omniChainID);
   if (chaindata == null) {
     throw new AutoSelectionError("Chain not found");
   }
   const COT = chaindata.Currencies.find(
-    (cur) => cur.currencyID === commonCurrencyID,
+    (cur) => cur.currencyID === inputCurrency,
   );
   if (COT == null) {
     throw new AutoSelectionError("COT not present on the destination chain");
@@ -900,7 +667,7 @@ export async function destinationSwapWithExactIn(
     [
       {
         type: QuoteType.EXACT_IN,
-        chain: chainID,
+        chain: omniChainID,
         userAddress,
         inputToken: COT.tokenAddress,
         outputToken: outputToken,
@@ -912,17 +679,24 @@ export async function destinationSwapWithExactIn(
     AggregateAggregatorsMode.MaximizeOutput,
   );
   if (fullLiquidationResult.length !== 1) {
-    throw new AutoSelectionError("???");
+    throw new AutoSelectionError(
+      "Unexpected response length from aggregateAggregators",
+    );
   }
+
   const fullLiquidationQuote = fullLiquidationResult[0];
   if (fullLiquidationQuote.quote == null) {
     throw new AutoSelectionError("Couldn't get full liquidation quote");
   }
+
   return {
-    ...fullLiquidationQuote,
-    inputAmount: convertBigIntToDecimal(inputAmount).div(
-      Decimal.pow(10, COT.decimals),
-    ),
-    outputAmount: fullLiquidationQuote.quote.outputAmountMinimum,
+    chainID: Number(omniChainID.chainID),
+    quote: fullLiquidationQuote.quote,
+    aggregator: fullLiquidationQuote.aggregator,
+    holding: {
+      amountRaw: inputAmount,
+      chainID: omniChainID,
+      tokenAddress: COT.tokenAddress,
+    },
   };
 }

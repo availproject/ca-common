@@ -1,5 +1,5 @@
 import axios, { AxiosError, AxiosInstance, AxiosResponse } from "axios";
-import { bytesToHex, getAddress } from "viem";
+import { bytesToHex, getAddress, Hex } from "viem";
 
 import {
   Aggregator,
@@ -9,34 +9,37 @@ import {
   QuoteType,
 } from "./iface";
 import { Universe } from "../proto/definition";
+import Decimal from "decimal.js";
 
 export type LiFiResponse = {
   type: string;
   id: string;
   estimate: {
     tool: string;
-    approvalAddress: string;
+    approvalAddress: Hex;
     toAmountMin: string;
     toAmount: string;
     fromAmount: string;
     executionDuration: number;
-    fromAmountUSD: string;
-    toAmountUSD: string;
+  };
+  action: {
+    fromToken: {
+      symbol: string;
+      decimals: number;
+      priceUSD: string;
+    };
+    toToken: {
+      symbol: string;
+      decimals: number;
+      priceUSD: string;
+    };
   };
   integrator: string;
   transactionRequest: {
-    value: string;
-    to: string;
-    data: string;
-    chainId: number;
-    gasPrice: string;
-    gasLimit: string;
-    from: string;
+    value: Hex;
+    to: Hex;
+    data: Hex;
   };
-};
-
-export type LiFiQuote = Quote & {
-  originalResponse: LiFiResponse;
 };
 
 export class LiFiAggregator implements Aggregator {
@@ -44,6 +47,7 @@ export class LiFiAggregator implements Aggregator {
   private static readonly COMMON_OPTIONS = {
     denyExchanges: "openocean",
     slippage: "0.01",
+    skipSimulation: true,
   };
 
   private readonly axios: AxiosInstance;
@@ -54,17 +58,18 @@ export class LiFiAggregator implements Aggregator {
       headers: {
         "x-lifi-api-key": apiKey,
       },
+      timeout: 10_000,
     });
   }
 
   async getQuotes(
     requests: (QuoteRequestExactInput | QuoteRequestExactOutput)[],
-  ): Promise<(LiFiQuote | null)[]> {
+  ): Promise<(Quote | null)[]> {
     const list = await Promise.allSettled(
       requests.map(
         async (
           r: QuoteRequestExactInput | QuoteRequestExactOutput,
-        ): Promise<LiFiQuote | null> => {
+        ): Promise<Quote | null> => {
           if (r.chain.universe !== Universe.ETHEREUM) {
             return null;
           }
@@ -133,12 +138,51 @@ export class LiFiAggregator implements Aggregator {
             throw e;
           }
 
+          const {
+            estimate,
+            transactionRequest: { to, value, data },
+            action: { fromToken, toToken },
+          } = resp.data;
+
+          const inputAmountInDecimal = new Decimal(estimate.fromAmount)
+            .div(Decimal.pow(10, fromToken.decimals))
+            .toFixed(fromToken.decimals);
+
+          const outputAmountInDecimal = new Decimal(estimate.toAmountMin)
+            .div(Decimal.pow(10, toToken.decimals))
+            .toFixed(toToken.decimals);
+
           return {
-            type: r.type,
-            inputAmount: BigInt(resp.data.estimate.fromAmount),
-            outputAmountMinimum: BigInt(resp.data.estimate.toAmountMin),
-            outputAmountLikely: BigInt(resp.data.estimate.toAmount),
-            originalResponse: resp.data,
+            input: {
+              amount: inputAmountInDecimal,
+              amountRaw: BigInt(estimate.fromAmount),
+              contractAddress: inputTokenAddr,
+              decimals: fromToken.decimals,
+              value: Decimal.mul(
+                inputAmountInDecimal,
+                fromToken.priceUSD,
+              ).toNumber(),
+              symbol: fromToken.symbol,
+            },
+            output: {
+              amount: outputAmountInDecimal,
+              amountRaw: BigInt(estimate.toAmountMin),
+              contractAddress: outputTokenAddr,
+              decimals: toToken.decimals,
+              value: Decimal.mul(
+                outputAmountInDecimal,
+                toToken.priceUSD,
+              ).toNumber(),
+              symbol: toToken.symbol,
+            },
+            txData: {
+              approvalAddress: estimate.approvalAddress,
+              tx: {
+                to,
+                value,
+                data,
+              },
+            },
           };
         },
       ),
