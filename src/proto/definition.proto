@@ -241,12 +241,19 @@ message AdminFeeRecipient {
   bytes address = 2;
 }
 
+message PerChainFeeBP {
+  Universe universe = 1;
+  bytes chainID = 2;
+  uint64 feeBP = 3;
+}
+
 message ProtocolFees {
   uint64 feeBP = 1;
   repeated FixedFeeTuple collectionFees = 2;
   repeated FixedFeeTuple fulfilmentFees = 3;
   string admin = 4;
   repeated AdminFeeRecipient feeRecipients = 5;
+  repeated PerChainFeeBP perChainFeeBP = 6;
 }
 
 message QueryGetProtocolFeesRequest {}
@@ -261,6 +268,7 @@ message MsgCreateProtocolFees {
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
   repeated AdminFeeRecipient feeRecipients = 5;
+  repeated PerChainFeeBP perChainFeeBP = 6;
 }
 
 message MsgCreateProtocolFeesResponse {}
@@ -271,6 +279,7 @@ message MsgUpdateProtocolFees {
   repeated FixedFeeTuple collectionFees = 3;
   repeated FixedFeeTuple fulfilmentFees = 4;
   repeated AdminFeeRecipient feeRecipients = 5;
+  repeated PerChainFeeBP perChainFeeBP = 6;
 }
 
 message MsgUpdateProtocolFeesResponse {}

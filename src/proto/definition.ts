@@ -329,12 +329,19 @@ export interface AdminFeeRecipient {
   address: Uint8Array;
 }
 
+export interface PerChainFeeBP {
+  universe: Universe;
+  chainID: Uint8Array;
+  feeBP: Long;
+}
+
 export interface ProtocolFees {
   feeBP: Long;
   collectionFees: FixedFeeTuple[];
   fulfilmentFees: FixedFeeTuple[];
   admin: string;
   feeRecipients: AdminFeeRecipient[];
+  perChainFeeBP: PerChainFeeBP[];
 }
 
 export interface QueryGetProtocolFeesRequest {
@@ -350,6 +357,7 @@ export interface MsgCreateProtocolFees {
   collectionFees: FixedFeeTuple[];
   fulfilmentFees: FixedFeeTuple[];
   feeRecipients: AdminFeeRecipient[];
+  perChainFeeBP: PerChainFeeBP[];
 }
 
 export interface MsgCreateProtocolFeesResponse {
@@ -361,6 +369,7 @@ export interface MsgUpdateProtocolFees {
   collectionFees: FixedFeeTuple[];
   fulfilmentFees: FixedFeeTuple[];
   feeRecipients: AdminFeeRecipient[];
+  perChainFeeBP: PerChainFeeBP[];
 }
 
 export interface MsgUpdateProtocolFeesResponse {
@@ -3400,8 +3409,100 @@ export const AdminFeeRecipient: MessageFns<AdminFeeRecipient> = {
   },
 };
 
+function createBasePerChainFeeBP(): PerChainFeeBP {
+  return { universe: 0, chainID: new Uint8Array(0), feeBP: Long.UZERO };
+}
+
+export const PerChainFeeBP: MessageFns<PerChainFeeBP> = {
+  encode(message: PerChainFeeBP, writer: BinaryWriter = new BinaryWriter()): BinaryWriter {
+    if (message.universe !== 0) {
+      writer.uint32(8).int32(message.universe);
+    }
+    if (message.chainID.length !== 0) {
+      writer.uint32(18).bytes(message.chainID);
+    }
+    if (!message.feeBP.equals(Long.UZERO)) {
+      writer.uint32(24).uint64(message.feeBP.toString());
+    }
+    return writer;
+  },
+
+  decode(input: BinaryReader | Uint8Array, length?: number): PerChainFeeBP {
+    const reader = input instanceof BinaryReader ? input : new BinaryReader(input);
+    const end = length === undefined ? reader.len : reader.pos + length;
+    const message = createBasePerChainFeeBP();
+    while (reader.pos < end) {
+      const tag = reader.uint32();
+      switch (tag >>> 3) {
+        case 1: {
+          if (tag !== 8) {
+            break;
+          }
+
+          message.universe = reader.int32() as any;
+          continue;
+        }
+        case 2: {
+          if (tag !== 18) {
+            break;
+          }
+
+          message.chainID = reader.bytes();
+          continue;
+        }
+        case 3: {
+          if (tag !== 24) {
+            break;
+          }
+
+          message.feeBP = Long.fromString(reader.uint64().toString(), true);
+          continue;
+        }
+      }
+      if ((tag & 7) === 4 || tag === 0) {
+        break;
+      }
+      reader.skip(tag & 7);
+    }
+    return message;
+  },
+
+  fromJSON(object: any): PerChainFeeBP {
+    return {
+      universe: isSet(object.universe) ? universeFromJSON(object.universe) : 0,
+      chainID: isSet(object.chainID) ? bytesFromBase64(object.chainID) : new Uint8Array(0),
+      feeBP: isSet(object.feeBP) ? Long.fromValue(object.feeBP) : Long.UZERO,
+    };
+  },
+
+  toJSON(message: PerChainFeeBP): unknown {
+    const obj: any = {};
+    if (message.universe !== 0) {
+      obj.universe = universeToJSON(message.universe);
+    }
+    if (message.chainID.length !== 0) {
+      obj.chainID = base64FromBytes(message.chainID);
+    }
+    if (!message.feeBP.equals(Long.UZERO)) {
+      obj.feeBP = (message.feeBP || Long.UZERO).toString();
+    }
+    return obj;
+  },
+
+  create<I extends Exact<DeepPartial<PerChainFeeBP>, I>>(base?: I): PerChainFeeBP {
+    return PerChainFeeBP.fromPartial(base ?? ({} as any));
+  },
+  fromPartial<I extends Exact<DeepPartial<PerChainFeeBP>, I>>(object: I): PerChainFeeBP {
+    const message = createBasePerChainFeeBP();
+    message.universe = object.universe ?? 0;
+    message.chainID = object.chainID ?? new Uint8Array(0);
+    message.feeBP = (object.feeBP !== undefined && object.feeBP !== null) ? Long.fromValue(object.feeBP) : Long.UZERO;
+    return message;
+  },
+};
+
 function createBaseProtocolFees(): ProtocolFees {
-  return { feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], admin: "", feeRecipients: [] };
+  return { feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], admin: "", feeRecipients: [], perChainFeeBP: [] };
 }
 
 export const ProtocolFees: MessageFns<ProtocolFees> = {
@@ -3420,6 +3521,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
     }
     for (const v of message.feeRecipients) {
       AdminFeeRecipient.encode(v!, writer.uint32(42).fork()).join();
+    }
+    for (const v of message.perChainFeeBP) {
+      PerChainFeeBP.encode(v!, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -3471,6 +3575,14 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
           message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.perChainFeeBP.push(PerChainFeeBP.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3493,6 +3605,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
       feeRecipients: globalThis.Array.isArray(object?.feeRecipients)
         ? object.feeRecipients.map((e: any) => AdminFeeRecipient.fromJSON(e))
         : [],
+      perChainFeeBP: globalThis.Array.isArray(object?.perChainFeeBP)
+        ? object.perChainFeeBP.map((e: any) => PerChainFeeBP.fromJSON(e))
+        : [],
     };
   },
 
@@ -3513,6 +3628,9 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
     if (message.feeRecipients?.length) {
       obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
     }
+    if (message.perChainFeeBP?.length) {
+      obj.perChainFeeBP = message.perChainFeeBP.map((e) => PerChainFeeBP.toJSON(e));
+    }
     return obj;
   },
 
@@ -3526,6 +3644,7 @@ export const ProtocolFees: MessageFns<ProtocolFees> = {
     message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.admin = object.admin ?? "";
     message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.perChainFeeBP = object.perChainFeeBP?.map((e) => PerChainFeeBP.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3634,7 +3753,14 @@ export const QueryGetProtocolFeesResponse: MessageFns<QueryGetProtocolFeesRespon
 };
 
 function createBaseMsgCreateProtocolFees(): MsgCreateProtocolFees {
-  return { creator: "", feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], feeRecipients: [] };
+  return {
+    creator: "",
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    feeRecipients: [],
+    perChainFeeBP: [],
+  };
 }
 
 export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
@@ -3653,6 +3779,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
     }
     for (const v of message.feeRecipients) {
       AdminFeeRecipient.encode(v!, writer.uint32(42).fork()).join();
+    }
+    for (const v of message.perChainFeeBP) {
+      PerChainFeeBP.encode(v!, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -3704,6 +3833,14 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
           message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.perChainFeeBP.push(PerChainFeeBP.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3726,6 +3863,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
       feeRecipients: globalThis.Array.isArray(object?.feeRecipients)
         ? object.feeRecipients.map((e: any) => AdminFeeRecipient.fromJSON(e))
         : [],
+      perChainFeeBP: globalThis.Array.isArray(object?.perChainFeeBP)
+        ? object.perChainFeeBP.map((e: any) => PerChainFeeBP.fromJSON(e))
+        : [],
     };
   },
 
@@ -3746,6 +3886,9 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
     if (message.feeRecipients?.length) {
       obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
     }
+    if (message.perChainFeeBP?.length) {
+      obj.perChainFeeBP = message.perChainFeeBP.map((e) => PerChainFeeBP.toJSON(e));
+    }
     return obj;
   },
 
@@ -3759,6 +3902,7 @@ export const MsgCreateProtocolFees: MessageFns<MsgCreateProtocolFees> = {
     message.collectionFees = object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.perChainFeeBP = object.perChainFeeBP?.map((e) => PerChainFeeBP.fromPartial(e)) || [];
     return message;
   },
 };
@@ -3807,7 +3951,14 @@ export const MsgCreateProtocolFeesResponse: MessageFns<MsgCreateProtocolFeesResp
 };
 
 function createBaseMsgUpdateProtocolFees(): MsgUpdateProtocolFees {
-  return { creator: "", feeBP: Long.UZERO, collectionFees: [], fulfilmentFees: [], feeRecipients: [] };
+  return {
+    creator: "",
+    feeBP: Long.UZERO,
+    collectionFees: [],
+    fulfilmentFees: [],
+    feeRecipients: [],
+    perChainFeeBP: [],
+  };
 }
 
 export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
@@ -3826,6 +3977,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
     }
     for (const v of message.feeRecipients) {
       AdminFeeRecipient.encode(v!, writer.uint32(42).fork()).join();
+    }
+    for (const v of message.perChainFeeBP) {
+      PerChainFeeBP.encode(v!, writer.uint32(50).fork()).join();
     }
     return writer;
   },
@@ -3877,6 +4031,14 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
           message.feeRecipients.push(AdminFeeRecipient.decode(reader, reader.uint32()));
           continue;
         }
+        case 6: {
+          if (tag !== 50) {
+            break;
+          }
+
+          message.perChainFeeBP.push(PerChainFeeBP.decode(reader, reader.uint32()));
+          continue;
+        }
       }
       if ((tag & 7) === 4 || tag === 0) {
         break;
@@ -3899,6 +4061,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
       feeRecipients: globalThis.Array.isArray(object?.feeRecipients)
         ? object.feeRecipients.map((e: any) => AdminFeeRecipient.fromJSON(e))
         : [],
+      perChainFeeBP: globalThis.Array.isArray(object?.perChainFeeBP)
+        ? object.perChainFeeBP.map((e: any) => PerChainFeeBP.fromJSON(e))
+        : [],
     };
   },
 
@@ -3919,6 +4084,9 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
     if (message.feeRecipients?.length) {
       obj.feeRecipients = message.feeRecipients.map((e) => AdminFeeRecipient.toJSON(e));
     }
+    if (message.perChainFeeBP?.length) {
+      obj.perChainFeeBP = message.perChainFeeBP.map((e) => PerChainFeeBP.toJSON(e));
+    }
     return obj;
   },
 
@@ -3932,6 +4100,7 @@ export const MsgUpdateProtocolFees: MessageFns<MsgUpdateProtocolFees> = {
     message.collectionFees = object.collectionFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.fulfilmentFees = object.fulfilmentFees?.map((e) => FixedFeeTuple.fromPartial(e)) || [];
     message.feeRecipients = object.feeRecipients?.map((e) => AdminFeeRecipient.fromPartial(e)) || [];
+    message.perChainFeeBP = object.perChainFeeBP?.map((e) => PerChainFeeBP.fromPartial(e)) || [];
     return message;
   },
 };
