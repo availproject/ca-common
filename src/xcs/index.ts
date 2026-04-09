@@ -1,4 +1,5 @@
 export * from './iface'
 export * from './lifi-agg'
 export * from './bebop-agg'
+export * from './fibrous-agg'
 export * from './autochoice'
