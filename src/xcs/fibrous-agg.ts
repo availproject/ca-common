@@ -32,7 +32,7 @@ export type FibrousToken = {
   symbol?: string;
   address: Hex;
   decimals: number;
-  price: number | string;
+  price: number | string | null;
 };
 
 export type FibrousResponse = {
@@ -174,7 +174,7 @@ export class FibrousAggregator implements Aggregator {
               decimals: resp.data.route.inputToken.decimals,
               value: Decimal.mul(
                 inputAmountInDecimal,
-                resp.data.route.inputToken.price,
+                resp.data.route.inputToken.price ?? 0,
               ).toNumber(),
               symbol:
                 resp.data.route.inputToken.symbol ??
@@ -187,7 +187,7 @@ export class FibrousAggregator implements Aggregator {
               decimals: resp.data.route.outputToken.decimals,
               value: Decimal.mul(
                 outputAmountInDecimal,
-                resp.data.route.outputToken.price,
+                resp.data.route.outputToken.price ?? 0,
               ).toNumber(),
               symbol:
                 resp.data.route.outputToken.symbol ??
