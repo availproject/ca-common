@@ -248,6 +248,7 @@ export class BebopAggregator implements Aggregator {
           const outputAmountInDecimal = new Decimal(buyT.minimumAmount)
             .div(Decimal.pow(10, buyT.decimals))
             .toFixed(buyT.decimals);
+            
           const inputAmountInDecimal = new Decimal(sellT.amount)
             .div(Decimal.pow(10, sellT.decimals))
             .toFixed(sellT.decimals);
