@@ -23,7 +23,7 @@ const ChainNameMapping = new Map(
     avalanche: 43114,
     polygon: 137,
     scroll: 534352,
-    hyperevm: 999,
+    // hyperevm: 999,
   }).map(([k, v]) => [bytesToHex(encodeChainID36(Universe.ETHEREUM, v)), k]),
 );
 // const erc7528Addr = Buffer.from('000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'hex')
