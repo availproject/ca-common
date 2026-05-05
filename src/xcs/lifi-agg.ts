@@ -42,6 +42,21 @@ export type LiFiResponse = {
   };
 };
 
+const ALLOWED_CHAINS = new Set([
+  1, // Ethereum
+  10, // Optimism
+  56, // BSC
+  137, // Polygon
+  143, // Monad
+  // 999, // HyperEVM (removed because of failing swaps)
+  4326, // MegaETH
+  8453, // Base
+  42161, // Arbitrum
+  43114, // Avalanche
+  8217, // Kaia
+  534352, // Scroll
+]);
+
 export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
   private static readonly COMMON_OPTIONS = {
@@ -71,6 +86,10 @@ export class LiFiAggregator implements Aggregator {
           r: QuoteRequestExactInput | QuoteRequestExactOutput,
         ): Promise<Quote | null> => {
           if (r.chain.universe !== Universe.ETHEREUM) {
+            return null;
+          }
+
+          if (!ALLOWED_CHAINS.has(Number(r.chain.chainID))) {
             return null;
           }
 

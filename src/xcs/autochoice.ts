@@ -24,6 +24,8 @@ import {
 import { Bytes } from "../types";
 import { Holding } from "./iface";
 
+export type HoldingWithRecipient = Holding & { recipient: Bytes };
+
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.025");
 
@@ -158,6 +160,28 @@ export async function autoSelectSourcesV2(
     cur: Currency;
   }[];
 }> {
+  return autoSelectSourcesV2ByRecipient(
+    holdings.map((holding) => ({ ...holding, recipient: userAddress })),
+    outputRequired,
+    aggregators,
+    commonCurrencyID,
+  );
+}
+
+export async function autoSelectSourcesV2ByRecipient(
+  holdings: HoldingWithRecipient[],
+  outputRequired: Decimal,
+  aggregators: Aggregator[],
+  commonCurrencyID: CurrencyID = CurrencyID.USDC,
+): Promise<{
+  quoteResponses: QuoteResponse[];
+  usedCOTs: {
+    originalHolding: Holding;
+    amountUsed: Decimal;
+    idx: number;
+    cur: Currency;
+  }[];
+}> {
   // Assumption: Holding is already sorted in usage priority
   console.debug("XCS | SSV2:", {
     holdings,
@@ -217,7 +241,7 @@ export async function autoSelectSourcesV2(
     } else {
       fullLiquidationQuotes.push({
         req: {
-          userAddress,
+          userAddress: holding.recipient,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -561,6 +585,18 @@ export async function liquidateInputHoldings(
   aggregators: Aggregator[],
   commonCurrencyID = CurrencyID.USDC,
 ): Promise<QuoteResponse[]> {
+  return liquidateInputHoldingsByRecipient(
+    holdings.map((holding) => ({ ...holding, recipient: userAddress })),
+    aggregators,
+    commonCurrencyID,
+  );
+}
+
+export async function liquidateInputHoldingsByRecipient(
+  holdings: HoldingWithRecipient[],
+  aggregators: Aggregator[],
+  commonCurrencyID = CurrencyID.USDC,
+): Promise<QuoteResponse[]> {
   console.debug("XCS | LIH | Holdings:", holdings);
   const groupedByChainID = groupBy(holdings, (h) =>
     bytesToHex(h.chainID.toBytes()),
@@ -607,7 +643,7 @@ export async function liquidateInputHoldings(
       }
       fullLiquidationQuotes.push({
         req: {
-          userAddress,
+          userAddress: holding.recipient,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
