@@ -48,7 +48,7 @@ const ALLOWED_CHAINS = new Set([
   56, // BSC
   137, // Polygon
   143, // Monad
-  // 999, // HyperEVM (removed because of failing swaps)
+  999, // HyperEVM
   4326, // MegaETH
   8453, // Base
   42161, // Arbitrum
