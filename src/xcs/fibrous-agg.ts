@@ -123,6 +123,10 @@ export class FibrousAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
+          const receiverAddrHex =
+            r.receiverAddress != null
+              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
+              : userAddrHex;
 
           let resp: AxiosResponse<FibrousResponse>;
           try {
@@ -134,7 +138,7 @@ export class FibrousAggregator implements Aggregator {
                 tokenInAddress: inputTokenAddr,
                 tokenOutAddress: outputTokenAddr,
                 slippage: this.slippage,
-                destination: userAddrHex,
+                destination: receiverAddrHex,
               },
             });
           } catch (e) {

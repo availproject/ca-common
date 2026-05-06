@@ -184,6 +184,10 @@ export class BebopAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
+          const receiverAddrHex =
+            r.receiverAddress != null
+              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
+              : userAddrHex;
 
           switch (r.type) {
             case QuoteType.EXACT_IN: {
@@ -194,6 +198,7 @@ export class BebopAggregator implements Aggregator {
                   sell_tokens: inputTokenAddr,
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
+                  receiver_address: receiverAddrHex,
                   sell_amounts: r.inputAmount.toString(),
                   ...BebopAggregator.COMMON_OPTIONS,
                 },
@@ -208,6 +213,7 @@ export class BebopAggregator implements Aggregator {
                   sell_tokens: inputTokenAddr,
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
+                  receiver_address: receiverAddrHex,
                   buy_amounts: r.outputAmount.toString(),
                   ...BebopAggregator.COMMON_OPTIONS,
                 },

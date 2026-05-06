@@ -489,6 +489,7 @@ export async function determineDestinationSwaps(
   requirement: Holding,
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse> {
   const chaindata = ChaindataMap.get(requirement.chainID);
   if (chaindata == null) {
@@ -507,6 +508,7 @@ export async function determineDestinationSwaps(
     type: QuoteType.EXACT_IN,
     chain: requirement.chainID,
     userAddress,
+    receiverAddress,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amountRaw,
@@ -542,6 +544,7 @@ export async function determineDestinationSwaps(
         {
           type: QuoteType.EXACT_IN,
           userAddress,
+          receiverAddress,
           chain: requirement.chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
@@ -584,11 +587,13 @@ export async function liquidateInputHoldings(
   holdings: Holding[],
   aggregators: Aggregator[],
   commonCurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse[]> {
   return liquidateInputHoldingsByRecipient(
     holdings.map((holding) => ({ ...holding, recipient: userAddress })),
     aggregators,
     commonCurrencyID,
+    receiverAddress,
   );
 }
 
@@ -596,6 +601,7 @@ export async function liquidateInputHoldingsByRecipient(
   holdings: HoldingWithRecipient[],
   aggregators: Aggregator[],
   commonCurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse[]> {
   console.debug("XCS | LIH | Holdings:", holdings);
   const groupedByChainID = groupBy(holdings, (h) =>
@@ -644,6 +650,7 @@ export async function liquidateInputHoldingsByRecipient(
       fullLiquidationQuotes.push({
         req: {
           userAddress: holding.recipient,
+          receiverAddress,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -688,6 +695,7 @@ export async function destinationSwapWithExactIn(
   outputToken: Bytes,
   aggregators: Aggregator[],
   inputCurrency: CurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse> {
   const chaindata = ChaindataMap.get(omniChainID);
   if (chaindata == null) {
@@ -705,6 +713,7 @@ export async function destinationSwapWithExactIn(
         type: QuoteType.EXACT_IN,
         chain: omniChainID,
         userAddress,
+        receiverAddress,
         inputToken: COT.tokenAddress,
         outputToken: outputToken,
         inputAmount: inputAmount,
