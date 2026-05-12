@@ -56,6 +56,11 @@ export interface Quote {
 
 type CommonQuoteParameters = {
   userAddress: Bytes;
+  // Optional output recipient. When omitted, defaults to userAddress (output returns to
+  // the caller — current behavior). When set, the aggregator delivers the swap output to
+  // this address instead. Used by destination-leg swaps that want output to go straight
+  // to the user's EOA rather than the wrapper account that signs the swap.
+  receiverAddress?: Bytes;
   chain: OmniversalChainID;
   inputToken: Bytes;
   outputToken: Bytes;

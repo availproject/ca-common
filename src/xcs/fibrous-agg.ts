@@ -21,7 +21,7 @@ import {
 } from "./iface";
 
 const ChainNameMapping = new ChainIDKeyedMap<string>([
-  [new OmniversalChainID(Universe.ETHEREUM, 8453), "base"],
+  // [new OmniversalChainID(Universe.ETHEREUM, 8453), "base"], // Disabled because of few liquidity issues
   [new OmniversalChainID(Universe.ETHEREUM, 999), "hyperevm"],
   [new OmniversalChainID(Universe.ETHEREUM, 143), "monad"],
   [new OmniversalChainID(Universe.ETHEREUM, 4114), "citrea"],
@@ -123,6 +123,10 @@ export class FibrousAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
+          const receiverAddrHex =
+            r.receiverAddress != null
+              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
+              : userAddrHex;
 
           let resp: AxiosResponse<FibrousResponse>;
           try {
@@ -134,7 +138,7 @@ export class FibrousAggregator implements Aggregator {
                 tokenInAddress: inputTokenAddr,
                 tokenOutAddress: outputTokenAddr,
                 slippage: this.slippage,
-                destination: userAddrHex,
+                destination: receiverAddrHex,
               },
             });
           } catch (e) {
@@ -246,7 +250,10 @@ export class FibrousAggregator implements Aggregator {
           return item.value;
         }
         case "rejected": {
-          console.error("Caught error in fetching Fibrous quotes:", item.reason);
+          console.error(
+            "Caught error in fetching Fibrous quotes:",
+            item.reason,
+          );
           return null;
         }
       }

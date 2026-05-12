@@ -19,17 +19,11 @@ const ChainNameMapping = new Map(
     arbitrum: 42161,
     optimism: 10,
     base: 8453,
-    taiko: 167000,
     bsc: 56,
-    monadtestnet: 10143,
-    megaethtestnet: 6342,
-    berachain: 80094,
+    avalanche: 43114,
     polygon: 137,
-    zksync: 324,
-    blast: 81457,
-    mode: 34443,
     scroll: 534352,
-    superseed: 5330,
+    hyperevm: 999,
   }).map(([k, v]) => [bytesToHex(encodeChainID36(Universe.ETHEREUM, v)), k]),
 );
 // const erc7528Addr = Buffer.from('000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'hex')
@@ -190,6 +184,10 @@ export class BebopAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
+          const receiverAddrHex =
+            r.receiverAddress != null
+              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
+              : userAddrHex;
 
           switch (r.type) {
             case QuoteType.EXACT_IN: {
@@ -200,6 +198,7 @@ export class BebopAggregator implements Aggregator {
                   sell_tokens: inputTokenAddr,
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
+                  receiver_address: receiverAddrHex,
                   sell_amounts: r.inputAmount.toString(),
                   ...BebopAggregator.COMMON_OPTIONS,
                 },
@@ -214,6 +213,7 @@ export class BebopAggregator implements Aggregator {
                   sell_tokens: inputTokenAddr,
                   buy_tokens: outputTokenAddr,
                   taker_address: userAddrHex,
+                  receiver_address: receiverAddrHex,
                   buy_amounts: r.outputAmount.toString(),
                   ...BebopAggregator.COMMON_OPTIONS,
                 },
@@ -248,7 +248,7 @@ export class BebopAggregator implements Aggregator {
           const outputAmountInDecimal = new Decimal(buyT.minimumAmount)
             .div(Decimal.pow(10, buyT.decimals))
             .toFixed(buyT.decimals);
-            
+
           const inputAmountInDecimal = new Decimal(sellT.amount)
             .div(Decimal.pow(10, sellT.decimals))
             .toFixed(sellT.decimals);

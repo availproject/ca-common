@@ -24,6 +24,24 @@ import {
 import { Bytes } from "../types";
 import { Holding } from "./iface";
 
+// Legacy per-holding shape used by the deprecated `*ByRecipient` positional fns. `recipient`
+// historically doubled as both swap executor (taker) and output destination (receiver) — that
+// conflation is the root of GS013-class bugs. New code should pass `HoldingWithSwapAddresses`
+// to the new wrappers below; this type stays for backwards compat. The optional
+// `receiverAddress` lets the new wrappers thread per-holding receiver through legacy code.
+export type HoldingWithRecipient = Holding & {
+  recipient: Bytes;
+  receiverAddress?: Bytes;
+};
+
+// Per-holding shape for the new wrappers. Both `takerAddress` and `receiverAddress` are
+// required — even when source-side has them equal today, keeping both explicit forces every
+// call site to acknowledge each role.
+export type HoldingWithSwapAddresses = Holding & {
+  takerAddress: Bytes;
+  receiverAddress: Bytes;
+};
+
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.025");
 
@@ -143,9 +161,39 @@ cots = [(1 COT, 1), (1 COT, 4)]
 5. return quotes and assets used.
 */
 
+/**
+ * @deprecated Use {@link autoSelectSources} (object args; per-holding `takerAddress` and
+ * `receiverAddress` on each `HoldingWithSwapAddresses`).
+ */
 export async function autoSelectSourcesV2(
   userAddress: Bytes,
   holdings: Holding[],
+  outputRequired: Decimal,
+  aggregators: Aggregator[],
+  commonCurrencyID: CurrencyID = CurrencyID.USDC,
+): Promise<{
+  quoteResponses: QuoteResponse[];
+  usedCOTs: {
+    originalHolding: Holding;
+    amountUsed: Decimal;
+    idx: number;
+    cur: Currency;
+  }[];
+}> {
+  return autoSelectSourcesV2ByRecipient(
+    holdings.map((holding) => ({ ...holding, recipient: userAddress })),
+    outputRequired,
+    aggregators,
+    commonCurrencyID,
+  );
+}
+
+/**
+ * @deprecated Use {@link autoSelectSources} (object args; per-holding `takerAddress` and
+ * `receiverAddress` on each `HoldingWithSwapAddresses`).
+ */
+export async function autoSelectSourcesV2ByRecipient(
+  holdings: HoldingWithRecipient[],
   outputRequired: Decimal,
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
@@ -217,7 +265,10 @@ export async function autoSelectSourcesV2(
     } else {
       fullLiquidationQuotes.push({
         req: {
-          userAddress,
+          userAddress: holding.recipient,
+          // New wrappers thread per-holding receiver via this field. Falls back to taker
+          // (`recipient`) when absent — preserves legacy positional-call behavior.
+          receiverAddress: holding.receiverAddress,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -460,11 +511,16 @@ export async function autoSelectSourcesV2(
   return { quoteResponses: final, usedCOTs };
 }
 
+/**
+ * @deprecated Use {@link getDestinationExactOutSwap} (object args; explicit `takerAddress` and
+ * `receiverAddress`, both required).
+ */
 export async function determineDestinationSwaps(
   userAddress: Bytes,
   requirement: Holding,
   aggregators: Aggregator[],
   commonCurrencyID: CurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse> {
   const chaindata = ChaindataMap.get(requirement.chainID);
   if (chaindata == null) {
@@ -483,6 +539,7 @@ export async function determineDestinationSwaps(
     type: QuoteType.EXACT_IN,
     chain: requirement.chainID,
     userAddress,
+    receiverAddress,
     inputToken: requirement.tokenAddress,
     outputToken: COT.tokenAddress,
     inputAmount: requirement.amountRaw,
@@ -518,6 +575,7 @@ export async function determineDestinationSwaps(
         {
           type: QuoteType.EXACT_IN,
           userAddress,
+          receiverAddress,
           chain: requirement.chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
@@ -555,11 +613,34 @@ export async function determineDestinationSwaps(
   }
 }
 
+/**
+ * @deprecated Use {@link liquidateSourceHoldings} (object args; per-holding `takerAddress`
+ * and `receiverAddress` on each `HoldingWithSwapAddresses`).
+ */
 export async function liquidateInputHoldings(
   userAddress: Bytes,
   holdings: Holding[],
   aggregators: Aggregator[],
   commonCurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
+): Promise<QuoteResponse[]> {
+  return liquidateInputHoldingsByRecipient(
+    holdings.map((holding) => ({ ...holding, recipient: userAddress })),
+    aggregators,
+    commonCurrencyID,
+    receiverAddress,
+  );
+}
+
+/**
+ * @deprecated Use {@link liquidateSourceHoldings} (object args; per-holding `takerAddress`
+ * and `receiverAddress` on each `HoldingWithSwapAddresses`).
+ */
+export async function liquidateInputHoldingsByRecipient(
+  holdings: HoldingWithRecipient[],
+  aggregators: Aggregator[],
+  commonCurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse[]> {
   console.debug("XCS | LIH | Holdings:", holdings);
   const groupedByChainID = groupBy(holdings, (h) =>
@@ -607,7 +688,10 @@ export async function liquidateInputHoldings(
       }
       fullLiquidationQuotes.push({
         req: {
-          userAddress,
+          userAddress: holding.recipient,
+          // Per-holding receiver wins (set by the new wrappers); shared param is the legacy
+          // positional-call fallback.
+          receiverAddress: holding.receiverAddress ?? receiverAddress,
           type: QuoteType.EXACT_IN,
           chain: chain.ChainID,
           inputToken: holding.tokenAddress,
@@ -645,6 +729,10 @@ export async function liquidateInputHoldings(
   return quotes;
 }
 
+/**
+ * @deprecated Use {@link getDestinationExactInSwap} (object args; explicit `takerAddress`
+ * and `receiverAddress`, both required).
+ */
 export async function destinationSwapWithExactIn(
   userAddress: Bytes,
   omniChainID: OmniversalChainID,
@@ -652,6 +740,7 @@ export async function destinationSwapWithExactIn(
   outputToken: Bytes,
   aggregators: Aggregator[],
   inputCurrency: CurrencyID = CurrencyID.USDC,
+  receiverAddress?: Bytes,
 ): Promise<QuoteResponse> {
   const chaindata = ChaindataMap.get(omniChainID);
   if (chaindata == null) {
@@ -669,6 +758,7 @@ export async function destinationSwapWithExactIn(
         type: QuoteType.EXACT_IN,
         chain: omniChainID,
         userAddress,
+        receiverAddress,
         inputToken: COT.tokenAddress,
         outputToken: outputToken,
         inputAmount: inputAmount,
@@ -699,4 +789,100 @@ export async function destinationSwapWithExactIn(
       tokenAddress: COT.tokenAddress,
     },
   };
+}
+
+// =====================================================================================
+// Object-arg wrappers around the legacy positional functions above.
+//
+// Aggregator vocabulary:
+//   takerAddress    — on-chain executor of the swap (drives aggregator simulation /
+//                     permit / approval routing). On 7702 chains this is the ephemeral; on
+//                     non-Pectra chains it's the deployed Safe. Maps to the underlying
+//                     QuoteRequest's `userAddress`.
+//   receiverAddress — recipient of the swap output. Maps to the underlying QuoteRequest's
+//                     `receiverAddress`. Required on all 4 wrappers — the GS013-class bug we
+//                     fixed came from forgetting this and silently defaulting to the wrong
+//                     address. Even on source side (where it equals the taker today), require
+//                     it explicitly so the type system forces every call site to acknowledge
+//                     both roles.
+//
+// Wrap-only: each wrapper delegates to the deprecated positional fn. No business logic added.
+// =====================================================================================
+
+export async function getDestinationExactOutSwap(args: {
+  takerAddress: Bytes;
+  receiverAddress: Bytes;
+  requirement: Holding;
+  aggregators: Aggregator[];
+  commonCurrencyID?: CurrencyID;
+}): Promise<QuoteResponse> {
+  return determineDestinationSwaps(
+    args.takerAddress,
+    args.requirement,
+    args.aggregators,
+    args.commonCurrencyID,
+    args.receiverAddress,
+  );
+}
+
+export async function getDestinationExactInSwap(args: {
+  takerAddress: Bytes;
+  receiverAddress: Bytes;
+  chain: OmniversalChainID;
+  inputAmount: bigint;
+  outputToken: Bytes;
+  aggregators: Aggregator[];
+  inputCurrency?: CurrencyID;
+}): Promise<QuoteResponse> {
+  return destinationSwapWithExactIn(
+    args.takerAddress,
+    args.chain,
+    args.inputAmount,
+    args.outputToken,
+    args.aggregators,
+    args.inputCurrency,
+    args.receiverAddress,
+  );
+}
+
+export async function liquidateSourceHoldings(args: {
+  holdings: HoldingWithSwapAddresses[];
+  aggregators: Aggregator[];
+  commonCurrencyID?: CurrencyID;
+}): Promise<QuoteResponse[]> {
+  return liquidateInputHoldingsByRecipient(
+    args.holdings.map((h) => ({
+      ...h,
+      recipient: h.takerAddress,
+      receiverAddress: h.receiverAddress,
+    })),
+    args.aggregators,
+    args.commonCurrencyID,
+  );
+}
+
+export async function autoSelectSources(args: {
+  holdings: HoldingWithSwapAddresses[];
+  outputRequired: Decimal;
+  aggregators: Aggregator[];
+  commonCurrencyID?: CurrencyID;
+}): Promise<{
+  quoteResponses: QuoteResponse[];
+  usedCOTs: {
+    originalHolding: Holding;
+    amountUsed: Decimal;
+    idx: number;
+    cur: Currency;
+  }[];
+}> {
+  return autoSelectSourcesV2ByRecipient(
+    args.holdings.map((h) => ({
+      ...h,
+      recipient: h.takerAddress,
+      receiverAddress: h.receiverAddress,
+    })),
+    args.outputRequired,
+    args.aggregators,
+    args.commonCurrencyID,
+  );
 }

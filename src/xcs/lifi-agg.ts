@@ -42,6 +42,21 @@ export type LiFiResponse = {
   };
 };
 
+const ALLOWED_CHAINS = new Set([
+  1, // Ethereum
+  10, // Optimism
+  56, // BSC
+  137, // Polygon
+  143, // Monad
+  999, // HyperEVM
+  4326, // MegaETH
+  8453, // Base
+  42161, // Arbitrum
+  43114, // Avalanche
+  8217, // Kaia
+  534352, // Scroll
+]);
+
 export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
   private static readonly COMMON_OPTIONS = {
@@ -74,6 +89,10 @@ export class LiFiAggregator implements Aggregator {
             return null;
           }
 
+          if (!ALLOWED_CHAINS.has(Number(r.chain.chainID))) {
+            return null;
+          }
+
           let respPromise: Promise<AxiosResponse<LiFiResponse>>;
           const chIDStr = r.chain.chainID.toString();
           const inputTokenAddr = getAddress(
@@ -85,6 +104,10 @@ export class LiFiAggregator implements Aggregator {
           const userAddrHex = getAddress(
             bytesToHex(r.userAddress.subarray(12)),
           );
+          const receiverAddrHex =
+            r.receiverAddress != null
+              ? getAddress(bytesToHex(r.receiverAddress.subarray(12)))
+              : userAddrHex;
 
           switch (r.type) {
             case QuoteType.EXACT_IN: {
@@ -97,6 +120,7 @@ export class LiFiAggregator implements Aggregator {
                   fromToken: inputTokenAddr,
                   toToken: outputTokenAddr,
                   fromAddress: userAddrHex,
+                  toAddress: receiverAddrHex,
                   fromAmount: r.inputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
                 },
@@ -113,6 +137,7 @@ export class LiFiAggregator implements Aggregator {
                   fromToken: inputTokenAddr,
                   toToken: outputTokenAddr,
                   fromAddress: userAddrHex,
+                  toAddress: receiverAddrHex,
                   toAmount: r.outputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
                 },
