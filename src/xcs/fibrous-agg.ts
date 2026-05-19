@@ -74,6 +74,7 @@ export type FibrousQuote = Quote & {
 export type FibrousAggregatorOptions = {
   apiKey?: string;
   slippage?: number;
+  excludeProtocols?: string;
 };
 
 export class FibrousAggregator implements Aggregator {
@@ -81,11 +82,13 @@ export class FibrousAggregator implements Aggregator {
 
   private readonly axios: AxiosInstance;
   private readonly slippage: number;
+  private readonly excludeProtocols: string;
 
   public constructor(options: FibrousAggregatorOptions = {}) {
-    const { apiKey, slippage = 0.5 } = options;
+    const { apiKey, slippage = 0.5, excludeProtocols = "3" } = options;
 
     this.slippage = slippage;
+    this.excludeProtocols = excludeProtocols;
     this.axios = axios.create({
       baseURL: FibrousAggregator.BASE_URL,
       headers: apiKey != null ? { "X-API-Key": apiKey } : undefined,
@@ -139,6 +142,7 @@ export class FibrousAggregator implements Aggregator {
                 tokenOutAddress: outputTokenAddr,
                 slippage: this.slippage,
                 destination: receiverAddrHex,
+                excludeProtocols: this.excludeProtocols,
               },
             });
           } catch (e) {
