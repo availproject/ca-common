@@ -48,11 +48,11 @@ export type BebopCommonQuote = {
     {
       amount: string;
       decimals: number;
-      priceUsd: number;
+      priceUsd?: number;
       symbol: string;
       minimumAmount: string;
-      price: number;
-      priceBeforeFee: number;
+      price?: number;
+      priceBeforeFee?: number;
       amountBeforeFee: string;
       deltaFromExpected: number;
     }
@@ -62,10 +62,10 @@ export type BebopCommonQuote = {
     {
       amount: string;
       decimals: number;
-      priceUsd: number;
+      priceUsd?: number;
       symbol: string;
-      price: number;
-      priceBeforeFee: number;
+      price?: number;
+      priceBeforeFee?: number;
     }
   >;
   settlementAddress: string;
@@ -262,7 +262,7 @@ export class BebopAggregator implements Aggregator {
               decimals: sellT.decimals,
               value: Decimal.mul(
                 inputAmountInDecimal,
-                sellT.priceUsd,
+                sellT.priceUsd ?? 0,
               ).toNumber(),
               symbol: sellT.symbol,
             },
@@ -272,8 +272,8 @@ export class BebopAggregator implements Aggregator {
               contractAddress: outputTokenAddr,
               decimals: buyT.decimals,
               value: Decimal.mul(
-                buyT.priceUsd,
                 outputAmountInDecimal,
+                buyT.priceUsd ?? 0,
               ).toNumber(),
               symbol: buyT.symbol,
             },
