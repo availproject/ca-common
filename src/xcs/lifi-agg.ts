@@ -63,6 +63,7 @@ export class LiFiAggregator implements Aggregator {
     denyExchanges: "openocean",
     slippage: "0.01",
     skipSimulation: true,
+    order: "FASTEST",
   };
 
   private readonly axios: AxiosInstance;
