@@ -91,9 +91,7 @@ export async function selectSources(args: {
     if (chain == null) {
       throw new AutoSelectionError("Chain not found");
     }
-    const cot = chain.Currencies.find(
-      (c) => c.currencyID === commonCurrencyID,
-    );
+    const cot = chain.Currencies.find((c) => c.currencyID === commonCurrencyID);
     if (cot == null) {
       console.debug("XCS | SS | Skipping source — no COT on chain", { chain });
       continue;
@@ -269,9 +267,7 @@ export async function selectSources(args: {
     let lookup = responseByIdx.get(quoteData.idx);
     if (lookup == null) {
       // Prefix under-delivered: quote every non-COT we haven't yet and continue.
-      const unquoted = nonCOTQuotes.filter(
-        (q) => !responseByIdx.has(q.idx),
-      );
+      const unquoted = nonCOTQuotes.filter((q) => !responseByIdx.has(q.idx));
       console.log("XCS | SS | Prefix under-delivered, extending batch", {
         remaining: unquoted.length,
       });
