@@ -59,12 +59,37 @@ const ALLOWED_CHAINS = new Set([
 
 export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
+
+  // Params that don't depend on chain — spread into every quote request.
+  // `denyExchanges` is built per-call via `denyExchangesFor(chainId)`.
   private static readonly COMMON_OPTIONS = {
-    denyExchanges: "openocean",
     slippage: "0.01",
     skipSimulation: true,
-    order: "FASTEST",
+  } as const;
+
+  // Tools denied on every chain.
+  private static readonly GLOBAL_DENY: readonly string[] = ["openocean"];
+
+  // Tools denied only on specific chains. Add an entry here when a tool quotes
+  // well on most chains but mis-quotes on a specific one — global-denying it
+  // would needlessly disable healthy routes elsewhere.
+  //
+  // 999 (HyperEVM): fly/hyperflow/liquidswap all share the same on-chain entry
+  //   (0x0a0758d937d1059c356d4714e57f5df0239bce1a) and systematically over-quote
+  //   native HYPE -> USDC routes by 5-11% (LI.FI /quote toAmountMin vs on-chain
+  //   delivery, observed via InsufficientAmountOut(0xe52970aa) failures in
+  //   HyperEVM Safe-mode swaps). They quote within ±0.2% of other tools on
+  //   Ethereum/Base/Arbitrum/Polygon/Optimism, so the deny is chain-local.
+  private static readonly PER_CHAIN_DENY: Readonly<
+    Record<number, readonly string[]>
+  > = {
+    999: ["fly", "hyperflow", "liquidswap"],
   };
+
+  private denyExchangesFor(chainId: number): string {
+    const perChain = LiFiAggregator.PER_CHAIN_DENY[chainId] ?? [];
+    return [...LiFiAggregator.GLOBAL_DENY, ...perChain].join(",");
+  }
 
   private readonly axios: AxiosInstance;
 
@@ -124,6 +149,7 @@ export class LiFiAggregator implements Aggregator {
                   toAddress: receiverAddrHex,
                   fromAmount: r.inputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
+                  denyExchanges: this.denyExchangesFor(Number(r.chain.chainID)),
                 },
               });
               break;
@@ -141,6 +167,7 @@ export class LiFiAggregator implements Aggregator {
                   toAddress: receiverAddrHex,
                   toAmount: r.outputAmount.toString(),
                   ...LiFiAggregator.COMMON_OPTIONS,
+                  denyExchanges: this.denyExchangesFor(Number(r.chain.chainID)),
                 },
               });
               break;
