@@ -45,7 +45,7 @@ export type HoldingWithSwapAddresses = Holding & {
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.025");
 
-const enum AggregateAggregatorsMode {
+export enum AggregateAggregatorsMode {
   MaximizeOutput,
   MinimizeInput,
 }
