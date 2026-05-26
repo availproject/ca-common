@@ -15,6 +15,7 @@ import {
   AutoSelectionError,
 } from "./autochoice";
 import {
+  bytesEqual,
   ChaindataMap,
   convertDecimalToBigInt,
   Currency,
@@ -104,7 +105,7 @@ export async function selectSources(args: {
       amountRaw: src.amountRaw,
     };
 
-    if (Buffer.compare(src.tokenAddress, cot.tokenAddress) === 0) {
+    if (bytesEqual(src.tokenAddress, cot.tokenAddress)) {
       const normalizedAmount = new Decimal(src.amountRaw.toString()).div(
         Decimal.pow(10, cot.decimals),
       );

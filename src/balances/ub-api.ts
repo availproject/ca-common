@@ -10,7 +10,7 @@ export type BalanceOnChain = {
   chainID: OmniversalChainID,
   totalValue: Decimal,
   currencywise: {
-    tokenAddress: Buffer,
+    tokenAddress: Uint8Array,
     amount: Decimal,
     value: Decimal
   }[]
@@ -19,10 +19,10 @@ export type BalanceOnChain = {
 type MPResp = {
   balances: {
     universe: Universe,
-    chain_id: Buffer,
+    chain_id: Uint8Array,
     total_usd: string,
     currencies: {
-      token_address: Buffer,
+      token_address: Uint8Array,
       balance: string,
       value: string
     }[]

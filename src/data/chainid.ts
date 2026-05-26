@@ -1,5 +1,3 @@
-import { ensureBufferPolyfill } from "../_polyfill";
-
 import {
   bytesToBigInt,
   bytesToHex,
@@ -16,24 +14,16 @@ import {
   universeToJSON,
 } from "../proto/definition";
 import { Bytes } from "../types";
-import { convertToBufferIfNecessary } from "./utils";
-
-ensureBufferPolyfill();
 
 export function encodeChainID36(
   universe: Universe,
   chainID: Bytes | bigint | number,
-): Buffer {
-  let chainIDB: Uint8Array;
+): Uint8Array {
+  const chainIDB: Uint8Array =
+    chainID instanceof Uint8Array ? chainID : toBytes(chainID);
 
-  if (Buffer.isBuffer(chainID) || chainID instanceof Uint8Array) {
-    chainIDB = chainID;
-  } else {
-    chainIDB = toBytes(chainID);
-  }
-
-  const buf = Buffer.alloc(36);
-  buf.writeUInt32BE(universe);
+  const buf = new Uint8Array(36);
+  new DataView(buf.buffer).setUint32(0, universe, false);
   buf.set(chainIDB, 4 + (32 - chainIDB.length));
   return buf;
 }
@@ -41,7 +31,7 @@ export function encodeChainID36(
 export class OmniversalChainID {
   public readonly universe: Universe;
   public readonly chainID: bigint;
-  private readonly binaryForm: Buffer;
+  private readonly binaryForm: Uint8Array;
 
   constructor(universe: Universe, chainID: bigint | number | string | Bytes) {
     this.universe = universe;
@@ -78,15 +68,15 @@ export class OmniversalChainID {
     );
   }
 
-  static fromChainID36(_input: Bytes): OmniversalChainID {
-    const input = convertToBufferIfNecessary(_input);
-    const univID = input.readUInt32BE(0);
+  static fromChainID36(input: Bytes): OmniversalChainID {
+    const view = new DataView(input.buffer, input.byteOffset, input.byteLength);
+    const univID = view.getUint32(0, false);
     const rest = input.subarray(4);
     return new OmniversalChainID(univID, rest);
   }
 
   // Do not modify the returned buffer. Make a copy if necessary.
-  public toBytes(): Buffer {
+  public toBytes(): Uint8Array {
     return this.binaryForm;
   }
 
