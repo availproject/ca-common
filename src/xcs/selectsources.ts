@@ -288,67 +288,116 @@ export async function selectSources(args: {
     const divisor = Decimal.pow(10, quoteData.cur.decimals);
     const oamD = new Decimal(resp.output.amount);
     if (oamD.gt(remainder)) {
-      const indicativePrice = Decimal.div(
-        resp.input.amountRaw.toString(),
-        resp.output.amountRaw.toString(),
-      );
-      const userBal = new Decimal(
-        quoteData.originalHolding.amountRaw.toString(),
-      );
-      let expectedInput = Decimal.min(
-        remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
-        userBal,
-      );
-      let attempts = 0;
-      while (true) {
-        if (++attempts > 10) {
-          throw new AutoSelectionError("Partial quote did not converge");
-        }
-        console.debug("XCS | SS | partial_quote_loop", {
-          indicativePrice: indicativePrice.toFixed(),
-          expectedInput: expectedInput.toFixed(),
-          userBal: userBal.toFixed(),
+      // Citrea (4114) only has Fibrous routed for it, and Fibrous doesn't support
+      // EXACT_OUT — fall back to iterative EXACT_IN convergence there. Every other
+      // chain has Bebop/LiFi which serve EXACT_OUT directly, so a single sized
+      // request replaces the convergence loop.
+      if (quoteData.req.chain.chainID !== 4114n) {
+        const outputAmountRaw = convertDecimalToBigInt(remainder.mul(divisor));
+        console.debug("XCS | SS | exact_out_request", {
+          idx: quoteData.idx,
           remainder: remainder.toFixed(),
+          outputAmountRaw: outputAmountRaw.toString(),
         });
-        const adequate = await aggregateAggregators(
+        const exactOut = await aggregateAggregators(
           [
             {
-              ...quoteData.req,
+              userAddress: quoteData.req.userAddress,
+              receiverAddress: quoteData.req.receiverAddress,
+              chain: quoteData.req.chain,
+              inputToken: quoteData.req.inputToken,
+              outputToken: quoteData.req.outputToken,
               seriousness: QuoteSeriousness.SERIOUS,
-              inputAmount: convertDecimalToBigInt(expectedInput),
+              type: QuoteType.EXACT_OUT,
+              outputAmount: outputAmountRaw,
             },
           ],
           aggregators,
-          AggregateAggregatorsMode.MaximizeOutput,
+          AggregateAggregatorsMode.MinimizeInput,
         );
-        if (adequate.length !== 1) {
+        if (exactOut.length !== 1) {
           throw new AutoSelectionError(
             "Unexpected response length from aggregateAggregators",
           );
         }
-        const aq = adequate[0];
+        const aq = exactOut[0];
         if (aq.quote == null) {
-          throw new AutoSelectionError("Couldn't get buy quote");
+          throw new AutoSelectionError("Couldn't get EXACT_OUT quote");
+        }
+        if (aq.quote.input.amountRaw > quoteData.originalHolding.amountRaw) {
+          throw new AutoSelectionError("EXACT_OUT quote input exceeds holding");
         }
         const oam2D = new Decimal(aq.quote.output.amount);
-        if (oam2D.gte(remainder)) {
-          final.push({
-            quote: aq.quote,
-            aggregator: aq.aggregator,
-            holding: quoteData.originalHolding,
-            chainID: Number(quoteData.req.chain.chainID),
+        final.push({
+          quote: aq.quote,
+          aggregator: aq.aggregator,
+          holding: quoteData.originalHolding,
+          chainID: Number(quoteData.req.chain.chainID),
+        });
+        remainder = remainder.minus(oam2D);
+      } else {
+        const indicativePrice = Decimal.div(
+          resp.input.amountRaw.toString(),
+          resp.output.amountRaw.toString(),
+        );
+        const userBal = new Decimal(
+          quoteData.originalHolding.amountRaw.toString(),
+        );
+        let expectedInput = Decimal.min(
+          remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
+          userBal,
+        );
+        let attempts = 0;
+        while (true) {
+          if (++attempts > 10) {
+            throw new AutoSelectionError("Partial quote did not converge");
+          }
+          console.debug("XCS | SS | partial_quote_loop", {
+            indicativePrice: indicativePrice.toFixed(),
+            expectedInput: expectedInput.toFixed(),
+            userBal: userBal.toFixed(),
+            remainder: remainder.toFixed(),
           });
-          remainder = remainder.minus(oam2D);
-          break;
-        } else if (expectedInput.eq(userBal)) {
-          throw new AutoSelectionError(
-            "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
+          const adequate = await aggregateAggregators(
+            [
+              {
+                ...quoteData.req,
+                seriousness: QuoteSeriousness.SERIOUS,
+                inputAmount: convertDecimalToBigInt(expectedInput),
+              },
+            ],
+            aggregators,
+            AggregateAggregatorsMode.MaximizeOutput,
           );
-        } else {
-          expectedInput = Decimal.min(
-            expectedInput.mul(safetyMultiplier),
-            userBal,
-          );
+          if (adequate.length !== 1) {
+            throw new AutoSelectionError(
+              "Unexpected response length from aggregateAggregators",
+            );
+          }
+          const aq = adequate[0];
+          if (aq.quote == null) {
+            throw new AutoSelectionError("Couldn't get buy quote");
+          }
+          const oam2D = new Decimal(aq.quote.output.amount);
+          if (oam2D.gte(remainder)) {
+            final.push({
+              quote: aq.quote,
+              aggregator: aq.aggregator,
+              holding: quoteData.originalHolding,
+              chainID: Number(quoteData.req.chain.chainID),
+            });
+            remainder = remainder.minus(oam2D);
+            break;
+          } else if (expectedInput.eq(userBal)) {
+            throw new AutoSelectionError(
+              "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
+            );
+          } else {
+            expectedInput = Decimal.min(
+              expectedInput.mul(safetyMultiplier),
+              userBal,
+            );
+          }
         }
       }
     } else {
