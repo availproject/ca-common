@@ -802,11 +802,14 @@ export class SigningStargateClient {
     });
     const response = result.response;
 
-    if (!response?.value) {
+    if (!response) {
       return null;
     }
     if (response.code) {
       throw new Error(response.log ?? `Account query failed with code ${response.code}`);
+    }
+    if (!response.value) {
+      return null;
     }
 
     const account = QueryAccountResponse.decode(base64ToBytes(response.value)).account;
