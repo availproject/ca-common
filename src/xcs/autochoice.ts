@@ -12,6 +12,7 @@ import {
   QuoteType,
 } from "./iface";
 import {
+  bytesEqual,
   ChaindataMap,
   convertBigIntToDecimal,
   convertDecimalToBigInt,
@@ -247,10 +248,7 @@ export async function autoSelectSourcesV2ByRecipient(
     }
 
     if (
-      Buffer.compare(
-        holding.tokenAddress,
-        correspondingCurrency.tokenAddress,
-      ) === 0
+      bytesEqual(holding.tokenAddress, correspondingCurrency.tokenAddress)
     ) {
       const normalizedAmount = new Decimal(holding.amountRaw).div(
         Decimal.pow(10, correspondingCurrency.decimals),
@@ -674,10 +672,7 @@ export async function liquidateInputHoldingsByRecipient(
 
     for (const holding of holdings) {
       if (
-        Buffer.compare(
-          holding.tokenAddress,
-          correspondingCurrency.tokenAddress,
-        ) === 0
+        bytesEqual(holding.tokenAddress, correspondingCurrency.tokenAddress)
       ) {
         console.log(
           "XCS | LIH | Disqualifying",

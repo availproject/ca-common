@@ -1,4 +1,3 @@
-import "./_polyfill";
 export * from "./proto/definition";
 export {
   QueryClientImpl,

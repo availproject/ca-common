@@ -792,14 +792,14 @@ class CurrencyMap {
 export type ChainDatum = {
   ChainID: OmniversalChainID;
   Universe: Universe;
-  ChainID32: Buffer;
+  ChainID32: Uint8Array;
   Currencies: Currency[];
   CurrencyMap: CurrencyMap;
 };
 
 // Certain data fields are auto-generated while others are not.
 export const Chaindata: ChainDatum[] = RawData.map((ch) => {
-  const ch32 = Buffer.from(hexToBytes(<Hex>ch.ChainID32));
+  const ch32 = hexToBytes(<Hex>ch.ChainID32);
   const currencies = ch.Currencies.map((cur) => {
     return new Currency(
       cur.CurrencyID,

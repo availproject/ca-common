@@ -218,7 +218,7 @@ export function getVaultContractMap(environment: Environment) {
   if (src == null) {
     throw new Error("Environment not found");
   }
-  return new ChainIDKeyedMap<Buffer>(
+  return new ChainIDKeyedMap<Uint8Array>(
     src.map((t) => [
       t[0],
       zeroExtendBufToGivenSize(hexToBytes(t[1] as Hex), 32),

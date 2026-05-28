@@ -22,7 +22,7 @@ export enum CurrencyID {
 
 export class Currency {
   // this is always 32 byte long
-  public readonly tokenAddress: Buffer;
+  public readonly tokenAddress: Uint8Array;
 
   /* This is the ratio between one unit to the smallest unit used.
 
@@ -48,7 +48,7 @@ export class Currency {
       typeof tokenAddress[0] === "number"
     ) {
       this.tokenAddress = zeroExtendBufToGivenSize(
-        Buffer.from(tokenAddress),
+        new Uint8Array(tokenAddress),
         32,
       );
     }
@@ -71,9 +71,7 @@ export class Currency {
     return Decimal.div(rawunits, this.oneUnitToAtomicUnitRatio);
   }
 
-  convertAmountToUnitsInBinary(input: Decimal): Buffer {
-    return Buffer.from(
-      toBytes(input.mul(this.oneUnitToAtomicUnitRatio).ceil().toHex()),
-    );
+  convertAmountToUnitsInBinary(input: Decimal): Uint8Array {
+    return toBytes(input.mul(this.oneUnitToAtomicUnitRatio).ceil().toHex());
   }
 }
