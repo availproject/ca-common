@@ -39,32 +39,3 @@ export const FibrousChainNameMapping = new ChainIDKeyedMap<string>([
   [new OmniversalChainID(Universe.ETHEREUM, 143), "monad"],
   [new OmniversalChainID(Universe.ETHEREUM, 4114), "citrea"],
 ]);
-
-export function isBebopChainSupported(chain: OmniversalChainID): boolean {
-  return (
-    chain.universe === Universe.ETHEREUM &&
-    BebopChainNameMapping.has(bytesToHex(chain.toBytes()))
-  );
-}
-
-export function isLiFiChainSupported(chain: OmniversalChainID): boolean {
-  return (
-    chain.universe === Universe.ETHEREUM &&
-    LiFiAllowedChains.has(Number(chain.chainID))
-  );
-}
-
-export function isFibrousChainSupported(chain: OmniversalChainID): boolean {
-  return (
-    chain.universe === Universe.ETHEREUM &&
-    FibrousChainNameMapping.get(chain) != null
-  );
-}
-
-export function isFibrousOnlyChain(chain: OmniversalChainID): boolean {
-  return (
-    isFibrousChainSupported(chain) &&
-    !isBebopChainSupported(chain) &&
-    !isLiFiChainSupported(chain)
-  );
-}

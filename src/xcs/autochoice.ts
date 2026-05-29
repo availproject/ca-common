@@ -11,7 +11,6 @@ import {
   QuoteSeriousness,
   QuoteType,
 } from "./iface";
-import { isFibrousOnlyChain } from "./aggregator-support";
 import {
   bytesEqual,
   ChaindataMap,
@@ -46,6 +45,7 @@ export type HoldingWithSwapAddresses = Holding & {
 
 export class AutoSelectionError extends Error {}
 const safetyMultiplier = new Decimal("1.01");
+const maxConvergenceExtraValue = new Decimal("0.5");
 
 export enum AggregateAggregatorsMode {
   MaximizeOutput,
@@ -126,6 +126,190 @@ export async function aggregateAggregators(
     }
   }
   return final;
+}
+
+export type QuoteCandidate = {
+  quote: Quote;
+  aggregator: Aggregator;
+};
+
+export function rawAmountForCurrencyValue(
+  currency: Currency,
+  value: Decimal = maxConvergenceExtraValue,
+): Decimal {
+  return value.mul(Decimal.pow(10, currency.decimals));
+}
+
+export function inputRawForOutputRaw(
+  quote: Quote,
+  outputAmountRaw: Decimal,
+): Decimal {
+  if (quote.output.amountRaw === 0n) {
+    throw new AutoSelectionError("Cannot estimate input for zero output quote");
+  }
+  return outputAmountRaw
+    .mul(quote.input.amountRaw.toString())
+    .div(quote.output.amountRaw.toString());
+}
+
+export function applyCappedSafetyMargin(args: {
+  baseInputAmountRaw: Decimal;
+  inputAmountRaw: Decimal;
+  maxExtraInputAmountRaw: Decimal;
+  maxInputAmountRaw?: Decimal;
+}): Decimal {
+  const maxInputWithExtra = args.baseInputAmountRaw.add(
+    args.maxExtraInputAmountRaw,
+  );
+  const maxAllowedInput =
+    args.maxInputAmountRaw == null
+      ? maxInputWithExtra
+      : Decimal.min(maxInputWithExtra, args.maxInputAmountRaw);
+  return Decimal.min(args.inputAmountRaw.mul(safetyMultiplier), maxAllowedInput);
+}
+
+export async function firstSuccessfulQuoteCandidate(
+  candidates: Promise<QuoteCandidate | null>[],
+  noQuoteMessage: string,
+): Promise<QuoteCandidate> {
+  let pending = candidates.map((promise, idx) => ({
+    idx,
+    promise: promise.then((candidate) => ({ idx, candidate })),
+  }));
+
+  while (pending.length > 0) {
+    const settled = await Promise.race(pending.map((p) => p.promise));
+    if (settled.candidate != null) {
+      return settled.candidate;
+    }
+    pending = pending.filter((p) => p.idx !== settled.idx);
+  }
+
+  throw new AutoSelectionError(noQuoteMessage);
+}
+
+export async function quoteCandidateOrNull(
+  label: string,
+  quotePromise: Promise<QuoteCandidate>,
+): Promise<QuoteCandidate | null> {
+  try {
+    return await quotePromise;
+  } catch (e) {
+    console.debug("XCS | quote_candidate_failed", {
+      label,
+      error: e instanceof Error ? e.message : e,
+    });
+    return null;
+  }
+}
+
+export async function getExactOutQuoteCandidate(args: {
+  request: QuoteRequestExactOutput;
+  aggregators: Aggregator[];
+  maxInputAmountRaw?: bigint;
+  requiredOutputAmountRaw?: bigint;
+}): Promise<QuoteCandidate> {
+  const exactOutResult = await aggregateAggregators(
+    [args.request],
+    args.aggregators,
+    AggregateAggregatorsMode.MinimizeInput,
+  );
+  if (exactOutResult.length !== 1) {
+    throw new AutoSelectionError(
+      "Unexpected response length from aggregateAggregators",
+    );
+  }
+  const exactOutQuote = exactOutResult[0];
+  if (exactOutQuote.quote == null) {
+    throw new AutoSelectionError("Couldn't get EXACT_OUT quote");
+  }
+  if (
+    exactOutQuote.quote.output.amountRaw <
+    (args.requiredOutputAmountRaw ?? args.request.outputAmount)
+  ) {
+    throw new AutoSelectionError("EXACT_OUT quote output is below requirement");
+  }
+  if (
+    args.maxInputAmountRaw != null &&
+    exactOutQuote.quote.input.amountRaw > args.maxInputAmountRaw
+  ) {
+    throw new AutoSelectionError("EXACT_OUT quote input exceeds holding");
+  }
+  return {
+    quote: exactOutQuote.quote,
+    aggregator: exactOutQuote.aggregator,
+  };
+}
+
+export async function convergeExactInQuote(args: {
+  makeRequest: (inputAmountRaw: bigint) => QuoteRequestExactInput;
+  initialInputAmountRaw: Decimal;
+  maxExtraInputAmountRaw: Decimal;
+  requiredOutputAmountRaw: bigint;
+  aggregators: Aggregator[];
+  maxInputAmountRaw?: Decimal;
+  maxAttempts?: number;
+  didNotConvergeMessage: string;
+  maxInputReachedMessage: string;
+}): Promise<QuoteCandidate> {
+  const baseInputAmountRaw = args.initialInputAmountRaw;
+  let inputAmountRaw = applyCappedSafetyMargin({
+    baseInputAmountRaw,
+    inputAmountRaw: baseInputAmountRaw,
+    maxExtraInputAmountRaw: args.maxExtraInputAmountRaw,
+    maxInputAmountRaw: args.maxInputAmountRaw,
+  });
+  const maxAttempts = args.maxAttempts ?? 10;
+
+  for (let attempts = 1; attempts <= maxAttempts; attempts++) {
+    const requestInputAmountRaw = convertDecimalToBigInt(inputAmountRaw);
+    console.debug("XCS | convergence_quote_loop", {
+      attempts,
+      inputAmountRaw: requestInputAmountRaw.toString(),
+      maxExtraInputAmountRaw: convertDecimalToBigInt(
+        args.maxExtraInputAmountRaw,
+      ).toString(),
+      maxInputAmountRaw:
+        args.maxInputAmountRaw == null
+          ? undefined
+          : convertDecimalToBigInt(args.maxInputAmountRaw).toString(),
+      requiredOutputAmountRaw: args.requiredOutputAmountRaw.toString(),
+    });
+    const quoteResult = await aggregateAggregators(
+      [args.makeRequest(requestInputAmountRaw)],
+      args.aggregators,
+      AggregateAggregatorsMode.MaximizeOutput,
+    );
+    if (quoteResult.length !== 1) {
+      throw new AutoSelectionError(
+        "Unexpected response length from aggregateAggregators",
+      );
+    }
+
+    const quoteCandidate = quoteResult[0];
+    if (quoteCandidate.quote == null) {
+      throw new AutoSelectionError("Couldn't get buy quote");
+    }
+    if (quoteCandidate.quote.output.amountRaw >= args.requiredOutputAmountRaw) {
+      return {
+        quote: quoteCandidate.quote,
+        aggregator: quoteCandidate.aggregator,
+      };
+    }
+
+    const nextInputAmountRaw = applyCappedSafetyMargin({
+      baseInputAmountRaw,
+      inputAmountRaw,
+      maxExtraInputAmountRaw: args.maxExtraInputAmountRaw,
+      maxInputAmountRaw: args.maxInputAmountRaw,
+    });
+    if (nextInputAmountRaw.eq(inputAmountRaw)) {
+      throw new AutoSelectionError(args.maxInputReachedMessage);
+    }
+    inputAmountRaw = nextInputAmountRaw;
+  }
+
+  throw new AutoSelectionError(args.didNotConvergeMessage);
 }
 
 /* 
@@ -537,120 +721,89 @@ export async function determineDestinationSwaps(
     throw new AutoSelectionError("COT not present on the destination chain");
   }
 
-  // Fibrous doesn't support EXACT_OUT. Keep the iterative EXACT_IN fallback only
-  // on chains routed by Fibrous with no Bebop/LiFi exact-out support.
-  if (!isFibrousOnlyChain(requirement.chainID)) {
-    const exactOutResult = await aggregateAggregators(
-      [
-        {
-          type: QuoteType.EXACT_OUT,
-          chain: requirement.chainID,
-          userAddress,
-          receiverAddress,
-          inputToken: COT.tokenAddress,
-          outputToken: requirement.tokenAddress,
-          outputAmount: requirement.amountRaw,
-          seriousness: QuoteSeriousness.SERIOUS,
-        },
-      ],
+  const exactOutCandidate = quoteCandidateOrNull(
+    "destination_exact_out",
+    getExactOutQuoteCandidate({
+      request: {
+        type: QuoteType.EXACT_OUT,
+        chain: requirement.chainID,
+        userAddress,
+        receiverAddress,
+        inputToken: COT.tokenAddress,
+        outputToken: requirement.tokenAddress,
+        outputAmount: requirement.amountRaw,
+        seriousness: QuoteSeriousness.SERIOUS,
+      },
       aggregators,
-      AggregateAggregatorsMode.MinimizeInput,
-    );
-    if (exactOutResult.length !== 1) {
-      throw new AutoSelectionError(
-        "Unexpected response length from aggregateAggregators",
-      );
-    }
-    const exactOutQuote = exactOutResult[0];
-    if (exactOutQuote.quote == null) {
-      throw new AutoSelectionError("Couldn't get EXACT_OUT quote");
-    }
-    return {
-      chainID: Number(requirement.chainID.chainID),
-      quote: exactOutQuote.quote,
-      aggregator: exactOutQuote.aggregator,
-      holding: requirement,
-    };
-  }
-
-  // FIXME: Replace with oracle usage - should reduce time.
-  // what happens if we happen to sell the requirement for the COT, what would the amount be?
-  const fullLiquidationQR: QuoteRequestExactInput = {
-    type: QuoteType.EXACT_IN,
-    chain: requirement.chainID,
-    userAddress,
-    receiverAddress,
-    inputToken: requirement.tokenAddress,
-    outputToken: COT.tokenAddress,
-    inputAmount: requirement.amountRaw,
-    seriousness: QuoteSeriousness.PRICE_SURVEY,
-  };
-  const fullLiquidationResult = await aggregateAggregators(
-    [fullLiquidationQR],
-    aggregators,
-    AggregateAggregatorsMode.MaximizeOutput,
+      requiredOutputAmountRaw: requirement.amountRaw,
+    }),
   );
-  if (fullLiquidationResult.length !== 1) {
-    throw new AutoSelectionError(
-      "Unexpected response length from aggregateAggregators",
-    );
-  }
 
-  const fullLiquidationQuote = fullLiquidationResult[0];
-  if (fullLiquidationQuote.quote == null) {
-    throw new AutoSelectionError("Couldn't get full liquidation quote");
-  }
+  const convergedCandidate = quoteCandidateOrNull(
+    "destination_convergence",
+    (async () => {
+      // FIXME: Replace with oracle usage - should reduce time.
+      // what happens if we happen to sell the requirement for the COT, what would the amount be?
+      const fullLiquidationQR: QuoteRequestExactInput = {
+        type: QuoteType.EXACT_IN,
+        chain: requirement.chainID,
+        userAddress,
+        receiverAddress,
+        inputToken: requirement.tokenAddress,
+        outputToken: COT.tokenAddress,
+        inputAmount: requirement.amountRaw,
+        seriousness: QuoteSeriousness.PRICE_SURVEY,
+      };
+      const fullLiquidationResult = await aggregateAggregators(
+        [fullLiquidationQR],
+        aggregators,
+        AggregateAggregatorsMode.MaximizeOutput,
+      );
+      if (fullLiquidationResult.length !== 1) {
+        throw new AutoSelectionError(
+          "Unexpected response length from aggregateAggregators",
+        );
+      }
 
-  let curAmount = convertBigIntToDecimal(
-    fullLiquidationQuote.quote.output.amountRaw,
-  ).mul(safetyMultiplier);
+      const fullLiquidationQuote = fullLiquidationResult[0];
+      if (fullLiquidationQuote.quote == null) {
+        throw new AutoSelectionError("Couldn't get full liquidation quote");
+      }
 
-  let attempts = 0;
-  while (true) {
-    if (++attempts > 10) {
-      throw new AutoSelectionError("Destination swap quote did not converge");
-    }
-    const buyQuoteResult = await aggregateAggregators(
-      [
-        {
+      return convergeExactInQuote({
+        initialInputAmountRaw: convertBigIntToDecimal(
+          fullLiquidationQuote.quote.output.amountRaw,
+        ),
+        maxExtraInputAmountRaw: rawAmountForCurrencyValue(COT),
+        requiredOutputAmountRaw: requirement.amountRaw,
+        aggregators,
+        didNotConvergeMessage: "Destination swap quote did not converge",
+        maxInputReachedMessage: "Destination swap quote did not converge",
+        makeRequest: (inputAmount) => ({
           type: QuoteType.EXACT_IN,
           userAddress,
           receiverAddress,
           chain: requirement.chainID,
           inputToken: COT.tokenAddress,
           outputToken: requirement.tokenAddress,
-          inputAmount: convertDecimalToBigInt(curAmount),
+          inputAmount,
           seriousness: QuoteSeriousness.SERIOUS,
-        },
-      ],
-      aggregators,
-      AggregateAggregatorsMode.MaximizeOutput,
-    );
-    if (buyQuoteResult.length !== 1) {
-      throw new AutoSelectionError(
-        "Unexpected response length from aggregateAggregators",
-      );
-    }
+        }),
+      });
+    })(),
+  );
 
-    const buyQuote = buyQuoteResult[0];
-    if (buyQuote.quote == null) {
-      throw new AutoSelectionError("Couldn't get buy quote");
-    }
-    console.debug("XCS | DDS | 2⒜ iteration", {
-      buyQuote,
-      curAmount,
-    });
-    if (buyQuote.quote.output.amountRaw >= requirement.amountRaw) {
-      return {
-        chainID: Number(requirement.chainID.chainID),
-        quote: buyQuote.quote,
-        aggregator: buyQuote.aggregator,
-        holding: requirement,
-      };
-    } else {
-      curAmount = curAmount.mul(safetyMultiplier); // try again with higher amount
-    }
-  }
+  const bestQuote = await firstSuccessfulQuoteCandidate(
+    [exactOutCandidate, convergedCandidate],
+    "Couldn't get destination quote",
+  );
+
+  return {
+    chainID: Number(requirement.chainID.chainID),
+    quote: bestQuote.quote,
+    aggregator: bestQuote.aggregator,
+    holding: requirement,
+  };
 }
 
 /**

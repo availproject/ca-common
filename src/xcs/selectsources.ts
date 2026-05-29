@@ -13,8 +13,14 @@ import {
   AggregateAggregatorsMode,
   aggregateAggregators,
   AutoSelectionError,
+  applyCappedSafetyMargin,
+  convergeExactInQuote,
+  firstSuccessfulQuoteCandidate,
+  getExactOutQuoteCandidate,
+  inputRawForOutputRaw,
+  quoteCandidateOrNull,
+  rawAmountForCurrencyValue,
 } from "./autochoice";
-import { isFibrousOnlyChain } from "./aggregator-support";
 import {
   bytesEqual,
   ChaindataMap,
@@ -37,8 +43,6 @@ export type SourceWithValue = {
   receiverAddress: Bytes;
   value: number;
 };
-
-const safetyMultiplier = new Decimal("1.01");
 
 export async function selectSources(args: {
   sources: SourceWithValue[];
@@ -289,116 +293,96 @@ export async function selectSources(args: {
     const divisor = Decimal.pow(10, quoteData.cur.decimals);
     const oamD = new Decimal(resp.output.amount);
     if (oamD.gt(remainder)) {
-      // Fibrous doesn't support EXACT_OUT. Keep the iterative EXACT_IN fallback
-      // only on chains routed by Fibrous with no Bebop/LiFi exact-out support.
-      if (!isFibrousOnlyChain(quoteData.req.chain)) {
-        const outputAmountRaw = convertDecimalToBigInt(remainder.mul(divisor));
-        console.debug("XCS | SS | exact_out_request", {
-          idx: quoteData.idx,
-          remainder: remainder.toFixed(),
-          outputAmountRaw: outputAmountRaw.toString(),
-        });
-        const exactOut = await aggregateAggregators(
-          [
-            {
-              userAddress: quoteData.req.userAddress,
-              receiverAddress: quoteData.req.receiverAddress,
-              chain: quoteData.req.chain,
-              inputToken: quoteData.req.inputToken,
-              outputToken: quoteData.req.outputToken,
-              seriousness: QuoteSeriousness.SERIOUS,
-              type: QuoteType.EXACT_OUT,
-              outputAmount: outputAmountRaw,
-            },
-          ],
+      const outputAmountRaw = convertDecimalToBigInt(remainder.mul(divisor));
+      const userBal = new Decimal(
+        quoteData.originalHolding.amountRaw.toString(),
+      );
+      const initialInputAmountRaw = inputRawForOutputRaw(
+        resp,
+        new Decimal(outputAmountRaw.toString()),
+      );
+      const maxExtraInputAmountRaw = inputRawForOutputRaw(
+        resp,
+        rawAmountForCurrencyValue(quoteData.cur),
+      );
+      const firstConvergenceInputAmountRaw = applyCappedSafetyMargin({
+        baseInputAmountRaw: initialInputAmountRaw,
+        inputAmountRaw: initialInputAmountRaw,
+        maxExtraInputAmountRaw,
+        maxInputAmountRaw: userBal,
+      });
+      const maxConvergenceInputAmountRaw = Decimal.min(
+        initialInputAmountRaw.add(maxExtraInputAmountRaw),
+        userBal,
+      );
+
+      console.debug("XCS | SS | partial_quote_candidates", {
+        idx: quoteData.idx,
+        remainder: remainder.toFixed(),
+        outputAmountRaw: outputAmountRaw.toString(),
+        estimatedInputAmountRaw:
+          convertDecimalToBigInt(initialInputAmountRaw).toString(),
+        firstConvergenceInputAmountRaw: convertDecimalToBigInt(
+          firstConvergenceInputAmountRaw,
+        ).toString(),
+        maxExtraInputAmountRaw: convertDecimalToBigInt(
+          maxExtraInputAmountRaw,
+        ).toString(),
+        maxConvergenceInputAmountRaw: convertDecimalToBigInt(
+          maxConvergenceInputAmountRaw,
+        ).toString(),
+        userBalanceAmountRaw: quoteData.originalHolding.amountRaw.toString(),
+      });
+
+      const exactOutCandidate = quoteCandidateOrNull(
+        "source_exact_out",
+        getExactOutQuoteCandidate({
+          request: {
+            userAddress: quoteData.req.userAddress,
+            receiverAddress: quoteData.req.receiverAddress,
+            chain: quoteData.req.chain,
+            inputToken: quoteData.req.inputToken,
+            outputToken: quoteData.req.outputToken,
+            seriousness: QuoteSeriousness.SERIOUS,
+            type: QuoteType.EXACT_OUT,
+            outputAmount: outputAmountRaw,
+          },
           aggregators,
-          AggregateAggregatorsMode.MinimizeInput,
-        );
-        if (exactOut.length !== 1) {
-          throw new AutoSelectionError(
-            "Unexpected response length from aggregateAggregators",
-          );
-        }
-        const aq = exactOut[0];
-        if (aq.quote == null) {
-          throw new AutoSelectionError("Couldn't get EXACT_OUT quote");
-        }
-        if (aq.quote.input.amountRaw > quoteData.originalHolding.amountRaw) {
-          throw new AutoSelectionError("EXACT_OUT quote input exceeds holding");
-        }
-        const oam2D = new Decimal(aq.quote.output.amount);
-        final.push({
-          quote: aq.quote,
-          aggregator: aq.aggregator,
-          holding: quoteData.originalHolding,
-          chainID: Number(quoteData.req.chain.chainID),
-        });
-        remainder = remainder.minus(oam2D);
-      } else {
-        const indicativePrice = Decimal.div(
-          resp.input.amountRaw.toString(),
-          resp.output.amountRaw.toString(),
-        );
-        const userBal = new Decimal(
-          quoteData.originalHolding.amountRaw.toString(),
-        );
-        let expectedInput = Decimal.min(
-          remainder.mul(divisor).mul(indicativePrice).mul(safetyMultiplier),
-          userBal,
-        );
-        let attempts = 0;
-        while (true) {
-          if (++attempts > 10) {
-            throw new AutoSelectionError("Partial quote did not converge");
-          }
-          console.debug("XCS | SS | partial_quote_loop", {
-            indicativePrice: indicativePrice.toFixed(),
-            expectedInput: expectedInput.toFixed(),
-            userBal: userBal.toFixed(),
-            remainder: remainder.toFixed(),
-          });
-          const adequate = await aggregateAggregators(
-            [
-              {
-                ...quoteData.req,
-                seriousness: QuoteSeriousness.SERIOUS,
-                inputAmount: convertDecimalToBigInt(expectedInput),
-              },
-            ],
-            aggregators,
-            AggregateAggregatorsMode.MaximizeOutput,
-          );
-          if (adequate.length !== 1) {
-            throw new AutoSelectionError(
-              "Unexpected response length from aggregateAggregators",
-            );
-          }
-          const aq = adequate[0];
-          if (aq.quote == null) {
-            throw new AutoSelectionError("Couldn't get buy quote");
-          }
-          const oam2D = new Decimal(aq.quote.output.amount);
-          if (oam2D.gte(remainder)) {
-            final.push({
-              quote: aq.quote,
-              aggregator: aq.aggregator,
-              holding: quoteData.originalHolding,
-              chainID: Number(quoteData.req.chain.chainID),
-            });
-            remainder = remainder.minus(oam2D);
-            break;
-          } else if (expectedInput.eq(userBal)) {
-            throw new AutoSelectionError(
-              "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
-            );
-          } else {
-            expectedInput = Decimal.min(
-              expectedInput.mul(safetyMultiplier),
-              userBal,
-            );
-          }
-        }
-      }
+          maxInputAmountRaw: quoteData.originalHolding.amountRaw,
+          requiredOutputAmountRaw: outputAmountRaw,
+        }),
+      );
+      const convergedCandidate = quoteCandidateOrNull(
+        "source_convergence",
+        convergeExactInQuote({
+          initialInputAmountRaw,
+          maxExtraInputAmountRaw,
+          maxInputAmountRaw: userBal,
+          requiredOutputAmountRaw: outputAmountRaw,
+          aggregators,
+          didNotConvergeMessage: "Partial quote did not converge",
+          maxInputReachedMessage:
+            "Holding was supposedly enough to meet the full requirement but ceased to be so subsequently",
+          makeRequest: (inputAmount) => ({
+            ...quoteData.req,
+            seriousness: QuoteSeriousness.SERIOUS,
+            inputAmount,
+          }),
+        }),
+      );
+
+      const bestQuote = await firstSuccessfulQuoteCandidate(
+        [exactOutCandidate, convergedCandidate],
+        "Couldn't get exact out or converged partial quote",
+      );
+      const oam2D = new Decimal(bestQuote.quote.output.amount);
+      final.push({
+        quote: bestQuote.quote,
+        aggregator: bestQuote.aggregator,
+        holding: quoteData.originalHolding,
+        chainID: Number(quoteData.req.chain.chainID),
+      });
+      remainder = remainder.minus(oam2D);
     } else {
       final.push({
         quote: resp,
