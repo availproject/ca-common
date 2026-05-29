@@ -10,6 +10,7 @@ import {
 } from "./iface";
 import { Universe } from "../proto/definition";
 import Decimal from "decimal.js";
+import { LiFiAllowedChains } from "./aggregator-support";
 
 export type LiFiResponse = {
   type: string;
@@ -41,21 +42,6 @@ export type LiFiResponse = {
     data: Hex;
   };
 };
-
-const ALLOWED_CHAINS = new Set([
-  1, // Ethereum
-  10, // Optimism
-  56, // BSC
-  137, // Polygon
-  143, // Monad
-  999, // HyperEVM
-  4326, // MegaETH
-  8453, // Base
-  42161, // Arbitrum
-  43114, // Avalanche
-  8217, // Kaia
-  534352, // Scroll
-]);
 
 export class LiFiAggregator implements Aggregator {
   private static readonly BASE_URL_V1 = "https://li.quest/v1";
@@ -115,7 +101,7 @@ export class LiFiAggregator implements Aggregator {
             return null;
           }
 
-          if (!ALLOWED_CHAINS.has(Number(r.chain.chainID))) {
+          if (!LiFiAllowedChains.has(Number(r.chain.chainID))) {
             return null;
           }
 

@@ -14,6 +14,7 @@ import {
   aggregateAggregators,
   AutoSelectionError,
 } from "./autochoice";
+import { isFibrousOnlyChain } from "./aggregator-support";
 import {
   bytesEqual,
   ChaindataMap,
@@ -288,11 +289,9 @@ export async function selectSources(args: {
     const divisor = Decimal.pow(10, quoteData.cur.decimals);
     const oamD = new Decimal(resp.output.amount);
     if (oamD.gt(remainder)) {
-      // Citrea (4114) only has Fibrous routed for it, and Fibrous doesn't support
-      // EXACT_OUT — fall back to iterative EXACT_IN convergence there. Every other
-      // chain has Bebop/LiFi which serve EXACT_OUT directly, so a single sized
-      // request replaces the convergence loop.
-      if (quoteData.req.chain.chainID !== 4114n) {
+      // Fibrous doesn't support EXACT_OUT. Keep the iterative EXACT_IN fallback
+      // only on chains routed by Fibrous with no Bebop/LiFi exact-out support.
+      if (!isFibrousOnlyChain(quoteData.req.chain)) {
         const outputAmountRaw = convertDecimalToBigInt(remainder.mul(divisor));
         console.debug("XCS | SS | exact_out_request", {
           idx: quoteData.idx,

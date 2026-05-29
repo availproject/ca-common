@@ -11,6 +11,7 @@ import {
   QuoteSeriousness,
   QuoteType,
 } from "./iface";
+import { isFibrousOnlyChain } from "./aggregator-support";
 import {
   bytesEqual,
   ChaindataMap,
@@ -101,11 +102,17 @@ export async function aggregateAggregators(
     }
     case AggregateAggregatorsMode.MinimizeInput: {
       for (let i = 0; i < requests.length; i++) {
-        const best = minByBigInt(
-          responses.map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg })),
-          // Default null quotes to MAX so they never win as the minimum
-          (r) => r.quote?.input.amountRaw ?? BigInt(Number.MAX_SAFE_INTEGER),
-        );
+        const candidates = responses
+          .map((ra) => ({ quote: ra.quotes[i], aggregator: ra.agg }))
+          .filter(
+            (r): r is { quote: Quote; aggregator: Aggregator } =>
+              r.quote != null,
+          );
+        const best =
+          candidates.length > 0
+            ? minByBigInt(candidates, (r) => r.quote.input.amountRaw)
+            : null;
+
         if (best != null) {
           final[i] = best;
         } else {
@@ -531,6 +538,43 @@ export async function determineDestinationSwaps(
   if (COT == null) {
     throw new AutoSelectionError("COT not present on the destination chain");
   }
+
+  // Fibrous doesn't support EXACT_OUT. Keep the iterative EXACT_IN fallback only
+  // on chains routed by Fibrous with no Bebop/LiFi exact-out support.
+  if (!isFibrousOnlyChain(requirement.chainID)) {
+    const exactOutResult = await aggregateAggregators(
+      [
+        {
+          type: QuoteType.EXACT_OUT,
+          chain: requirement.chainID,
+          userAddress,
+          receiverAddress,
+          inputToken: COT.tokenAddress,
+          outputToken: requirement.tokenAddress,
+          outputAmount: requirement.amountRaw,
+          seriousness: QuoteSeriousness.SERIOUS,
+        },
+      ],
+      aggregators,
+      AggregateAggregatorsMode.MinimizeInput,
+    );
+    if (exactOutResult.length !== 1) {
+      throw new AutoSelectionError(
+        "Unexpected response length from aggregateAggregators",
+      );
+    }
+    const exactOutQuote = exactOutResult[0];
+    if (exactOutQuote.quote == null) {
+      throw new AutoSelectionError("Couldn't get EXACT_OUT quote");
+    }
+    return {
+      chainID: Number(requirement.chainID.chainID),
+      quote: exactOutQuote.quote,
+      aggregator: exactOutQuote.aggregator,
+      holding: requirement,
+    };
+  }
+
   // FIXME: Replace with oracle usage - should reduce time.
   // what happens if we happen to sell the requirement for the COT, what would the amount be?
   const fullLiquidationQR: QuoteRequestExactInput = {

@@ -8,24 +8,8 @@ import {
   QuoteRequestExactOutput,
   QuoteType,
 } from "./iface";
-import { Universe } from "../proto/definition";
-import { encodeChainID36 } from "../data";
 import Decimal from "decimal.js";
-
-// https://api.bebop.xyz/{jam|pmm}/chains
-const ChainNameMapping = new Map(
-  Object.entries({
-    ethereum: 1,
-    arbitrum: 42161,
-    optimism: 10,
-    base: 8453,
-    bsc: 56,
-    avalanche: 43114,
-    polygon: 137,
-    scroll: 534352,
-    hyperevm: 999,
-  }).map(([k, v]) => [bytesToHex(encodeChainID36(Universe.ETHEREUM, v)), k]),
-);
+import { BebopChainNameMapping } from "./aggregator-support";
 // const erc7528Addr = Buffer.from('000000000000000000000000eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', 'hex')
 
 export type BebopCommonQuote = {
@@ -169,7 +153,9 @@ export class BebopAggregator implements Aggregator {
         async (
           r: QuoteRequestExactInput | QuoteRequestExactOutput,
         ): Promise<Quote | null> => {
-          const chainName = ChainNameMapping.get(bytesToHex(r.chain.toBytes()));
+          const chainName = BebopChainNameMapping.get(
+            bytesToHex(r.chain.toBytes()),
+          );
           if (chainName == null) {
             return null;
           }

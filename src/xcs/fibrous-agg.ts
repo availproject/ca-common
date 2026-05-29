@@ -9,7 +9,6 @@ import {
   zeroAddress,
 } from "viem";
 
-import { ChainIDKeyedMap, OmniversalChainID } from "../data";
 import { FibrousRouterABI } from "../evmabi";
 import { Universe } from "../proto/definition";
 import {
@@ -19,13 +18,7 @@ import {
   QuoteRequestExactOutput,
   QuoteType,
 } from "./iface";
-
-const ChainNameMapping = new ChainIDKeyedMap<string>([
-  // [new OmniversalChainID(Universe.ETHEREUM, 8453), "base"], // Disabled because of few liquidity issues
-  [new OmniversalChainID(Universe.ETHEREUM, 999), "hyperevm"],
-  [new OmniversalChainID(Universe.ETHEREUM, 143), "monad"],
-  [new OmniversalChainID(Universe.ETHEREUM, 4114), "citrea"],
-]);
+import { FibrousChainNameMapping } from "./aggregator-support";
 
 export type FibrousToken = {
   name: string;
@@ -112,7 +105,7 @@ export class FibrousAggregator implements Aggregator {
             return null;
           }
 
-          const chainName = ChainNameMapping.get(r.chain);
+          const chainName = FibrousChainNameMapping.get(r.chain);
           if (chainName == null) {
             return null;
           }
