@@ -45,7 +45,7 @@ export type HoldingWithSwapAddresses = Holding & {
 };
 
 export class AutoSelectionError extends Error {}
-const safetyMultiplier = new Decimal("1.025");
+const safetyMultiplier = new Decimal("1.01");
 
 export enum AggregateAggregatorsMode {
   MaximizeOutput,
@@ -254,9 +254,7 @@ export async function autoSelectSourcesV2ByRecipient(
       continue;
     }
 
-    if (
-      bytesEqual(holding.tokenAddress, correspondingCurrency.tokenAddress)
-    ) {
+    if (bytesEqual(holding.tokenAddress, correspondingCurrency.tokenAddress)) {
       const normalizedAmount = new Decimal(holding.amountRaw).div(
         Decimal.pow(10, correspondingCurrency.decimals),
       );

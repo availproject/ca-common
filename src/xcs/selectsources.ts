@@ -38,7 +38,7 @@ export type SourceWithValue = {
   value: number;
 };
 
-const safetyMultiplier = new Decimal("1.025");
+const safetyMultiplier = new Decimal("1.01");
 
 export async function selectSources(args: {
   sources: SourceWithValue[];
