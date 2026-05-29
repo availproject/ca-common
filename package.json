@@ -49,7 +49,6 @@
     "viem": "2.51.0"
   },
   "dependencies": {
-    "@avail-project/nexus-core": "file:../nexus-sdk",
     "@bufbuild/protobuf": "2.12.0",
     "@improbable-eng/grpc-web": "0.15.0",
     "@improbable-eng/grpc-web-node-http-transport": "0.15.0",
