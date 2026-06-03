@@ -231,21 +231,15 @@ export async function firstSuccessfulQuoteCandidate(
   candidates: Promise<QuoteCandidate | null>[],
   noQuoteMessage: string,
 ): Promise<QuoteCandidate> {
-  let pending = candidates.map((promise, idx) => ({
-    idx,
-    promise: promise.then((candidate) => ({ idx, candidate })),
-  }));
-
-  while (pending.length > 0) {
-    const settled = await Promise.race(pending.map((p) => p.promise));
-    if (settled.candidate != null) {
+  for (const candidatePromise of candidates) {
+    const candidate = await candidatePromise;
+    if (candidate != null) {
       console.debug("XCS | quote_candidate_selected", {
-        label: settled.candidate.label,
-        ...quoteCandidateForLog(settled.candidate),
+        label: candidate.label,
+        ...quoteCandidateForLog(candidate),
       });
-      return settled.candidate;
+      return candidate;
     }
-    pending = pending.filter((p) => p.idx !== settled.idx);
   }
 
   throw new AutoSelectionError(noQuoteMessage);
