@@ -131,7 +131,66 @@ export async function aggregateAggregators(
 export type QuoteCandidate = {
   quote: Quote;
   aggregator: Aggregator;
+  label?: string;
 };
+
+function aggregatorName(aggregator: Aggregator): string {
+  return aggregator.constructor.name || "Aggregator";
+}
+
+export function decimalAmountForLog(amount: Decimal): string {
+  return amount.toSignificantDigits(12).toFixed();
+}
+
+export function rawAmountForLog(args: {
+  amountRaw: Decimal | bigint;
+  decimals: number;
+  symbol: string;
+}): {
+  amount: string;
+  symbol: string;
+  decimals: number;
+} {
+  const amountRaw =
+    typeof args.amountRaw === "bigint"
+      ? new Decimal(args.amountRaw.toString())
+      : args.amountRaw;
+  return {
+    amount: decimalAmountForLog(
+      amountRaw.div(Decimal.pow(10, args.decimals)),
+    ),
+    symbol: args.symbol,
+    decimals: args.decimals,
+  };
+}
+
+export function quoteAmountForLog(amount: Quote["input"]): {
+  amount: string;
+  symbol: string;
+  decimals: number;
+  value: number;
+  token: string;
+} {
+  return {
+    amount: amount.amount,
+    symbol: amount.symbol,
+    decimals: amount.decimals,
+    value: amount.value,
+    token: amount.contractAddress,
+  };
+}
+
+export function quoteCandidateForLog(candidate: QuoteCandidate): {
+  aggregator: string;
+  input: ReturnType<typeof quoteAmountForLog>;
+  output: ReturnType<typeof quoteAmountForLog>;
+} {
+  return {
+    aggregator: aggregatorName(candidate.aggregator),
+    input: quoteAmountForLog(candidate.quote.input),
+    output: quoteAmountForLog(candidate.quote.output),
+  };
+}
 
 export function rawAmountForCurrencyValue(
   currency: Currency,
@@ -180,6 +239,10 @@ export async function firstSuccessfulQuoteCandidate(
   while (pending.length > 0) {
     const settled = await Promise.race(pending.map((p) => p.promise));
     if (settled.candidate != null) {
+      console.debug("XCS | quote_candidate_selected", {
+        label: settled.candidate.label,
+        ...quoteCandidateForLog(settled.candidate),
+      });
       return settled.candidate;
     }
     pending = pending.filter((p) => p.idx !== settled.idx);
@@ -193,7 +256,15 @@ export async function quoteCandidateOrNull(
   quotePromise: Promise<QuoteCandidate>,
 ): Promise<QuoteCandidate | null> {
   try {
-    return await quotePromise;
+    const candidate = {
+      ...(await quotePromise),
+      label,
+    };
+    console.debug("XCS | quote_candidate_success", {
+      label,
+      ...quoteCandidateForLog(candidate),
+    });
+    return candidate;
   } catch (e) {
     console.debug("XCS | quote_candidate_failed", {
       label,

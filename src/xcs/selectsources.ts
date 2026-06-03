@@ -15,11 +15,13 @@ import {
   AutoSelectionError,
   applyCappedSafetyMargin,
   convergeExactInQuote,
+  decimalAmountForLog,
   firstSuccessfulQuoteCandidate,
   getExactOutQuoteCandidate,
   inputRawForOutputRaw,
   quoteCandidateOrNull,
   rawAmountForCurrencyValue,
+  rawAmountForLog,
 } from "./autochoice";
 import {
   bytesEqual,
@@ -318,20 +320,47 @@ export async function selectSources(args: {
 
       console.debug("XCS | SS | partial_quote_candidates", {
         idx: quoteData.idx,
-        remainder: remainder.toFixed(),
-        outputAmountRaw: outputAmountRaw.toString(),
-        estimatedInputAmountRaw:
-          convertDecimalToBigInt(initialInputAmountRaw).toString(),
-        firstConvergenceInputAmountRaw: convertDecimalToBigInt(
-          firstConvergenceInputAmountRaw,
-        ).toString(),
-        maxExtraInputAmountRaw: convertDecimalToBigInt(
-          maxExtraInputAmountRaw,
-        ).toString(),
-        maxConvergenceInputAmountRaw: convertDecimalToBigInt(
-          maxConvergenceInputAmountRaw,
-        ).toString(),
-        userBalanceAmountRaw: quoteData.originalHolding.amountRaw.toString(),
+        target: {
+          amount: decimalAmountForLog(remainder),
+          symbol: resp.output.symbol,
+          decimals: quoteData.cur.decimals,
+        },
+        exactOut: {
+          requestedOutput: rawAmountForLog({
+            amountRaw: outputAmountRaw,
+            decimals: quoteData.cur.decimals,
+            symbol: resp.output.symbol,
+          }),
+        },
+        convergence: {
+          estimatedInput: rawAmountForLog({
+            amountRaw: initialInputAmountRaw,
+            decimals: resp.input.decimals,
+            symbol: resp.input.symbol,
+          }),
+          firstRequestInput: rawAmountForLog({
+            amountRaw: firstConvergenceInputAmountRaw,
+            decimals: resp.input.decimals,
+            symbol: resp.input.symbol,
+          }),
+          maxExtraInput: rawAmountForLog({
+            amountRaw: maxExtraInputAmountRaw,
+            decimals: resp.input.decimals,
+            symbol: resp.input.symbol,
+          }),
+          maxInput: rawAmountForLog({
+            amountRaw: maxConvergenceInputAmountRaw,
+            decimals: resp.input.decimals,
+            symbol: resp.input.symbol,
+          }),
+        },
+        source: {
+          balance: rawAmountForLog({
+            amountRaw: quoteData.originalHolding.amountRaw,
+            decimals: resp.input.decimals,
+            symbol: resp.input.symbol,
+          }),
+        },
       });
 
       const exactOutCandidate = quoteCandidateOrNull(
